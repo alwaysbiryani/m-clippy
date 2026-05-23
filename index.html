@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Clip Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --ink: #1a1208;
+    --ink-faint: #7a6e5f;
+    --ink-ghost: #c8bfb0;
+    --paper: #f5f0e8;
+    --paper-warm: #ede7d9;
+    --paper-card: #faf7f2;
+    --amber: #d4820a;
+    --amber-light: #fef3d0;
+    --red-soft: #c9442a;
+    --red-light: #fde8e3;
+    --green-soft: #2a7a4a;
+    --green-light: #e3f2e9;
+    --blue-soft: #2a5c8a;
+    --blue-light: #e3eef8;
+    --border: #ddd5c4;
+    --border-strong: #c4b8a0;
+    --shadow: 0 2px 8px rgba(26,18,8,0.08), 0 1px 2px rgba(26,18,8,0.06);
+    --shadow-lg: 0 8px 24px rgba(26,18,8,0.12), 0 2px 6px rgba(26,18,8,0.08);
+    --radius: 6px;
+    --radius-lg: 10px;
+  }
+
+  body {
+    font-family: 'DM Mono', monospace;
+    background: var(--paper);
+    color: var(--ink);
+    min-height: 100vh;
+    font-size: 13px;
+    line-height: 1.5;
+    /* subtle grain texture */
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+
+  /* ─── LAYOUT ─── */
+  .app { max-width: 1200px; margin: 0 auto; padding: 0 24px 80px; }
+
+  /* ─── HEADER ─── */
+  header {
+    padding: 32px 0 24px;
+    border-bottom: 1.5px solid var(--border-strong);
+    margin-bottom: 28px;
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    flex-wrap: wrap;
+  }
+  .logo {
+    font-family: 'Instrument Serif', serif;
+    font-size: 28px;
+    letter-spacing: -0.5px;
+    color: var(--ink);
+    flex: 1;
+  }
+  .logo span { color: var(--amber); }
+
+  .nav-tabs {
+    display: flex;
+    gap: 2px;
+    background: var(--paper-warm);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 3px;
+  }
+  .nav-tab {
+    padding: 6px 14px;
+    border: none;
+    background: transparent;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-faint);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.3px;
+  }
+  .nav-tab:hover { color: var(--ink); background: rgba(26,18,8,0.05); }
+  .nav-tab.active { background: var(--paper-card); color: var(--ink); box-shadow: 0 1px 3px rgba(26,18,8,0.1); }
+  .nav-tab .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px; height: 16px;
+    border-radius: 50%;
+    font-size: 10px;
+    margin-left: 5px;
+    background: var(--border);
+    color: var(--ink-faint);
+  }
+  .nav-tab.active .badge { background: var(--amber-light); color: var(--amber); }
+
+  /* ─── TOOLBAR ─── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .search-wrap {
+    position: relative;
+    flex: 1;
+    min-width: 200px;
+  }
+  .search-icon {
+    position: absolute;
+    left: 11px; top: 50%;
+    transform: translateY(-50%);
+    color: var(--ink-ghost);
+    pointer-events: none;
+    font-size: 14px;
+  }
+  .search-input {
+    width: 100%;
+    padding: 9px 12px 9px 34px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--paper-card);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--ink);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+  }
+  .search-input:focus { border-color: var(--amber); box-shadow: 0 0 0 3px rgba(212,130,10,0.1); }
+  .search-input::placeholder { color: var(--ink-ghost); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 16px;
+    border-radius: var(--radius);
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    border: none;
+    transition: all 0.15s;
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+    text-decoration: none;
+  }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--paper);
+  }
+  .btn-primary:hover { background: #2d2010; transform: translateY(-1px); box-shadow: var(--shadow); }
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-faint);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: var(--paper-warm); color: var(--ink); border-color: var(--border-strong); }
+  .btn-danger {
+    background: var(--red-light);
+    color: var(--red-soft);
+    border: 1px solid #f0c4bc;
+  }
+  .btn-danger:hover { background: #fbd5ce; }
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+
+  /* ─── CARDS GRID ─── */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .card {
+    background: var(--paper-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.15s, box-shadow 0.15s;
+    overflow: hidden;
+    position: relative;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+  .card.archived { border-color: #f0c4bc; }
+  .card.archived .card-header { background: var(--red-light); border-bottom-color: #f0c4bc; }
+  .card.deleted { border-color: #b8d4ee; }
+  .card.deleted .card-header { background: var(--blue-light); border-bottom-color: #b8d4ee; }
+
+  .card-header {
+    padding: 14px 16px 12px;
+    border-bottom: 1px solid var(--border);
+    background: var(--paper-warm);
+  }
+  .card-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 17px;
+    color: var(--ink);
+    margin-bottom: 3px;
+    line-height: 1.3;
+    word-break: break-word;
+  }
+  .card-desc {
+    font-size: 11px;
+    color: var(--ink-faint);
+    font-style: italic;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .card-body {
+    padding: 14px 16px;
+    flex: 1;
+  }
+  .card-content {
+    font-size: 12px;
+    color: var(--ink-faint);
+    line-height: 1.6;
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    word-break: break-word;
+    white-space: pre-wrap;
+  }
+
+  .card-footer {
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .card-date {
+    font-size: 10px;
+    color: var(--ink-ghost);
+    margin-left: auto;
+    letter-spacing: 0.3px;
+  }
+
+  .card-status-badge {
+    position: absolute;
+    top: 10px; right: 10px;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+  .badge-archived { background: var(--red-light); color: var(--red-soft); border: 1px solid #f0c4bc; }
+  .badge-deleted { background: var(--blue-light); color: var(--blue-soft); border: 1px solid #b8d4ee; }
+
+  /* ─── EMPTY STATE ─── */
+  .empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--ink-faint);
+  }
+  .empty-icon { font-size: 48px; margin-bottom: 16px; opacity: 0.4; }
+  .empty h3 { font-family: 'Instrument Serif', serif; font-size: 22px; color: var(--ink-faint); margin-bottom: 8px; }
+  .empty p { font-size: 12px; }
+
+  /* ─── MODAL ─── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,18,8,0.4);
+    backdrop-filter: blur(3px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--paper-card);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    animation: slideUp 0.2s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .modal-header {
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .modal-title {
+    font-family: 'Instrument Serif', serif;
+    font-size: 22px;
+    flex: 1;
+  }
+  .modal-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+  .modal-footer {
+    padding: 16px 24px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  /* ─── FORM FIELDS ─── */
+  .field { margin-bottom: 18px; }
+  .field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink-faint);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .field input, .field textarea {
+    width: 100%;
+    padding: 10px 13px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--paper);
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    color: var(--ink);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    outline: none;
+    resize: vertical;
+  }
+  .field input:focus, .field textarea:focus {
+    border-color: var(--amber);
+    box-shadow: 0 0 0 3px rgba(212,130,10,0.1);
+  }
+  .field textarea { min-height: 160px; line-height: 1.7; }
+
+  /* ─── TOAST ─── */
+  .toast {
+    position: fixed;
+    bottom: 28px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 10px 20px;
+    border-radius: var(--radius);
+    font-size: 12px;
+    font-weight: 500;
+    box-shadow: var(--shadow-lg);
+    z-index: 200;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    white-space: nowrap;
+    letter-spacing: 0.2px;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* ─── CONFIRM DIALOG ─── */
+  .confirm-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26,18,8,0.4);
+    z-index: 150;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .confirm-overlay.open { display: flex; }
+  .confirm-box {
+    background: var(--paper-card);
+    border: 1px solid var(--border-strong);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    padding: 28px;
+    max-width: 380px;
+    width: 100%;
+    animation: slideUp 0.15s ease;
+  }
+  .confirm-box h3 { font-family: 'Instrument Serif', serif; font-size: 20px; margin-bottom: 10px; }
+  .confirm-box p { font-size: 12px; color: var(--ink-faint); margin-bottom: 22px; line-height: 1.6; }
+  .confirm-actions { display: flex; gap: 10px; justify-content: flex-end; }
+
+  /* ─── DIVIDER ─── */
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--ink-ghost);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 600px) {
+    .app { padding: 0 16px 60px; }
+    header { padding: 20px 0 16px; }
+    .logo { font-size: 22px; }
+    .grid { grid-template-columns: 1fr; }
+    .toolbar { flex-direction: column; align-items: stretch; }
+    .search-wrap { min-width: 0; }
+  }
+
+  /* copy flash */
+  @keyframes flash {
+    0% { background: var(--amber-light); }
+    100% { background: var(--paper-card); }
+  }
+  .card.flash-copy { animation: flash 0.4s ease; }
+
+  /* scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <header>
+    <div class="logo">Clip<span>Board</span></div>
+    <div class="nav-tabs">
+      <button class="nav-tab active" onclick="setView('active')" id="tab-active">Active <span class="badge" id="badge-active">0</span></button>
+      <button class="nav-tab" onclick="setView('archived')" id="tab-archived">Archived <span class="badge" id="badge-archived">0</span></button>
+      <button class="nav-tab" onclick="setView('deleted')" id="tab-deleted">Deleted <span class="badge" id="badge-deleted">0</span></button>
+    </div>
+  </header>
+
+  <!-- TOOLBAR -->
+  <div class="toolbar">
+    <div class="search-wrap">
+      <span class="search-icon">⌕</span>
+      <input type="text" class="search-input" id="search" placeholder="Search clips..." oninput="renderGrid()" />
+    </div>
+    <button class="btn btn-primary" onclick="openNew()">
+      <span>+</span> New Clip
+    </button>
+  </div>
+
+  <!-- GRID -->
+  <div id="section-label-wrap"></div>
+  <div class="grid" id="grid"></div>
+
+</div>
+
+<!-- EDIT / CREATE MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">New Clip</div>
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">✕ Close</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Title</label>
+        <input type="text" id="f-title" placeholder="e.g. API Key, Email Template..." maxlength="80" />
+      </div>
+      <div class="field">
+        <label>Description <span style="font-weight:300;text-transform:none;letter-spacing:0">(optional)</span></label>
+        <input type="text" id="f-desc" placeholder="Short description or context..." maxlength="120" />
+      </div>
+      <div class="field">
+        <label>Content</label>
+        <textarea id="f-content" placeholder="Paste or type your clip content here..."></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveClip()">Save Clip</button>
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div class="confirm-overlay" id="confirm-overlay">
+  <div class="confirm-box">
+    <h3 id="confirm-title">Are you sure?</h3>
+    <p id="confirm-msg">This action cannot be undone.</p>
+    <div class="confirm-actions">
+      <button class="btn btn-ghost" onclick="closeConfirm()">Cancel</button>
+      <button class="btn btn-danger" id="confirm-ok" onclick="confirmAction()">Confirm</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── DATA LAYER ───────────────────────────────────────────────
+const STORE_KEY = 'clipboard_manager_v1';
+
+function load() {
+  try { return JSON.parse(localStorage.getItem(STORE_KEY)) || []; }
+  catch { return []; }
+}
+function save(clips) {
+  localStorage.setItem(STORE_KEY, JSON.stringify(clips));
+}
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+// ─── STATE ────────────────────────────────────────────────────
+let clips = load();
+let currentView = 'active'; // 'active' | 'archived' | 'deleted'
+let editingId = null;
+let pendingAction = null;
+
+// ─── VIEWS ────────────────────────────────────────────────────
+function setView(view) {
+  currentView = view;
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + view).classList.add('active');
+  document.getElementById('search').value = '';
+  renderGrid();
+}
+
+function renderGrid() {
+  const q = document.getElementById('search').value.toLowerCase();
+  const grid = document.getElementById('grid');
+  const wrap = document.getElementById('section-label-wrap');
+
+  // counts
+  const counts = { active: 0, archived: 0, deleted: 0 };
+  clips.forEach(c => {
+    if (c.status === 'active') counts.active++;
+    else if (c.status === 'archived') counts.archived++;
+    else if (c.status === 'deleted') counts.deleted++;
+  });
+  document.getElementById('badge-active').textContent = counts.active;
+  document.getElementById('badge-archived').textContent = counts.archived;
+  document.getElementById('badge-deleted').textContent = counts.deleted;
+
+  // filter
+  const filtered = clips.filter(c => {
+    if (c.status !== currentView) return false;
+    if (!q) return true;
+    return (c.title + c.desc + c.content).toLowerCase().includes(q);
+  }).sort((a,b) => b.updatedAt - a.updatedAt);
+
+  // section label
+  const labels = { active: 'Your Clips', archived: 'Archived Clips', deleted: 'Deleted Clips' };
+  wrap.innerHTML = `<div class="section-label">${labels[currentView]}</div>`;
+
+  if (filtered.length === 0) {
+    const msgs = {
+      active: q ? 'No clips match your search.' : "Nothing here yet. Hit <strong>+ New Clip</strong> to create your first.",
+      archived: q ? 'No archived clips match.' : 'No archived clips.',
+      deleted: q ? 'No deleted clips match.' : 'Nothing in the bin.'
+    };
+    grid.innerHTML = `<div class="empty"><div class="empty-icon">${currentView==='active'?'📋':currentView==='archived'?'🗃️':'🗑️'}</div><h3>${labels[currentView]}</h3><p>${msgs[currentView]}</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered.map(c => cardHTML(c)).join('');
+}
+
+function cardHTML(c) {
+  const d = new Date(c.updatedAt);
+  const dateStr = d.toLocaleDateString('en-US', { month:'short', day:'numeric' });
+  const preview = (c.content || '').slice(0, 200);
+
+  let statusBadge = '';
+  if (c.status === 'archived') statusBadge = `<span class="card-status-badge badge-archived">Archived</span>`;
+  if (c.status === 'deleted') statusBadge = `<span class="card-status-badge badge-deleted">Deleted</span>`;
+
+  let actions = '';
+  if (c.status === 'active') {
+    actions = `
+      <button class="btn btn-ghost btn-sm" onclick="copyClip('${c.id}',this)" title="Copy content">Copy</button>
+      <button class="btn btn-ghost btn-sm" onclick="editClip('${c.id}')" title="Edit">Edit</button>
+      <button class="btn btn-ghost btn-sm" onclick="archiveClip('${c.id}')" title="Archive" style="color:var(--red-soft)">Archive</button>
+    `;
+  } else if (c.status === 'archived') {
+    actions = `
+      <button class="btn btn-ghost btn-sm" onclick="copyClip('${c.id}',this)" title="Copy content">Copy</button>
+      <button class="btn btn-ghost btn-sm" onclick="restoreClip('${c.id}')" title="Restore to active" style="color:var(--green-soft)">Restore</button>
+      <button class="btn btn-ghost btn-sm" onclick="softDeleteClip('${c.id}')" title="Delete" style="color:var(--red-soft)">Delete</button>
+    `;
+  } else if (c.status === 'deleted') {
+    actions = `
+      <button class="btn btn-ghost btn-sm" onclick="copyClip('${c.id}',this)" title="Copy content">Copy</button>
+      <button class="btn btn-ghost btn-sm" onclick="restoreClip('${c.id}')" title="Restore to active" style="color:var(--green-soft)">Restore</button>
+      <button class="btn btn-danger btn-sm" onclick="permanentDelete('${c.id}')" title="Permanently delete">Purge</button>
+    `;
+  }
+
+  return `
+    <div class="card ${c.status !== 'active' ? c.status : ''}" id="card-${c.id}">
+      ${statusBadge}
+      <div class="card-header">
+        <div class="card-title">${escHtml(c.title || 'Untitled')}</div>
+        ${c.desc ? `<div class="card-desc">${escHtml(c.desc)}</div>` : ''}
+      </div>
+      <div class="card-body">
+        <div class="card-content">${escHtml(preview)}${c.content && c.content.length > 200 ? '…' : ''}</div>
+      </div>
+      <div class="card-footer">
+        ${actions}
+        <span class="card-date">${dateStr}</span>
+      </div>
+    </div>
+  `;
+}
+
+// ─── ACTIONS ──────────────────────────────────────────────────
+function copyClip(id, btn) {
+  const c = clips.find(x => x.id === id);
+  if (!c) return;
+  navigator.clipboard.writeText(c.content || '').then(() => {
+    toast('Copied to clipboard!');
+    const card = document.getElementById('card-' + id);
+    if (card) { card.classList.add('flash-copy'); setTimeout(()=>card.classList.remove('flash-copy'),400); }
+  }).catch(() => {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = c.content || '';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    toast('Copied to clipboard!');
+  });
+}
+
+function archiveClip(id) {
+  askConfirm(
+    'Archive this clip?',
+    'It will be moved to your Archive. You can restore it anytime.',
+    () => {
+      updateClip(id, { status: 'archived', updatedAt: Date.now() });
+      toast('Clip archived.');
+    }
+  );
+}
+
+function softDeleteClip(id) {
+  askConfirm(
+    'Move to Deleted?',
+    'It will be moved to the Deleted bin. You can restore or permanently delete it there.',
+    () => {
+      updateClip(id, { status: 'deleted', updatedAt: Date.now() });
+      toast('Clip moved to Deleted.');
+    }
+  );
+}
+
+function restoreClip(id) {
+  updateClip(id, { status: 'active', updatedAt: Date.now() });
+  toast('Clip restored to Active.');
+}
+
+function permanentDelete(id) {
+  askConfirm(
+    'Permanently delete?',
+    'This cannot be undone. The clip will be gone forever.',
+    () => {
+      clips = clips.filter(x => x.id !== id);
+      save(clips);
+      renderGrid();
+      toast('Clip permanently deleted.');
+    },
+    true
+  );
+}
+
+function updateClip(id, changes) {
+  const idx = clips.findIndex(x => x.id === id);
+  if (idx === -1) return;
+  clips[idx] = { ...clips[idx], ...changes };
+  save(clips);
+  renderGrid();
+}
+
+// ─── MODAL ────────────────────────────────────────────────────
+function openNew() {
+  editingId = null;
+  document.getElementById('modal-title').textContent = 'New Clip';
+  document.getElementById('f-title').value = '';
+  document.getElementById('f-desc').value = '';
+  document.getElementById('f-content').value = '';
+  document.getElementById('modal').classList.add('open');
+  setTimeout(() => document.getElementById('f-title').focus(), 100);
+}
+
+function editClip(id) {
+  const c = clips.find(x => x.id === id);
+  if (!c) return;
+  editingId = id;
+  document.getElementById('modal-title').textContent = 'Edit Clip';
+  document.getElementById('f-title').value = c.title || '';
+  document.getElementById('f-desc').value = c.desc || '';
+  document.getElementById('f-content').value = c.content || '';
+  document.getElementById('modal').classList.add('open');
+  setTimeout(() => document.getElementById('f-title').focus(), 100);
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  editingId = null;
+}
+
+function saveClip() {
+  const title = document.getElementById('f-title').value.trim();
+  const desc = document.getElementById('f-desc').value.trim();
+  const content = document.getElementById('f-content').value;
+
+  if (!title) {
+    document.getElementById('f-title').focus();
+    document.getElementById('f-title').style.borderColor = 'var(--red-soft)';
+    setTimeout(() => document.getElementById('f-title').style.borderColor = '', 1500);
+    toast('Please add a title.');
+    return;
+  }
+
+  if (editingId) {
+    updateClip(editingId, { title, desc, content, updatedAt: Date.now() });
+    toast('Clip updated!');
+  } else {
+    const newClip = { id: genId(), title, desc, content, status: 'active', createdAt: Date.now(), updatedAt: Date.now() };
+    clips.unshift(newClip);
+    save(clips);
+    if (currentView !== 'active') setView('active');
+    else renderGrid();
+    toast('Clip created!');
+  }
+  closeModal();
+}
+
+// ─── CONFIRM ──────────────────────────────────────────────────
+function askConfirm(title, msg, onOk, danger = false) {
+  document.getElementById('confirm-title').textContent = title;
+  document.getElementById('confirm-msg').textContent = msg;
+  const okBtn = document.getElementById('confirm-ok');
+  okBtn.className = danger ? 'btn btn-danger' : 'btn btn-primary';
+  okBtn.textContent = danger ? 'Delete Forever' : 'Confirm';
+  pendingAction = onOk;
+  document.getElementById('confirm-overlay').classList.add('open');
+}
+function confirmAction() {
+  if (pendingAction) pendingAction();
+  closeConfirm();
+}
+function closeConfirm() {
+  document.getElementById('confirm-overlay').classList.remove('open');
+  pendingAction = null;
+}
+
+// ─── TOAST ────────────────────────────────────────────────────
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ─── UTIL ─────────────────────────────────────────────────────
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+// ─── KEYBOARD SHORTCUTS ───────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeModal(); closeConfirm(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') { e.preventDefault(); openNew(); }
+  if (e.key === 'Enter' && document.getElementById('modal').classList.contains('open')) {
+    if (document.activeElement.tagName !== 'TEXTAREA') {
+      e.preventDefault(); saveClip();
+    }
+  }
+});
+
+// close modal on overlay click
+document.getElementById('modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('modal')) closeModal();
+});
+document.getElementById('confirm-overlay').addEventListener('click', e => {
+  if (e.target === document.getElementById('confirm-overlay')) closeConfirm();
+});
+
+// ─── INIT ─────────────────────────────────────────────────────
+renderGrid();
+</script>
+</body>
+</html>
