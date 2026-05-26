@@ -1216,8 +1216,9 @@ function editClip(id){
   pendingTags=[...(c.tags||[])]; renderTagPills();
   pendingColor=c.color||'none'; selectColor(pendingColor);
   onTypeChange(); populateChainSelect(c); renderRelatedPreview(c);
-  animateModalContinuityIn();
-  document.getElementById('modal-overlay').classList.add('open');
+  const overlay=document.getElementById('modal-overlay');
+  overlay.classList.add('open');
+  requestAnimationFrame(()=>animateModalContinuityIn());
   document.body.classList.add('focus-open');
   setTimeout(()=>document.getElementById('f-content').focus(),80);
 }
