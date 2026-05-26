@@ -274,6 +274,14 @@ body.focus-open .modal{filter:none}
 .chain-item{padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid var(--border-2);background:var(--card);color:var(--ink-2);transition:all var(--t);font-family:var(--font-mono)}
 .chain-item:hover{border-color:var(--purple);color:var(--purple);background:var(--purple-l)}
 .chain-item.linked{border-color:var(--purple);color:var(--purple);background:var(--purple-l)}
+.related-chip-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.related-chip{border:1px solid var(--border-2);background:var(--paper-2);color:var(--ink-2);font-size:11px;padding:3px 8px;border-radius:999px;font-family:var(--font-mono);cursor:pointer;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.related-chip:hover{border-color:var(--purple);color:var(--purple);background:var(--purple-l)}
+.related-preview{display:flex;flex-direction:column;gap:7px;padding:8px;background:var(--paper-2);border-radius:var(--r);border:1px solid var(--border-2);margin-bottom:8px}
+.related-preview-item{display:flex;justify-content:space-between;gap:8px;align-items:center;padding:5px 6px;border-radius:6px;border:1px solid transparent;background:var(--card);cursor:pointer}
+.related-preview-item:hover{border-color:var(--purple);background:var(--purple-l)}
+.related-preview-title{font-size:12px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.related-preview-meta{font-size:10px;color:var(--ink-4);font-family:var(--font-mono);flex-shrink:0}
 
 /* ── COMMAND PALETTE ── */
 .cmd-overlay{display:none;position:fixed;inset:0;background:rgba(24,18,10,.3);backdrop-filter:blur(3px);z-index:200;align-items:flex-start;justify-content:center;padding:80px 24px 24px}
@@ -538,6 +546,7 @@ body.focus-open .modal{filter:none}
 
       <div class="field">
         <label>Workflow Chain — link related clips</label>
+        <div id="related-preview" class="related-preview"></div>
         <div class="chain-select" id="chain-select"></div>
         <div class="field-hint">Click clips to link/unlink them into a workflow chain</div>
       </div>
@@ -893,6 +902,19 @@ function renderFilterBar(){
   wrap.innerHTML=chips.length?`<div class="filter-bar">${chips.join('')}</div>`:'';
 }
 
+
+function getLinkedClips(clip){
+  const ids=Array.isArray(clip&&clip.chainIds)?clip.chainIds:[];
+  return ids.map(id=>clips.find(x=>x.id===id)).filter(Boolean);
+}
+function linkedChipHTML(clip){
+  const linked=getLinkedClips(clip);
+  if(!linked.length)return '';
+  const chips=linked.slice(0,2).map(linkedClip=>`<button class="related-chip" onclick="event.stopPropagation();editClip('${linkedClip.id}')" title="Open ${esc(linkedClip.title||'Untitled')}">${esc(linkedClip.title||'Untitled')}</button>`).join('');
+  const overflow=linked.length>2?`<span class="related-chip">+${linked.length-2}</span>`:'';
+  return `<div class="related-chip-row">${chips}${overflow}</div>`;
+}
+
 // ═══════════════════════════════════════
 // CARD HTML
 // ═══════════════════════════════════════
@@ -927,8 +949,9 @@ function cardHTML(c){
   const tagsHTML=(c.tags||[]).length
     ?`<div class="clip-tags">${c.tags.map(t=>`<span class="clip-tag ${currentTagFilters.includes(t)?'active-filter':''}" onclick="event.stopPropagation();toggleTagFilter('${esc(t)}')">#${esc(t)}</span>`).join('')}</div>`:'';
 
-  const chainHTML=(c.chainIds||[]).length
-    ?`<button class="chain-badge" onclick="event.stopPropagation();editClip('${c.id}')">${IC.chain} ${c.chainIds.length} linked</button>`:'';
+  const chainCountHTML=(c.chainIds||[]).length
+    ?`<button class="chain-badge" onclick="event.stopPropagation();editClip('${c.id}')">${IC.chain} ${(c.chainIds||[]).length} linked</button>`:'';
+  const chainChipsHTML=linkedChipHTML(c);
 
   let actions='';
   if(c.status==='active'){
@@ -959,8 +982,8 @@ function cardHTML(c){
       <div class="clip-title">${esc(c.title||'Untitled')}</div>
       ${c.desc?`<div class="clip-desc">${esc(c.desc)}</div>`:''}
     </div>
-    <div class="clip-body">${contentHTML}${tagsHTML}</div>
-    ${chainHTML}
+    <div class="clip-body">${contentHTML}${tagsHTML}${chainChipsHTML}</div>
+    ${chainCountHTML}
     <div class="clip-footer">${actions}<span class="clip-date">${dateStr}</span></div>
   </div>`;
 }
@@ -1101,7 +1124,7 @@ function openNew(prefill){
   document.getElementById('pin-btn').innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg> Pin`;
   pendingTags=[]; renderTagPills();
   pendingColor='none'; selectColor('none');
-  onTypeChange(); populateChainSelect(null);
+  onTypeChange(); populateChainSelect(null); renderRelatedPreview(null);
   document.getElementById('modal-overlay').classList.add('open');
   document.body.classList.add('focus-open');
   setTimeout(()=>document.getElementById(prefill?'f-title':'f-title').focus(),80);
@@ -1119,7 +1142,7 @@ function editClip(id){
   document.getElementById('pin-btn').innerHTML=`<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg> ${c.pinned?'Unpin':'Pin'}`;
   pendingTags=[...(c.tags||[])]; renderTagPills();
   pendingColor=c.color||'none'; selectColor(pendingColor);
-  onTypeChange(); populateChainSelect(c);
+  onTypeChange(); populateChainSelect(c); renderRelatedPreview(c);
   document.getElementById('modal-overlay').classList.add('open');
   document.body.classList.add('focus-open');
   setTimeout(()=>document.getElementById('f-content').focus(),80);
@@ -1189,6 +1212,21 @@ function togglePinInModal(){
     btn.innerHTML=`${pinSVG} ${wanting?'Unpin':'Pin'}`;
   }
 }
+
+function renderRelatedPreview(clip){
+  const wrap=document.getElementById('related-preview');
+  if(!wrap)return;
+  const linked=getLinkedClips(clip);
+  if(!linked.length){
+    wrap.innerHTML='<div style="font-size:11px;color:var(--ink-4);font-family:var(--font-mono)">No related memories linked yet</div>';
+    return;
+  }
+  wrap.innerHTML=linked.slice(0,6).map(linkedClip=>`<button class="related-preview-item" onclick="event.stopPropagation();editClip('${linkedClip.id}')">
+    <span class="related-preview-title">${esc(linkedClip.title||'Untitled')}</span>
+    <span class="related-preview-meta">updated ${new Date(linkedClip.updatedAt).toLocaleDateString('en-US',{month:'short',day:'numeric'})}</span>
+  </button>`).join('');
+}
+
 function populateChainSelect(clip){
   const sel=document.getElementById('chain-select');
   const others=clips.filter(c=>c.status==='active'&&c.id!==editingId).slice(0,24);
