@@ -18,9 +18,9 @@
   --blue:#2a5a8a;--blue-l:#e3edf8;
   --purple:#6a3a8a;--purple-l:#f0e8f8;
   --border:rgba(24,18,10,0.1);--border-2:rgba(24,18,10,0.18);--border-3:rgba(24,18,10,0.28);
-  --shadow-sm:0 1px 3px rgba(24,18,10,0.07),0 1px 2px rgba(24,18,10,0.05);
-  --shadow:0 4px 12px rgba(24,18,10,0.09),0 1px 3px rgba(24,18,10,0.06);
-  --shadow-lg:0 12px 32px rgba(24,18,10,0.13),0 4px 8px rgba(24,18,10,0.08);
+  --shadow-sm:0 1px 2px rgba(24,18,10,0.05),0 1px 1px rgba(24,18,10,0.03);
+  --shadow:0 6px 16px rgba(24,18,10,0.07),0 1px 3px rgba(24,18,10,0.04);
+  --shadow-lg:0 12px 26px rgba(24,18,10,0.10),0 2px 8px rgba(24,18,10,0.05);
   --r:8px;--r-lg:12px;--r-xl:16px;
   --font-serif:'Instrument Serif',serif;
   --font-sans:'Geist',system-ui,sans-serif;
@@ -81,7 +81,7 @@ body{font-family:var(--font-sans);background:var(--paper);color:var(--ink);min-h
 .view-btn.active{background:var(--card);color:var(--ink);box-shadow:var(--shadow-sm)}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:var(--r);font-family:var(--font-sans);font-size:13px;font-weight:500;cursor:pointer;border:none;transition:all var(--t);white-space:nowrap}
 .btn-primary{background:var(--ink);color:var(--paper)}
-.btn-primary:hover{background:#2d2010;transform:translateY(-1px);box-shadow:var(--shadow)}
+.btn-primary:hover{background:#2d2010;box-shadow:var(--shadow-sm)}
 .btn-ghost{background:transparent;color:var(--ink-2);border:1px solid var(--border-2)}
 .btn-ghost:hover{background:var(--paper-2);color:var(--ink)}
 .btn-danger{background:var(--red-l);color:var(--red);border:1px solid rgba(184,58,34,.2)}
@@ -95,21 +95,21 @@ body{font-family:var(--font-sans);background:var(--paper);color:var(--ink);min-h
 .filter-chip:hover{background:var(--red-l);color:var(--red)}
 
 /* ── CONTENT ── */
-.content{flex:1;overflow-y:auto;padding:18px 20px}
+.content{flex:1;overflow-y:auto;padding:20px 24px}
 .content::-webkit-scrollbar{width:5px}
 .content::-webkit-scrollbar-thumb{background:var(--border-3);border-radius:3px}
 .section-header{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:500;letter-spacing:.7px;text-transform:uppercase;color:var(--ink-4);margin-bottom:12px;font-family:var(--font-mono)}
 .section-header::after{content:'';flex:1;height:1px;background:var(--border)}
 
 /* ── GRIDS ── */
-.clips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(278px,1fr));gap:14px;margin-bottom:26px}
+.clips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(292px,1fr));gap:12px;margin-bottom:24px;max-width:1240px}
 .clips-grid.view-compact{grid-template-columns:1fr;gap:3px}
 .clips-grid.view-timeline{grid-template-columns:1fr;gap:0;padding-left:28px;position:relative}
 .clips-grid.view-timeline::before{content:'';position:absolute;left:10px;top:0;bottom:0;width:1px;background:var(--border-2)}
 
 /* ── CLIP CARD ── */
 .clip-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow-sm);display:flex;flex-direction:column;cursor:pointer;transition:transform var(--t),box-shadow var(--t),border-color var(--t);position:relative;overflow:hidden;outline:none}
-.clip-card:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+.clip-card:hover{transform:translateY(-1px);box-shadow:var(--shadow)}
 .clip-card:focus{outline:2px solid var(--amber);outline-offset:2px}
 .clip-card.focused-card{outline:2px solid var(--amber);outline-offset:2px}
 .clip-card.pinned{border-color:rgba(201,123,10,.4)}
@@ -139,20 +139,20 @@ body{font-family:var(--font-sans);background:var(--paper);color:var(--ink);min-h
 .view-timeline .clip-card{border-radius:6px;margin-bottom:14px}
 .view-timeline .clip-card::after{content:'';position:absolute;left:-24px;top:18px;width:8px;height:8px;border-radius:50%;background:var(--ca,var(--ink-5));border:2px solid var(--paper);box-shadow:0 0 0 1px var(--border-2)}
 
-.clip-header{padding:13px 14px 10px;border-bottom:1px solid var(--border);background:var(--paper-2);transition:background var(--t),border-color var(--t)}
+.clip-header{padding:12px 14px 10px;border-bottom:1px solid var(--border);background:color-mix(in srgb,var(--paper-2) 84%,white);transition:background var(--t),border-color var(--t)}
 .clip-type-row{display:flex;align-items:center;gap:5px;margin-bottom:5px}
 .clip-type-badge{font-size:10px;font-family:var(--font-mono);font-weight:500;padding:2px 6px;border-radius:4px;background:var(--paper-2);color:var(--ink-3);letter-spacing:.4px;text-transform:uppercase}
 .type-code{background:#1a1208;color:#d4820a}
 .type-url{background:var(--blue-l);color:var(--blue)}
 .type-image{background:var(--purple-l);color:var(--purple)}
 .type-prompt{background:var(--green-l);color:var(--green)}
-.clip-title{font-family:var(--font-serif);font-size:16px;color:var(--ink);line-height:1.3;word-break:break-word}
-.clip-desc{font-size:11px;color:var(--ink-3);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-mono);font-style:italic}
+.clip-title{font-family:var(--font-serif);font-size:17px;letter-spacing:-.1px;color:var(--ink);line-height:1.28;word-break:break-word}
+.clip-desc{font-size:10.5px;color:var(--ink-4);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-mono);font-style:normal}
 .clip-body{padding:11px 14px;flex:1}
 
 /* content previews */
-.clip-content{font-size:12.5px;color:var(--ink-3);line-height:1.65;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;white-space:pre-wrap;transition:-webkit-line-clamp .3s}
-.clip-card:hover .clip-content{-webkit-line-clamp:8}
+.clip-content{font-size:12.8px;color:var(--ink-2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;white-space:pre-wrap;transition:-webkit-line-clamp .3s}
+.clip-card:hover .clip-content{-webkit-line-clamp:5}
 .clip-content.is-code{font-family:var(--font-mono);font-size:11.5px;background:var(--paper-2);padding:8px 10px;border-radius:5px;color:var(--ink-2)}
 .clip-content.sensitive{filter:blur(5px);user-select:none}
 .clip-content.sensitive:hover{filter:blur(0);transition:filter .25s}
@@ -166,8 +166,8 @@ body{font-family:var(--font-sans);background:var(--paper);color:var(--ink);min-h
 .clip-tag:hover{background:var(--amber-l);color:var(--amber);border-color:rgba(201,123,10,.25)}
 .clip-tag.active-filter{background:var(--amber-l);color:var(--amber);border-color:rgba(201,123,10,.4)}
 
-.clip-footer{padding:8px 12px;border-top:1px solid var(--border);display:flex;align-items:center;gap:4px;opacity:0;transition:opacity var(--t)}
-.clip-card:hover .clip-footer,.clip-card.focused-card .clip-footer{opacity:1}
+.clip-footer{padding:7px 11px;border-top:1px solid var(--border);display:flex;align-items:center;gap:3px;opacity:.72;transition:opacity var(--t)}
+.clip-card:hover .clip-footer,.clip-card.focused-card .clip-footer{opacity:.98}
 .clip-date{font-size:10px;color:var(--ink-5);margin-left:auto;font-family:var(--font-mono)}
 .clip-action{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:5px;border:none;background:transparent;cursor:pointer;color:var(--ink-3);font-size:14px;transition:background 0.1s,color 0.1s;position:relative}
 .clip-action:hover{background:var(--paper-2);color:var(--ink)}
@@ -190,9 +190,9 @@ body{font-family:var(--font-sans);background:var(--paper);color:var(--ink);min-h
 .chain-badge{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:4px;background:var(--purple-l);color:var(--purple);font-size:10px;font-family:var(--font-mono);cursor:pointer;border:none;margin:0 14px 10px}
 
 /* ── QUICK-CAPTURE BANNER ── */
-.capture-banner{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--border-2);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);padding:14px 18px;max-width:340px;width:calc(100vw - 48px);z-index:90;display:none;animation:slideInRight .28s cubic-bezier(.34,1.56,.64,1)}
+.capture-banner{position:fixed;bottom:24px;right:24px;background:var(--card);border:1px solid var(--border);border-radius:var(--r-xl);box-shadow:var(--shadow);padding:14px 18px;max-width:340px;width:calc(100vw - 48px);z-index:90;display:none;animation:slideInRight .2s ease-out}
 .capture-banner.show{display:block}
-@keyframes slideInRight{from{opacity:0;transform:translateX(30px)}to{opacity:1;transform:translateX(0)}}
+@keyframes slideInRight{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
 .capture-banner-title{font-family:var(--font-serif);font-size:16px;margin-bottom:4px}
 .capture-banner-preview{font-size:11.5px;color:var(--ink-3);font-family:var(--font-mono);background:var(--paper-2);padding:7px 9px;border-radius:5px;margin:8px 0 12px;max-height:60px;overflow:hidden;white-space:pre-wrap;word-break:break-word}
 .capture-banner-actions{display:flex;gap:8px;justify-content:flex-end}
@@ -207,8 +207,8 @@ body{font-family:var(--font-sans);background:var(--paper);color:var(--ink);min-h
 /* ── MODAL ── */
 .overlay{display:none;position:fixed;inset:0;background:rgba(24,18,10,.45);backdrop-filter:blur(4px);z-index:100;align-items:center;justify-content:center;padding:24px}
 .overlay.open{display:flex}
-.modal{background:var(--card);border:1px solid var(--border-2);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);width:100%;max-width:660px;max-height:90vh;display:flex;flex-direction:column;animation:popIn .22s cubic-bezier(.34,1.56,.64,1)}
-@keyframes popIn{from{opacity:0;transform:scale(.96) translateY(12px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal{background:var(--card);border:1px solid var(--border-2);border-radius:var(--r-xl);box-shadow:var(--shadow-lg);width:100%;max-width:660px;max-height:90vh;display:flex;flex-direction:column;animation:popIn .16s ease-out}
+@keyframes popIn{from{opacity:0;transform:scale(.985) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
 .modal-head{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:12px}
 .modal-head-title{font-family:var(--font-serif);font-size:21px;flex:1}
 .modal-body{padding:18px 22px;overflow-y:auto;flex:1}
@@ -310,7 +310,7 @@ body{font-family:var(--font-sans);background:var(--paper);color:var(--ink);min-h
 .onboard-title{font-family:var(--font-serif);font-size:32px;margin-bottom:8px}
 .onboard-sub{font-size:13.5px;color:var(--ink-3);line-height:1.7;margin-bottom:24px}
 .onboard-pills{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:28px}
-.onboard-pill{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:20px;font-size:12px;font-family:var(--font-mono);background:var(--green-l);color:var(--green);border:1px solid rgba(45,122,80,.2)}
+.onboard-pill{display:inline-flex;align-items:center;gap:7px;padding:6px 13px;border-radius:20px;font-size:12px;font-family:var(--font-mono);background:var(--green-l);color:var(--green);border:1px solid rgba(45,122,80,.2)}
 .onboard-footer{font-size:11px;color:var(--ink-4);font-family:var(--font-mono);margin-top:16px}
 
 /* ── CONFIRM ── */
@@ -365,7 +365,7 @@ body{font-family:var(--font-sans);background:var(--paper);color:var(--ink);min-h
     </div>
     <div class="sidebar-section">
       <div class="sidebar-label">Library</div>
-      <button class="sidebar-item active" onclick="setFilter('active')" id="nav-active"><span class="si" id="si-active"></span>All Clips<span class="cnt" id="cnt-active">0</span></button>
+      <button class="sidebar-item active" onclick="setFilter('active')" id="nav-active"><span class="si" id="si-active"></span>All Memories<span class="cnt" id="cnt-active">0</span></button>
       <button class="sidebar-item" onclick="setFilter('pinned')" id="nav-pinned"><span class="si" id="si-pinned"></span>Pinned<span class="cnt" id="cnt-pinned">0</span></button>
       <button class="sidebar-item" onclick="setFilter('favorites')" id="nav-favorites"><span class="si" id="si-favorites"></span>Favorites<span class="cnt" id="cnt-favorites">0</span></button>
     </div>
@@ -405,14 +405,14 @@ body{font-family:var(--font-sans);background:var(--paper);color:var(--ink);min-h
 <div class="main">
   <div class="topbar">
     <div class="tsearch">
-      <span class="tsearch-icon">⌕</span>
+      <span class="tsearch-icon" id="search-icon"></span>
       <input type="text" id="search-input" placeholder="Search… (/ or ⌘K)" oninput="onSearch()" onkeydown="onSearchKey(event)">
     </div>
     <div class="topbar-right">
       <div class="view-toggle">
-        <button class="view-btn active" id="view-grid" onclick="setView('grid')" title="Grid">⊞</button>
-        <button class="view-btn" id="view-compact" onclick="setView('compact')" title="Compact">≡</button>
-        <button class="view-btn" id="view-timeline" onclick="setView('timeline')" title="Timeline">⌇</button>
+        <button class="view-btn active" id="view-grid" onclick="setView('grid')" title="Grid"><span id="view-icon-grid"></span></button>
+        <button class="view-btn" id="view-compact" onclick="setView('compact')" title="Compact"><span id="view-icon-compact"></span></button>
+        <button class="view-btn" id="view-timeline" onclick="setView('timeline')" title="Timeline"><span id="view-icon-timeline"></span></button>
       </div>
       <button class="btn btn-primary" onclick="openNew()">+ New Clip</button>
     </div>
@@ -428,11 +428,11 @@ body{font-family:var(--font-sans);background:var(--paper);color:var(--ink);min-h
 
 <!-- ══ QUICK-CAPTURE BANNER ══ -->
 <div class="capture-banner" id="capture-banner">
-  <div class="capture-banner-title">Save clipboard content?</div>
+  <div class="capture-banner-title">Save this to your workspace?</div>
   <div class="capture-banner-preview" id="capture-preview"></div>
   <div class="capture-banner-actions">
     <button class="btn btn-ghost btn-sm" onclick="dismissCapture()">Dismiss</button>
-    <button class="btn btn-primary btn-sm" onclick="acceptCapture()">Save Clip ↵</button>
+    <button class="btn btn-primary btn-sm" onclick="acceptCapture()">Save to Workspace ↵</button>
   </div>
 </div>
 
@@ -443,14 +443,14 @@ body{font-family:var(--font-sans);background:var(--paper);color:var(--ink);min-h
     <div class="onboard-title">Welcome to Trace</div>
     <div class="onboard-sub">Your local-first memory workspace. Everything lives on your device — no accounts, no cloud, no tracking.</div>
     <div class="onboard-pills">
-      <span class="onboard-pill">🔒 100% Local</span>
-      <span class="onboard-pill">⚡ Keyboard-first</span>
-      <span class="onboard-pill">🧠 Workflow chains</span>
-      <span class="onboard-pill">🎨 AI assist</span>
-      <span class="onboard-pill">🔍 Fuzzy search</span>
+      <span class="onboard-pill">100% Local</span>
+      <span class="onboard-pill">Keyboard-first</span>
+      <span class="onboard-pill">Workflow chains</span>
+      <span class="onboard-pill">AI assist</span>
+      <span class="onboard-pill">Fuzzy search</span>
     </div>
     <button class="btn btn-primary" style="width:100%;justify-content:center;padding:12px" onclick="closeOnboard()">Get started →</button>
-    <div class="onboard-footer">Press ⌘K anytime to open the command palette</div>
+    <div class="onboard-footer">Press ⌘K anytime to open workspace commands</div>
   </div>
 </div>
 
@@ -557,7 +557,7 @@ body{font-family:var(--font-sans);background:var(--paper);color:var(--ink);min-h
     <div class="settings-body">
       <div class="settings-section">
         <div class="settings-section-title">Privacy &amp; Storage</div>
-        <div class="privacy-badge">🔒 100% Local Storage — Nothing leaves your device</div>
+        <div class="privacy-badge">100% Local Storage — Nothing leaves your device</div>
         <div class="toggle-row">
           <div class="toggle-label">Clipboard polling<small>Detect new clipboard content and offer to save</small></div>
           <label class="toggle"><input type="checkbox" id="s-poll" onchange="onPollToggle(this)"><span class="toggle-slider"></span></label>
@@ -624,6 +624,14 @@ body{font-family:var(--font-sans);background:var(--paper);color:var(--ink);min-h
 // ICON LIBRARY — clean Lucide-style SVGs
 // ═══════════════════════════════════════
 const IC = {
+
+  plus:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>`,
+  search:  `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>`,
+  grid:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>`,
+  list:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>`,
+  timeline:`<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="3" x2="12" y2="21"/><circle cx="12" cy="8" r="1.5" fill="currentColor"/><circle cx="12" cy="16" r="1.5" fill="currentColor"/></svg>`,
+  code:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>`,
+  spark:   `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="m12 3 1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9Z"/></svg>`,
   copy:    `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>`,
   pin:     `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>`,
   pinFill: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="17" x2="12" y2="22"/><path d="M5 17h14v-1.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6h1a2 2 0 0 0 0-4H8a2 2 0 0 0 0 4h1v4.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24Z"/></svg>`,
@@ -842,7 +850,7 @@ function render(){
   const displayClips=showPinnedSection?rest:visible;
   if(!displayClips.length&&!showPinnedSection){cw.innerHTML=emptyHTML();return;}
   if(!displayClips.length){cw.innerHTML='';return;}
-  const label=showPinnedSection?'<div class="section-header">All Clips</div>':'';
+  const label=showPinnedSection?'<div class="section-header">All Memories</div>':'';
   cw.innerHTML=`${label}<div class="clips-grid view-${currentView}" id="main-grid">${displayClips.map(cardHTML).join('')}</div>`;
   attachDragHandlers('main-grid');
 }
@@ -953,10 +961,10 @@ function cardHTML(c){
 
 function emptyHTML(){
   const m={active:{icon:'◈',h:'No clips yet',p:'Hit <strong>+ New Clip</strong>, press <kbd>⌘K</kbd>, or paste anywhere.'},
-    pinned:{icon:'📌',h:'No pinned clips',p:'Pin up to 3 clips to keep them at the top.'},
-    favorites:{icon:'♥',h:'No favorites',p:'Mark clips as favorites for quick access.'},
-    archived:{icon:'🗃',h:'Archive is empty',p:'Archived clips appear here.'},
-    deleted:{icon:'🗑',h:'Trash is empty',p:'Deleted clips appear here before permanent removal.'}}[currentFilter]||{icon:'◈',h:'No clips',p:''};
+    pinned:{icon:'📌',h:'No pinned memories',p:'Pin up to 3 clips to keep them at the top.'},
+    favorites:{icon:'♥',h:'No favorites yet',p:'Mark clips as favorites for quick access.'},
+    archived:{icon:'🗃',h:'Archive is calm',p:'Archived clips appear here.'},
+    deleted:{icon:'🗑',h:'Deleted is empty',p:'Deleted clips appear here before permanent removal.'}}[currentFilter]||{icon:'◈',h:'No clips',p:''};
   return`<div class="empty-state"><div class="e-icon">${m.icon}</div><h3>${m.h}</h3><p>${m.p}</p></div>`;
 }
 
@@ -1381,20 +1389,20 @@ function clearAllData(){
 // COMMAND PALETTE
 // ═══════════════════════════════════════
 const CMD_ACTIONS=[
-  {icon:'+',label:'New Clip',sub:'⌘N',action:()=>openNew()},
-  {icon:'◈',label:'All Clips',sub:'',action:()=>setFilter('active')},
-  {icon:'📌',label:'Pinned Clips',sub:'',action:()=>setFilter('pinned')},
-  {icon:'♥',label:'Favorites',sub:'',action:()=>setFilter('favorites')},
-  {icon:'🗃',label:'Archived',sub:'',action:()=>setFilter('archived')},
-  {icon:'🗑',label:'Deleted',sub:'',action:()=>setFilter('deleted')},
-  {icon:'⊞',label:'Grid View',sub:'',action:()=>setView('grid')},
-  {icon:'≡',label:'Compact View',sub:'',action:()=>setView('compact')},
-  {icon:'⌇',label:'Timeline View',sub:'',action:()=>setView('timeline')},
-  {icon:'⚙',label:'Settings',sub:'',action:()=>openSettings()},
-  {icon:'↓',label:'Export Data',sub:'',action:()=>exportData()},
-  {icon:'⌨',label:'Filter: Code',sub:'',action:()=>setTypeFilter('code')},
-  {icon:'🔗',label:'Filter: Links',sub:'',action:()=>setTypeFilter('url')},
-  {icon:'◎',label:'Filter: Prompts',sub:'',action:()=>setTypeFilter('prompt')},
+  {icon:IC.plus,label:'New Clip',sub:'⌘N',action:()=>openNew()},
+  {icon:IC.grid,label:'All Memories',sub:'',action:()=>setFilter('active')},
+  {icon:IC.pin,label:'Pinned Clips',sub:'',action:()=>setFilter('pinned')},
+  {icon:IC.heart,label:'Favorites',sub:'',action:()=>setFilter('favorites')},
+  {icon:IC.archive,label:'Archived',sub:'',action:()=>setFilter('archived')},
+  {icon:IC.trash,label:'Deleted',sub:'',action:()=>setFilter('deleted')},
+  {icon:IC.grid,label:'Grid View',sub:'',action:()=>setView('grid')},
+  {icon:IC.list,label:'Compact View',sub:'',action:()=>setView('compact')},
+  {icon:IC.timeline,label:'Timeline View',sub:'',action:()=>setView('timeline')},
+  {icon:IC.settings,label:'Settings',sub:'',action:()=>openSettings()},
+  {icon:IC.export,label:'Export Data',sub:'',action:()=>exportData()},
+  {icon:IC.code,label:'Filter: Code',sub:'',action:()=>setTypeFilter('code')},
+  {icon:IC.link,label:'Filter: Links',sub:'',action:()=>setTypeFilter('url')},
+  {icon:IC.spark,label:'Filter: Prompts',sub:'',action:()=>setTypeFilter('prompt')},
 ];
 function openCmd(){
   document.getElementById('cmd-overlay').classList.add('open');
@@ -1558,7 +1566,7 @@ function closeOnboard(){
     if(el) el.innerHTML = svg;
   });
 })();
-updateSidebarActive();
+document.getElementById('search-icon').innerHTML=IC.search;document.getElementById('view-icon-grid').innerHTML=IC.grid;document.getElementById('view-icon-compact').innerHTML=IC.list;document.getElementById('view-icon-timeline').innerHTML=IC.timeline;updateSidebarActive();
 render();
 if(!prefs.onboarded) document.getElementById('onboard-overlay').classList.add('open');
 if(prefs.clipboardPoll) startPolling();
