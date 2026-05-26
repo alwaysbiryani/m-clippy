@@ -152,13 +152,14 @@ body.focus-open .modal{filter:none}
 .type-url{background:var(--blue-l);color:var(--blue)}
 .type-image{background:var(--purple-l);color:var(--purple)}
 .type-prompt{background:var(--green-l);color:var(--green)}
-.clip-title{font-family:var(--font-serif);font-size:17px;letter-spacing:-.1px;color:var(--ink);line-height:1.28;word-break:break-word}
-.clip-desc{font-size:10.5px;color:var(--ink-4);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-mono);font-style:normal}
-.clip-body{padding:11px 14px;flex:1}
+.clip-title{font-family:var(--font-serif);font-size:17px;letter-spacing:-.1px;color:var(--ink);line-height:1.34;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.clip-desc{font-size:11px;color:var(--ink-3);margin-top:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-family:var(--font-mono);font-style:normal}
+.clip-meta{margin-top:7px;font-size:10.5px;color:var(--ink-4);font-family:var(--font-mono);letter-spacing:.12px}
+.clip-body{padding:12px 14px;flex:1}
 
 /* content previews */
-.clip-content{font-size:12.8px;color:var(--ink-2);line-height:1.6;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;white-space:pre-wrap;transition:-webkit-line-clamp .3s}
-.clip-card:hover .clip-content{-webkit-line-clamp:5}
+.clip-content{font-size:13.1px;color:var(--ink-2);line-height:1.65;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word;white-space:pre-wrap;transition:-webkit-line-clamp .28s ease}
+.clip-card:hover .clip-content,.clip-card:focus-within .clip-content,.clip-card.focused-card .clip-content{-webkit-line-clamp:6}
 .clip-content.is-code{font-family:var(--font-mono);font-size:11.5px;background:var(--paper-2);padding:8px 10px;border-radius:5px;color:var(--ink-2)}
 .clip-content.sensitive{filter:blur(5px);user-select:none}
 .clip-content.sensitive:hover{filter:blur(0);transition:filter .25s}
@@ -172,10 +173,11 @@ body.focus-open .modal{filter:none}
 .clip-tag:hover{background:var(--amber-l);color:var(--amber);border-color:rgba(201,123,10,.25)}
 .clip-tag.active-filter{background:var(--amber-l);color:var(--amber);border-color:rgba(201,123,10,.4)}
 
-.clip-footer{padding:7px 11px;border-top:1px solid var(--border);display:flex;align-items:center;gap:3px;opacity:.72;transition:opacity var(--t)}
-.clip-card:hover .clip-footer,.clip-card.focused-card .clip-footer{opacity:.98}
+.clip-footer{padding:6px 11px;border-top:1px solid var(--border);display:flex;align-items:center;gap:3px;opacity:.34;transform:translateY(1px);transition:opacity var(--t),transform var(--t)}
+.clip-card:hover .clip-footer,.clip-card:focus-within .clip-footer,.clip-card.focused-card .clip-footer{opacity:.9;transform:translateY(0)}
 .clip-date{font-size:10px;color:var(--ink-5);margin-left:auto;font-family:var(--font-mono)}
-.clip-action{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;border-radius:5px;border:none;background:transparent;cursor:pointer;color:var(--ink-3);font-size:14px;transition:background 0.1s,color 0.1s;position:relative}
+.clip-action{display:inline-flex;align-items:center;justify-content:center;width:27px;height:27px;border-radius:5px;border:none;background:transparent;cursor:pointer;color:var(--ink-4);font-size:13px;transition:background .1s,color .1s,opacity var(--t),transform var(--t);position:relative;opacity:.72;transform:translateY(1px)}
+.clip-card:hover .clip-action,.clip-card:focus-within .clip-action,.clip-card.focused-card .clip-action{opacity:1;transform:translateY(0)}
 .clip-action:hover{background:var(--paper-2);color:var(--ink)}
 .clip-action.danger:hover{background:var(--red-l);color:var(--red)}
 .clip-action.success:hover{background:var(--green-l);color:var(--green)}
@@ -914,6 +916,22 @@ function linkedChipHTML(clip){
   const overflow=linked.length>2?`<span class="related-chip">+${linked.length-2}</span>`:'';
   return `<div class="related-chip-row">${chips}${overflow}</div>`;
 }
+function relativeRecency(ts){
+  const delta=Math.max(0,Date.now()-new Date(ts).getTime());
+  const mins=Math.floor(delta/60000);
+  if(mins<1)return 'just now';
+  if(mins<60)return `${mins}m ago`;
+  const hrs=Math.floor(mins/60);
+  if(hrs<24)return `${hrs}h ago`;
+  const days=Math.floor(hrs/24);
+  if(days<7)return `${days}d ago`;
+  const weeks=Math.floor(days/7);
+  if(weeks<5)return `${weeks}w ago`;
+  const months=Math.floor(days/30);
+  if(months<12)return `${months}mo ago`;
+  const years=Math.floor(days/365);
+  return `${years}y ago`;
+}
 
 // ═══════════════════════════════════════
 // CARD HTML
@@ -921,6 +939,8 @@ function linkedChipHTML(clip){
 function cardHTML(c){
   const d=new Date(c.updatedAt);
   const dateStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  const recency=relativeRecency(c.updatedAt);
+  const linkCount=(c.chainIds||[]).length;
   const typeLabel={text:'Text',code:'Code',url:'Link',prompt:'Prompt',image:'Image'};
   const typeCls={code:'type-code',url:'type-url',image:'type-image',prompt:'type-prompt'}[c.type]||'';
 
@@ -981,6 +1001,7 @@ function cardHTML(c){
       </div>
       <div class="clip-title">${esc(c.title||'Untitled')}</div>
       ${c.desc?`<div class="clip-desc">${esc(c.desc)}</div>`:''}
+      <div class="clip-meta">${typeLabel[c.type]||'Text'} · ${recency}${linkCount?` · ${linkCount} linked`:''}</div>
     </div>
     <div class="clip-body">${contentHTML}${tagsHTML}${chainChipsHTML}</div>
     ${chainCountHTML}
