@@ -221,6 +221,16 @@ body.focus-open .modal{filter:none}
 .modal-head{padding:16px 26px 12px;border-bottom:1px solid rgba(24,18,10,.08);display:flex;align-items:center;gap:12px}
 .modal-head-title{font-family:var(--font-serif);font-size:21px;flex:1}
 .modal-body{padding:22px 26px 20px;overflow-y:auto;flex:1}
+.modal-section{margin-top:18px}
+.modal-section:first-child{margin-top:0}
+.modal-section-title{display:flex;align-items:center;gap:8px;font-size:10.5px;font-weight:500;letter-spacing:.7px;text-transform:uppercase;color:var(--ink-4);font-family:var(--font-mono);margin:0 0 10px}
+.modal-section-title::after{content:'';height:1px;flex:1;background:var(--border)}
+.modal-meta-panel{border:1px solid var(--border);border-radius:var(--r-lg);background:var(--paper-2);padding:12px}
+.modal-meta-panel summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:500;color:var(--ink-2)}
+.modal-meta-panel summary::-webkit-details-marker{display:none}
+.modal-meta-panel summary::after{content:'▾';font-size:11px;color:var(--ink-4);transition:transform var(--t)}
+.modal-meta-panel[open] summary::after{transform:rotate(180deg)}
+.modal-meta-content{margin-top:12px}
 .modal-footer{padding:12px 26px;border-top:1px solid rgba(24,18,10,.08);display:flex;gap:8px;align-items:center;opacity:.78}
 .modal-footer-right{margin-left:auto;display:flex;gap:8px}
 .field{margin-bottom:18px}
@@ -479,6 +489,8 @@ body.focus-open .modal{filter:none}
       <button class="btn btn-ghost btn-sm" onclick="closeModal()" style="padding:6px"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
     </div>
     <div class="modal-body">
+      <div class="modal-section">
+        <div class="modal-section-title">Primary</div>
       <div class="field-row">
         <div class="field" style="flex:2">
           <label>Title</label>
@@ -514,45 +526,51 @@ body.focus-open .modal{filter:none}
           <button class="ai-btn" id="ai-rewrite-btn" onclick="aiRewrite()" title="AI: clean up / rewrite">✦ Rewrite</button>
         </div>
       </div>
-
-      <div class="field">
-        <label>Tags <span style="font-weight:300;text-transform:none;letter-spacing:0">(Enter or comma to add)</span></label>
-        <div class="tag-input-wrap" id="tag-input-wrap" onclick="document.getElementById('tag-input').focus()">
-          <input type="text" class="tag-input" id="tag-input" placeholder="Add a tag…" onkeydown="onTagKey(event)" oninput="onTagInput(event)">
-        </div>
       </div>
 
-      <div class="field-row">
-        <div class="field">
-          <label>Accent Color</label>
-          <div class="color-options" style="margin-top:4px">
-            <div class="color-opt selected" data-c="none" onclick="selectColor('none')"></div>
-            <div class="color-opt" data-c="amber" onclick="selectColor('amber')"></div>
-            <div class="color-opt" data-c="red" onclick="selectColor('red')"></div>
-            <div class="color-opt" data-c="green" onclick="selectColor('green')"></div>
-            <div class="color-opt" data-c="blue" onclick="selectColor('blue')"></div>
-            <div class="color-opt" data-c="purple" onclick="selectColor('purple')"></div>
+      <details class="modal-section modal-meta-panel" open>
+        <summary>Secondary settings</summary>
+        <div class="modal-meta-content">
+          <div class="field">
+            <label>Tags <span style="font-weight:300;text-transform:none;letter-spacing:0">(Enter or comma to add)</span></label>
+            <div class="tag-input-wrap" id="tag-input-wrap" onclick="document.getElementById('tag-input').focus()">
+              <input type="text" class="tag-input" id="tag-input" placeholder="Add a tag…" onkeydown="onTagKey(event)" oninput="onTagInput(event)">
+            </div>
+          </div>
+
+          <div class="field-row">
+            <div class="field">
+              <label>Accent Color</label>
+              <div class="color-options" style="margin-top:4px">
+                <div class="color-opt selected" data-c="none" onclick="selectColor('none')"></div>
+                <div class="color-opt" data-c="amber" onclick="selectColor('amber')"></div>
+                <div class="color-opt" data-c="red" onclick="selectColor('red')"></div>
+                <div class="color-opt" data-c="green" onclick="selectColor('green')"></div>
+                <div class="color-opt" data-c="blue" onclick="selectColor('blue')"></div>
+                <div class="color-opt" data-c="purple" onclick="selectColor('purple')"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="border:1px solid var(--border);border-radius:var(--r);padding:4px 12px;margin-bottom:14px">
+            <div class="toggle-row">
+              <div class="toggle-label">Sensitive<small>Blurs preview until hovered</small></div>
+              <label class="toggle"><input type="checkbox" id="f-sensitive"><span class="toggle-slider"></span></label>
+            </div>
+            <div class="toggle-row">
+              <div class="toggle-label">Favorite<small>Quick-access to loved clips</small></div>
+              <label class="toggle"><input type="checkbox" id="f-favorite"><span class="toggle-slider"></span></label>
+            </div>
+          </div>
+
+          <div class="field">
+            <label>Workflow Chain — link related clips</label>
+            <div id="related-preview" class="related-preview"></div>
+            <div class="chain-select" id="chain-select"></div>
+            <div class="field-hint">Click clips to link/unlink them into a workflow chain</div>
           </div>
         </div>
-      </div>
-
-      <div style="border:1px solid var(--border);border-radius:var(--r);padding:4px 12px;margin-bottom:14px">
-        <div class="toggle-row">
-          <div class="toggle-label">Sensitive<small>Blurs preview until hovered</small></div>
-          <label class="toggle"><input type="checkbox" id="f-sensitive"><span class="toggle-slider"></span></label>
-        </div>
-        <div class="toggle-row">
-          <div class="toggle-label">Favorite<small>Quick-access to loved clips</small></div>
-          <label class="toggle"><input type="checkbox" id="f-favorite"><span class="toggle-slider"></span></label>
-        </div>
-      </div>
-
-      <div class="field">
-        <label>Workflow Chain — link related clips</label>
-        <div id="related-preview" class="related-preview"></div>
-        <div class="chain-select" id="chain-select"></div>
-        <div class="field-hint">Click clips to link/unlink them into a workflow chain</div>
-      </div>
+      </details>
     </div>
 
     <div class="modal-footer">
