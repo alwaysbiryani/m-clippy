@@ -106,6 +106,7 @@ body.focus-open .modal{filter:none}
 .content::-webkit-scrollbar-thumb{background:var(--border-3);border-radius:3px}
 .section-header{display:flex;align-items:center;gap:10px;font-size:11px;font-weight:500;letter-spacing:.7px;text-transform:uppercase;color:var(--ink-4);margin-bottom:12px;font-family:var(--font-mono)}
 .section-header::after{content:'';flex:1;height:1px;background:var(--border)}
+.timeline-group-header{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--ink-4);font-family:var(--font-mono);padding:8px 0 6px;margin-top:4px;opacity:.85}
 
 /* ── GRIDS ── */
 .clips-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(292px,1fr));gap:12px;margin-bottom:24px;max-width:1240px}
@@ -868,7 +869,8 @@ function render(){
   if(!displayClips.length&&!showPinnedSection){cw.innerHTML=emptyHTML();return;}
   if(!displayClips.length){cw.innerHTML='';return;}
   const label=showPinnedSection?'<div class="section-header">All Memories</div>':'';
-  cw.innerHTML=`${label}<div class="clips-grid view-${currentView}" id="main-grid">${displayClips.map(cardHTML).join('')}</div>`;
+  const mainHTML=currentView==='timeline'?buildTimelineHTML(displayClips):displayClips.map(cardHTML).join('');
+  cw.innerHTML=`${label}<div class="clips-grid view-${currentView}" id="main-grid">${mainHTML}</div>`;
   attachDragHandlers('main-grid');
 }
 
@@ -916,6 +918,35 @@ function linkedChipHTML(clip){
   const overflow=linked.length>2?`<span class="related-chip">+${linked.length-2}</span>`:'';
   return `<div class="related-chip-row">${chips}${overflow}</div>`;
 }
+function cardDate(ts){
+  return new Date(ts).toLocaleDateString('en-US',{month:'short',day:'numeric'});
+}
+
+function timelineBucketLabel(ts){
+  const d=new Date(ts);
+  const now=new Date();
+  const startToday=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  const startTomorrow=new Date(startToday); startTomorrow.setDate(startTomorrow.getDate()+1);
+  const startYesterday=new Date(startToday); startYesterday.setDate(startYesterday.getDate()-1);
+  const weekStart=new Date(startToday);
+  weekStart.setDate(weekStart.getDate()-weekStart.getDay());
+
+  if(d>=startToday&&d<startTomorrow)return 'Today';
+  if(d>=startYesterday&&d<startToday)return 'Yesterday';
+  if(d>=weekStart&&d<startYesterday)return 'This Week';
+  return 'Earlier';
+}
+
+function buildTimelineHTML(displayClips){
+  let lastLabel='';
+  return displayClips.map(c=>{
+    const label=timelineBucketLabel(c.updatedAt);
+    const header=label!==lastLabel?`<div class="timeline-group-header">${label}</div>`:'';
+    lastLabel=label;
+    return `${header}${cardHTML(c)}`;
+  }).join('');
+}
+
 function relativeRecency(ts){
   const delta=Math.max(0,Date.now()-new Date(ts).getTime());
   const mins=Math.floor(delta/60000);
@@ -937,8 +968,7 @@ function relativeRecency(ts){
 // CARD HTML
 // ═══════════════════════════════════════
 function cardHTML(c){
-  const d=new Date(c.updatedAt);
-  const dateStr=d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  const dateStr=cardDate(c.updatedAt);
   const recency=relativeRecency(c.updatedAt);
   const linkCount=(c.chainIds||[]).length;
   const typeLabel={text:'Text',code:'Code',url:'Link',prompt:'Prompt',image:'Image'};
