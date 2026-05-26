@@ -647,12 +647,69 @@ const IC = {
 // ═══════════════════════════════════════
 // DATA LAYER
 // ═══════════════════════════════════════
+// STORE key is permanent — never change it again.
+// Old keys are handled by migrateOldClips() below.
 const STORE='trace_v3', PREFS='trace_prefs_v3';
+
+// ── MIGRATION: merge clips from all older store keys ──
+function migrateOldClips() {
+  const oldKeys = ['clipboard_manager_v1', 'trace_v1', 'trace_v2'];
+  let migrated = 0;
+  const current = loadClips();
+  const currentIds = new Set(current.map(c => c.id));
+
+  oldKeys.forEach(key => {
+    try {
+      const raw = localStorage.getItem(key);
+      if (!raw) return;
+      const old = JSON.parse(raw);
+      if (!Array.isArray(old) || !old.length) return;
+
+      old.forEach(clip => {
+        if (!clip || !clip.id || currentIds.has(clip.id)) return;
+        // Normalize older schema to current shape
+        const normalized = {
+          id:        clip.id,
+          title:     clip.title || 'Untitled',
+          desc:      clip.desc || clip.description || '',
+          content:   clip.content || '',
+          type:      clip.type || 'text',
+          tags:      Array.isArray(clip.tags) ? clip.tags : [],
+          color:     clip.color || 'none',
+          pinned:    !!clip.pinned,
+          favorite:  !!clip.favorite,
+          sensitive: !!clip.sensitive,
+          status:    clip.status || 'active',
+          chainIds:  Array.isArray(clip.chainIds) ? clip.chainIds : [],
+          order:     clip.order ?? clip.updatedAt ?? Date.now(),
+          createdAt: clip.createdAt || Date.now(),
+          updatedAt: clip.updatedAt || Date.now(),
+        };
+        current.push(normalized);
+        currentIds.add(clip.id);
+        migrated++;
+      });
+
+      // Keep old key in place (don't delete) so re-opening old version still works
+    } catch(e) { /* corrupt data — skip */ }
+  });
+
+  if (migrated > 0) {
+    localStorage.setItem(STORE, JSON.stringify(current));
+    console.log(`[Trace] Migrated ${migrated} clip(s) from older versions.`);
+    return migrated;
+  }
+  return 0;
+}
+
 function loadClips(){try{return JSON.parse(localStorage.getItem(STORE))||[];}catch{return[];}}
 function saveClips(){localStorage.setItem(STORE,JSON.stringify(clips));}
 function loadPrefs(){try{return JSON.parse(localStorage.getItem(PREFS))||{};}catch{return {};}}
 function savePrefs(){localStorage.setItem(PREFS,JSON.stringify(prefs));}
 function genId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+
+// Run migration before loading clips into memory
+const _migratedCount = migrateOldClips();
 
 let clips=loadClips(), prefs=loadPrefs();
 
@@ -1505,6 +1562,7 @@ updateSidebarActive();
 render();
 if(!prefs.onboarded) document.getElementById('onboard-overlay').classList.add('open');
 if(prefs.clipboardPoll) startPolling();
+if(_migratedCount > 0) setTimeout(()=>toast(`✓ Recovered ${_migratedCount} clip${_migratedCount>1?'s':''} from a previous version`), 800);
 </script>
 </body>
 </html>
