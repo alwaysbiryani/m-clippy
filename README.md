@@ -1,60 +1,102 @@
-# ClipBoard — Online Clipboard Manager
+# Trace
 
-A lightweight, local-first clipboard manager. No backend, no accounts — all data lives in your browser's `localStorage`.
+**A local-first archive for thinking in fragments.**
+
+Single-file, zero-dependency, fully offline-capable.  
+All data lives in your browser's `localStorage` — nothing leaves your machine.
+
+---
+
+## What it is
+
+Trace is a calm, keyboard-native clip manager for capturing and connecting fragments of thought: code, prompts, links, notes, images, and prose.
+
+It is not a dashboard. It is not a chat app. It is not Notion.
+
+---
 
 ## Features
 
-- **Create** clips with a title, description, and content
-- **Copy** content to clipboard with one click
-- **Edit** clips inline
-- **Archive** clips (soft-hide, recoverable)
-- **Delete** clips (soft-delete, recoverable)
-- **Purge** permanently from the Deleted bin
-- **Search** across all clips in real-time
-- **Keyboard shortcuts**: `Cmd/Ctrl+K` → New Clip, `Esc` → Close, `Enter` → Save
+- **6 clip types** — text, code, prompt, link, image, note
+- **Masonry + list views** — content-driven hierarchy
+- **Pinned strip** — persistent working-memory shelf with FLIP animation
+- **Workflow chains** — link related clips bidirectionally
+- **AI assist** — auto-title, suggest tags, summarize, rewrite, describe (Anthropic API)
+- **Command palette** — `⌘K` global actions
+- **Keyboard-native** — `/` search, `⌘N` new, `E/F/P/C` card shortcuts
+- **Multi-select** — shift-click + bulk actions
+- **Sensitive blur** — hover to reveal private clips
+- **Dark / Light / Auto** theme — persists locally
+- **Drag & drop** — drop text or images anywhere
+- **Paste anywhere** — paste text/images outside inputs → auto-opens new clip
 
 ---
 
-## Run Locally
+## AI Setup (optional)
 
-### Option 1 — Open directly (simplest)
-Just double-click `index.html` — it works straight from the filesystem.
+Trace uses the Anthropic API for AI features. To enable:
 
-### Option 2 — Serve with Python
+1. Get an API key from [console.anthropic.com](https://console.anthropic.com)
+2. Open the browser console and set:
+   ```
+   // The API key is sent directly from the browser.
+   // For production, proxy through your own backend.
+   ```
+
+> **Note:** The current implementation calls the Anthropic API directly from the browser (no backend). This is fine for local/personal use. For a hosted deployment, proxy through a backend to keep your key private.
+
+---
+
+## Run locally
+
 ```bash
+# Simplest — just open the file
+open index.html
+
+# Or serve with Python
 python3 -m http.server 8080
-# open http://localhost:8080
-```
 
-### Option 3 — Serve with Node / npx
-```bash
+# Or with Node
 npx serve .
-# or
-npx http-server .
 ```
-
----
 
 ## Deploy to Vercel
 
-### Via GitHub (recommended)
-1. Push this folder to a GitHub repo
-2. Go to [vercel.com](https://vercel.com) → New Project
-3. Import your repo
-4. Framework: **Other** (static)
-5. Root directory: the folder containing `index.html`
-6. Deploy — done!
-
-### Via Vercel CLI
-```bash
-npm i -g vercel
-cd /path/to/this-folder
-vercel
-```
+1. Push this repo to GitHub
+2. Go to [vercel.com](https://vercel.com) → New Project → Import repo
+3. Framework: **Other** (static)
+4. Deploy — done
 
 ---
 
-## Notes
-- Data is stored in `localStorage` — it's per-browser, per-domain.
-- No data is sent anywhere. Fully offline-capable.
-- To back up: open DevTools → Application → Local Storage → copy the `clipboard_manager_v1` key.
+## Keyboard shortcuts
+
+| Key | Action |
+|---|---|
+| `⌘N` | New clip |
+| `⌘K` | Command palette |
+| `/` | Focus search |
+| `Esc` | Close / exit mode |
+| `E` | Edit focused clip |
+| `F` | Toggle favorite |
+| `P` | Pin / unpin |
+| `C` | Copy content |
+| `Shift+click` | Multi-select |
+| `⌘↵` | Save new clip |
+
+---
+
+## Data
+
+- Stored in `localStorage` under key `trace_clips_v1`
+- Preferences under `trace_prefs_v1`
+- To back up: DevTools → Application → Local Storage → copy the value
+- No data is sent anywhere (except optional AI API calls)
+
+---
+
+## Stack
+
+Pure HTML + CSS + vanilla JS. No build step. No dependencies. No framework.
+
+One file. Open it and it works.
