@@ -2,70 +2,48 @@
 
 **A local-first archive for thinking in fragments.**
 
-This repository currently implements **Sprint 0.5**: a deliberately small validation build for the Current Clip interaction model.
-
-Trace is single-file, zero-dependency, and offline-capable. All Sprint 0.5 clip data lives in the browser's `localStorage`.
-
----
-
-## Sprint 0.5 scope
-
-Sprint 0.5 validates only:
-
-- Current Clip lifecycle
-- New Clip replacement behavior
-- Autosave behavior
-- Fresh-session behavior
-- All Clips retrieval, open, and delete behavior
-
-It intentionally does **not** include search, tags, collections, filters, archive states, AI, rich formatting, command palette, sync, collaboration, or other Sprint 1 concepts.
+Single-file, zero-dependency, fully offline-capable.  
+All data lives in your browser's `localStorage` — nothing leaves your machine.
 
 ---
 
-## Current Clip model
+## What it is
 
-There is exactly one active Current Clip.
+Trace is a calm, keyboard-native clip manager for capturing and connecting fragments of thought: code, prompts, links, notes, images, and prose.
 
-- The Current Clip lives on Home.
-- It is a normal stored clip, not a separate object type.
-- It has an optional title and a content field.
-- Edits autosave while typing.
-- Clicking **New Clip** creates a new stored clip and immediately makes it current.
-- Opening an existing clip from **All Clips** makes that existing clip current.
+It is not a dashboard. It is not a chat app. It is not Notion.
 
 ---
 
-## Session behavior
+## Features
 
-Every app launch starts a fresh Current Clip.
-
-Previous clips remain stored and can be retrieved from **All Clips**, but the app does not resume the previous session or restore the prior Current Clip.
+- **6 clip types** — text, code, prompt, link, image, note
+- **Masonry + list views** — content-driven hierarchy
+- **Pinned strip** — persistent working-memory shelf with FLIP animation
+- **Workflow chains** — link related clips bidirectionally
+- **AI assist** — auto-title, suggest tags, summarize, rewrite, describe (Anthropic API)
+- **Command palette** — `⌘K` global actions
+- **Keyboard-native** — `/` search, `⌘N` new, `E/F/P/C` card shortcuts
+- **Multi-select** — shift-click + bulk actions
+- **Sensitive blur** — hover to reveal private clips
+- **Dark / Light / Auto** theme — persists locally
+- **Drag & drop** — drop text or images anywhere
+- **Paste anywhere** — paste text/images outside inputs → auto-opens new clip
 
 ---
 
-## Data model
+## AI Setup (optional)
 
-Stored clips use the minimal Sprint 0.5 shape:
+Trace uses the Anthropic API for AI features. To enable:
 
-```json
-{
-  "id": "string",
-  "title": "string",
-  "content": "string",
-  "createdAt": "ISO date string",
-  "updatedAt": "ISO date string"
-}
-```
+1. Get an API key from [console.anthropic.com](https://console.anthropic.com)
+2. Open the browser console and set:
+   ```
+   // The API key is sent directly from the browser.
+   // For production, proxy through your own backend.
+   ```
 
-Application state is limited to:
-
-```json
-{
-  "currentClipId": "string"
-}
-```
-
-Clip data is stored under `trace_clips_sprint_0_5`. Current clip state is stored under `trace_state_sprint_0_5`.
+> **Note:** The current implementation calls the Anthropic API directly from the browser (no backend). This is fine for local/personal use. For a hosted deployment, proxy through a backend to keep your key private.
 
 ---
 
@@ -84,7 +62,41 @@ npx serve .
 
 ## Deploy to Vercel
 
-1. Push this repo to GitHub.
-2. Go to [vercel.com](https://vercel.com) → New Project → Import repo.
-3. Framework: **Other** (static).
-4. Deploy.
+1. Push this repo to GitHub
+2. Go to [vercel.com](https://vercel.com) → New Project → Import repo
+3. Framework: **Other** (static)
+4. Deploy — done
+
+---
+
+## Keyboard shortcuts
+
+| Key | Action |
+|---|---|
+| `⌘N` | New clip |
+| `⌘K` | Command palette |
+| `/` | Focus search |
+| `Esc` | Close / exit mode |
+| `E` | Edit focused clip |
+| `F` | Toggle favorite |
+| `P` | Pin / unpin |
+| `C` | Copy content |
+| `Shift+click` | Multi-select |
+| `⌘↵` | Save new clip |
+
+---
+
+## Data
+
+- Stored in `localStorage` under key `trace_clips_v1`
+- Preferences under `trace_prefs_v1`
+- To back up: DevTools → Application → Local Storage → copy the value
+- No data is sent anywhere (except optional AI API calls)
+
+---
+
+## Stack
+
+Pure HTML + CSS + vanilla JS. No build step. No dependencies. No framework.
+
+One file. Open it and it works.

@@ -5,286 +5,1756 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Trace</title>
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
+/* ═══════════════════════════════════════
+   TRACE — Design System
+   ═══════════════════════════════════════ */
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
 :root{
-  --bg:#0a0a0b;--surface:#111113;--surface2:#17171a;--surface3:#202024;
-  --text:#f4f4f5;--muted:#a1a1aa;--micro:#71717a;--border:#242428;
-  --accent:#8b5cf6;--accent-dim:rgba(139,92,246,.14);--red:#ef4444;
-  --font-sans:'DM Sans',system-ui,sans-serif;--font-mono:'DM Mono',ui-monospace,monospace;--font-serif:'Instrument Serif',Georgia,serif;
+  --bg:#0A0A0B;
+  --surface:#111113;
+  --surface2:#161618;
+  --surface3:#1C1C1F;
+  --text:#F4F4F5;
+  --muted:#71717A;
+  --micro:#52525B;
+  --border:#1C1C1F;
+  --border2:#232326;
+  --accent:#8B5CF6;
+  --accent-dim:rgba(139,92,246,0.10);
+  --accent-glow:rgba(139,92,246,0.15);
+  --green:#10B981;
+  --amber:#F59E0B;
+  --teal:#14B8A6;
+  --red:#EF4444;
+  --pink:#F472B6;
+  --blue:#60A5FA;
+  --font-sans:'DM Sans',system-ui,sans-serif;
+  --font-mono:'DM Mono',ui-monospace,monospace;
+  --font-serif:'Instrument Serif',Georgia,serif;
+  --sidebar:236px;
+  --sidebar-collapsed:64px;
+  --editor:364px;
+  --r:6px;
+  --ease-panel:cubic-bezier(0.16,1,0.3,1);
+  --ease-reflow:cubic-bezier(0.2,0,0,1);
 }
-[data-theme="light"]{--bg:#fafafa;--surface:#fff;--surface2:#f4f4f5;--surface3:#e4e4e7;--text:#0a0a0b;--muted:#52525b;--micro:#71717a;--border:#e4e4e7;--accent-dim:rgba(139,92,246,.1)}
+
+[data-theme="light"]{
+  --bg:#FAFAFA;
+  --surface:#FFFFFF;
+  --surface2:#F4F4F5;
+  --surface3:#E4E4E7;
+  --text:#0A0A0B;
+  --muted:#52525B;
+  --micro:#A1A1AA;
+  --border:#E4E4E7;
+  --border2:#D4D4D8;
+}
+
 html,body{height:100%;overflow:hidden}
-body{background:var(--bg);color:var(--text);font-family:var(--font-sans);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
-button,input,textarea{font:inherit;color:inherit}
-button{cursor:pointer}
-:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+body{
+  background:var(--bg);color:var(--text);
+  font-family:var(--font-sans);font-size:13px;line-height:1.5;
+  -webkit-font-smoothing:antialiased;
+  transition:background .2s,color .2s;
+}
+button,input,textarea,select{font-family:var(--font-sans)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:3px}
 ::selection{background:var(--accent-dim)}
-#app{height:100vh;display:grid;grid-template-columns:220px minmax(0,1fr);overflow:hidden}
-.sidebar{border-right:1px solid var(--border);background:linear-gradient(180deg,var(--surface),var(--bg));display:flex;flex-direction:column;padding:22px 16px;gap:22px}
-.logo{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
-.logo strong{font-family:var(--font-serif);font-size:30px;font-weight:400;letter-spacing:.02em}
-.logo span{font-family:var(--font-mono);font-size:10px;color:var(--micro);text-transform:uppercase;letter-spacing:.12em}
-.nav{display:grid;gap:8px}
-.nav button{width:100%;border:1px solid transparent;background:transparent;color:var(--muted);border-radius:10px;padding:10px 12px;text-align:left;transition:background .15s,border-color .15s,color .15s}
-.nav button:hover,.nav button.active{background:var(--surface2);border-color:var(--border);color:var(--text)}
-.nav small{float:right;color:var(--micro);font-family:var(--font-mono);font-size:11px}
-.sidebar-note{margin-top:auto;color:var(--micro);font-family:var(--font-mono);font-size:11px;line-height:1.7}
-.main{min-width:0;overflow:hidden;display:flex;flex-direction:column}
-.screen{display:none;height:100%;overflow:auto;padding:34px clamp(22px,5vw,72px)}
-.screen.active{display:block}
-.home-shell{max-width:920px;margin:0 auto;min-height:100%;display:flex;flex-direction:column;gap:18px}
-.pinned-strip{min-height:70px;border:1px dashed var(--border);border-radius:18px;background:color-mix(in srgb,var(--surface) 70%,transparent);display:flex;align-items:center;padding:16px 18px;color:var(--micro)}
-.pinned-strip strong{font-family:var(--font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);margin-right:12px}
-.current-card{flex:1;min-height:520px;border:1px solid var(--border);border-radius:24px;background:var(--surface);box-shadow:0 24px 80px rgba(0,0,0,.18);display:flex;flex-direction:column;overflow:hidden}
-.current-head{display:flex;align-items:center;justify-content:space-between;gap:14px;border-bottom:1px solid var(--border);padding:18px 20px}
-.current-label{font-family:var(--font-mono);font-size:11px;color:var(--micro);text-transform:uppercase;letter-spacing:.13em}
-#autosaveState{font-family:var(--font-mono);font-size:11px;color:var(--micro)}
-.editor{display:flex;flex-direction:column;gap:0;flex:1}
-#clipTitle{border:0;background:transparent;padding:26px 28px 10px;font-family:var(--font-serif);font-size:40px;line-height:1.1;color:var(--text);outline:0}
-#clipTitle::placeholder{color:color-mix(in srgb,var(--muted) 58%,transparent)}
-#clipContent{flex:1;min-height:360px;resize:none;border:0;background:transparent;padding:10px 28px 30px;outline:0;color:var(--text);font-size:17px;line-height:1.75}
-#clipContent::placeholder{color:color-mix(in srgb,var(--muted) 64%,transparent)}
-.home-actions{display:flex;justify-content:flex-end}
-.primary-btn{border:1px solid var(--border);background:var(--text);color:var(--bg);border-radius:999px;padding:11px 18px;font-weight:500;transition:transform .12s,opacity .12s}
-.primary-btn:hover{transform:translateY(-1px);opacity:.92}
-.archive-shell{max-width:980px;margin:0 auto;display:grid;gap:22px}
-.archive-head{display:flex;justify-content:space-between;align-items:end;gap:16px;border-bottom:1px solid var(--border);padding-bottom:18px}
-h1{font-family:var(--font-serif);font-size:44px;font-weight:400;line-height:1}.muted{color:var(--micro)}
-.clip-list{display:grid;gap:10px}.empty{border:1px solid var(--border);border-radius:18px;background:var(--surface);padding:28px;color:var(--micro)}
-.clip-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px;align-items:center;border:1px solid var(--border);border-radius:16px;background:var(--surface);padding:16px;transition:border-color .15s,background .15s}
-.clip-row:hover{border-color:color-mix(in srgb,var(--accent) 38%,var(--border));background:var(--surface2)}
-.clip-title{font-size:16px;font-weight:500;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.clip-preview{color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:660px}.clip-date{font-family:var(--font-mono);font-size:11px;color:var(--micro);margin-top:8px}.row-actions{display:flex;gap:8px}.ghost-btn,.danger-btn{border:1px solid var(--border);background:transparent;border-radius:999px;padding:8px 12px;color:var(--muted)}.ghost-btn:hover{color:var(--text);background:var(--surface3)}.danger-btn:hover{color:#fff;background:var(--red);border-color:var(--red)}
-@media(max-width:760px){#app{grid-template-columns:1fr}.sidebar{border-right:0;border-bottom:1px solid var(--border);padding:16px;gap:14px}.nav{grid-template-columns:1fr 1fr}.sidebar-note{display:none}.screen{padding:20px}.current-card{min-height:60vh}#clipTitle{font-size:32px}.archive-head{align-items:start;flex-direction:column}.clip-row{grid-template-columns:1fr}.row-actions{justify-content:flex-start}}
+
+/* ─── SCROLLBARS ─── */
+::-webkit-scrollbar{width:4px;height:4px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+*{scrollbar-width:thin;scrollbar-color:var(--border2) transparent}
+
+/* ─── LAYOUT ─── */
+#app{display:flex;height:100vh;width:100vw;overflow:hidden;position:relative}
+
+/* ════════════════════
+   SIDEBAR
+════════════════════ */
+#sidebar{
+  width:var(--sidebar);min-width:var(--sidebar);
+  height:100vh;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 96%,var(--surface2)),var(--bg));flex-shrink:0;z-index:10;
+  transition:width .28s var(--ease-reflow),min-width .28s var(--ease-reflow),background .2s,border-color .2s;
+  overflow:hidden;position:relative;contain:layout paint;
+}
+#sidebar::after{
+  content:'';position:absolute;top:0;right:0;width:1px;height:100%;
+  background:linear-gradient(180deg,transparent,var(--border2),transparent);opacity:.75;pointer-events:none;
+}
+#sidebar.collapsed{width:var(--sidebar-collapsed);min-width:var(--sidebar-collapsed)}
+#sidebar.collapsed .logo{justify-content:center;padding-left:12px;padding-right:12px}
+#sidebar.collapsed .logo-name,#sidebar.collapsed .logo-ver,#sidebar.collapsed .ncb-inner,#sidebar.collapsed .kbd-chip,#sidebar.collapsed .sb-label,#sidebar.collapsed .nav-item span:not(.nav-glyph),#sidebar.collapsed .nav-count,#sidebar.collapsed .sb-status-txt,#sidebar.collapsed .theme-btns,#sidebar.collapsed .chain-indicator{opacity:0;pointer-events:none;width:0;max-width:0;overflow:hidden;white-space:nowrap}
+#sidebar.collapsed #newClipBtn{width:40px;height:40px;margin:12px;padding:0;justify-content:center;border-radius:50%}
+#sidebar.collapsed #newClipBtn::before{content:'+';font-size:19px;line-height:1;font-weight:400}
+#sidebar.collapsed .sb-section{padding:12px 10px 2px}
+#sidebar.collapsed .nav-item{justify-content:center;padding:9px 0;gap:0;width:44px;margin:0 auto 2px}
+#sidebar.collapsed .nav-dot{width:8px;height:8px;box-shadow:0 0 0 4px color-mix(in srgb,currentColor 10%,transparent)}
+#sidebar.collapsed .nav-glyph{width:18px;font-size:11px;text-align:center}
+#sidebar.collapsed .sb-div{margin:8px 18px;background:color-mix(in srgb,var(--border) 80%,transparent)}
+#sidebar.collapsed .sb-bottom{justify-content:center;padding:12px 10px 48px}
+#sidebar.collapsed .chain-indicator.active{display:none}
+#sidebar.collapsed .sb-status{justify-content:center;width:40px;height:30px;border-radius:7px;background:var(--surface);border:1px solid var(--border)}
+#sidebarToggle{width:26px;height:26px;border:1px solid transparent;background:none;color:var(--micro);border-radius:6px;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .14s,color .14s,border-color .14s,transform .14s;flex-shrink:0}
+#sidebarToggle:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+#sidebarToggle:active{transform:scale(.96)}
+#sidebar.collapsed #sidebarToggle{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:var(--surface);border-color:var(--border)}
+#sidebar.collapsed #sidebarToggle:active{transform:translateX(-50%) scale(.96)}
+.sidebar-tip{
+  position:fixed;left:0;top:0;z-index:600;min-width:148px;max-width:230px;
+  padding:9px 10px;border-radius:8px;border:1px solid var(--border2);
+  background:color-mix(in srgb,var(--surface2) 94%,transparent);color:var(--text);
+  box-shadow:0 18px 48px rgba(0,0,0,.34),0 0 0 1px rgba(255,255,255,.035);
+  backdrop-filter:blur(14px);opacity:0;pointer-events:none;
+  transform:translateX(-3px) scale(.985);transform-origin:left center;
+  transition:opacity .12s var(--ease-panel),transform .16s var(--ease-panel);
+}
+.sidebar-tip.visible{opacity:1;transform:translateX(0) scale(1)}
+.sidebar-tip-title{font-size:12px;font-weight:500;letter-spacing:-.1px;display:flex;align-items:center;gap:8px}
+.sidebar-tip-meta{margin-top:3px;font-size:10px;font-family:var(--font-mono);color:var(--micro);letter-spacing:.02em}
+.sidebar-tip-kbd{margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--micro);border:1px solid var(--border2);border-radius:4px;padding:1px 5px;background:var(--surface)}
+.sidebar-tip-section{font-size:9px;font-family:var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--micro);margin-bottom:4px}
+#main{transition:min-width .28s var(--ease-reflow);will-change:contents}
+.card.reflowing,.pin-chip.reflowing{transition:transform .28s var(--ease-reflow),opacity .18s var(--ease-reflow)!important;will-change:transform}
+.logo{
+  padding:17px 14px 13px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:9px;flex-shrink:0;
+}
+.logo-mark{
+  width:24px;height:24px;background:var(--accent);border-radius:5px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  box-shadow:0 2px 8px rgba(139,92,246,.3);
+}
+.logo-mark svg{width:13px;height:13px}
+.logo-name{display:inline-block;white-space:nowrap;font-size:14px;font-weight:500;letter-spacing:-.3px;transition:opacity .16s,max-width .2s}
+.logo-ver{display:inline-block;white-space:nowrap;font-size:9px;font-family:var(--font-mono);color:var(--micro);margin-left:auto;transition:opacity .16s,max-width .2s}
+
+#newClipBtn{
+  margin:11px 10px 5px;border:none;border-radius:var(--r);
+  padding:9px 11px;color:#fff;font-size:12px;font-weight:500;
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  background:var(--accent);
+  box-shadow:0 0 0 1px rgba(139,92,246,.3),0 4px 18px rgba(139,92,246,.2);
+  transition:background .15s,box-shadow .15s,transform .08s;cursor:pointer;
+}
+#newClipBtn:hover{background:#7C3AED;box-shadow:0 0 0 1px rgba(139,92,246,.5),0 6px 26px rgba(139,92,246,.3)}
+#newClipBtn:active{transform:scale(.98)}
+[data-theme="light"] #newClipBtn{background:#0A0A0B;box-shadow:none}
+[data-theme="light"] #newClipBtn:hover{background:#18181B}
+.ncb-inner{display:flex;flex-direction:column;align-items:flex-start;gap:1px;transition:opacity .16s,max-width .2s}
+.ncb-sub{font-size:9px;font-family:var(--font-mono);opacity:.55;letter-spacing:.5px}
+.kbd-chip{font-family:var(--font-mono);font-size:9px;background:rgba(255,255,255,.14);padding:2px 5px;border-radius:3px;flex-shrink:0;transition:opacity .16s,max-width .2s}
+[data-theme="light"] .kbd-chip{background:rgba(0,0,0,.12)}
+
+.sb-section{padding:13px 10px 3px}
+.sb-label{font-size:9px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--micro);padding:0 4px;margin-bottom:4px;transition:opacity .16s,max-width .2s}
+.nav-item{
+  display:flex;align-items:center;gap:7px;
+  padding:5px 7px;border-radius:5px;cursor:pointer;
+  color:var(--muted);font-size:12.5px;user-select:none;
+  transition:background .12s,color .12s,box-shadow .12s;
+  position:relative;
+}
+.nav-item span:not(.nav-glyph),.nav-count{display:inline-block;white-space:nowrap;transition:opacity .16s,max-width .2s}
+.nav-item::before{content:'';position:absolute;left:0;top:50%;width:2px;height:14px;border-radius:2px;background:var(--accent);opacity:0;transform:translateY(-50%) scaleY(.6);transition:opacity .14s,transform .14s}
+.nav-item.active::before{opacity:1;transform:translateY(-50%) scaleY(1)}
+.nav-item:hover{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--surface2);color:var(--text);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--border2) 70%,transparent)}
+#sidebar.collapsed .nav-item::before{left:-4px;height:18px}
+.nav-count{margin-left:auto;font-size:10px;font-family:var(--font-mono);color:var(--micro)}
+.nav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--micro)}
+.nav-dot.v{background:var(--accent)}.nav-dot.t{background:var(--teal)}
+.nav-dot.a{background:var(--amber)}.nav-dot.r{background:var(--red)}
+.nav-dot.b{background:var(--blue)}.nav-dot.g{background:var(--green)}
+.nav-glyph{font-family:var(--font-mono);font-size:10px;color:var(--micro);width:14px;flex-shrink:0;text-align:center}
+
+.sb-div{height:1px;background:var(--border);margin:6px 10px}
+
+/* Chain mode indicator */
+.chain-indicator{
+  margin:0 10px 8px;
+  padding:7px 10px;
+  border:1px solid var(--accent);
+  border-radius:var(--r);
+  background:var(--accent-dim);
+  display:none;
+  flex-direction:column;gap:3px;
+}
+.chain-indicator.active{display:flex}
+.ci-label{font-size:10px;font-family:var(--font-mono);color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
+.ci-count{font-size:12px;color:var(--text)}
+.ci-esc{font-size:10px;color:var(--muted);font-family:var(--font-mono)}
+
+.sb-bottom{
+  margin-top:auto;padding:10px;
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+}
+.sb-status{display:flex;align-items:center;gap:5px}
+.sb-dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+.sb-status-txt{font-size:10px;font-family:var(--font-mono);color:var(--micro)}
+.theme-btns{display:flex;gap:1px}
+.theme-btn{
+  padding:3px 6px;border-radius:3px;border:1px solid transparent;
+  background:none;color:var(--micro);font-size:10px;font-family:var(--font-mono);
+  transition:all .12s;cursor:pointer;
+}
+.theme-btn:hover{color:var(--muted)}
+.theme-btn.active{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+
+/* ════════════════════
+   MAIN
+════════════════════ */
+#main{flex:1;display:flex;flex-direction:column;overflow:hidden;min-width:0}
+
+/* Topbar */
+#topbar{
+  padding:10px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:10px;flex-shrink:0;
+  background:var(--bg);transition:background .2s;
+}
+.search-pill{
+  flex:1;max-width:400px;height:32px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:20px;display:flex;align-items:center;gap:7px;
+  padding:0 11px;cursor:text;
+  transition:border-color .16s,box-shadow .16s;
+}
+.search-pill.focused{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
+.search-pill input{background:none;border:none;outline:none;color:var(--text);font-size:12.5px;flex:1}
+.search-pill input::placeholder{color:var(--micro)}
+.s-ico{color:var(--micro);font-size:14px;user-select:none}
+.s-slash{
+  font-family:var(--font-mono);font-size:10px;color:var(--micro);
+  background:var(--surface2);padding:1px 5px;border-radius:3px;border:1px solid var(--border2);flex-shrink:0;
+}
+.topbar-r{margin-left:auto;display:flex;align-items:center;gap:7px}
+.view-toggle{display:flex;border:1px solid var(--border2);border-radius:var(--r);overflow:hidden}
+.vt-btn{
+  padding:5px 9px;background:none;border:none;color:var(--micro);font-size:12px;
+  display:flex;align-items:center;gap:4px;border-right:1px solid var(--border2);
+  transition:all .12s;cursor:pointer;
+}
+.vt-btn:last-child{border-right:none}
+.vt-btn.active{background:var(--surface2);color:var(--text)}
+.vt-btn:hover:not(.active){background:var(--surface);color:var(--muted)}
+#cmdBtn{
+  display:flex;align-items:center;gap:5px;padding:5px 9px;
+  border:1px solid var(--border2);border-radius:var(--r);
+  background:none;color:var(--micro);font-family:var(--font-mono);font-size:10px;
+  transition:all .12s;cursor:pointer;
+}
+#cmdBtn:hover{background:var(--surface);color:var(--muted)}
+
+/* ─── PINNED STRIP ─── */
+#pinnedStrip{
+  padding:7px 18px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:7px;
+  overflow-x:auto;flex-shrink:0;min-height:40px;
+  background:var(--bg);transition:background .2s;
+}
+.pin-label{font-size:9px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--micro);white-space:nowrap;flex-shrink:0}
+.pin-chip{
+  display:flex;align-items:center;gap:5px;padding:3px 8px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-left:2px solid var(--accent);border-radius:0 4px 4px 0;
+  white-space:nowrap;cursor:pointer;flex-shrink:0;
+  transition:background .12s;
+}
+.pin-chip:hover{background:var(--surface2)}
+.pin-chip-type{font-size:9px;font-family:var(--font-mono);color:var(--accent);text-transform:uppercase}
+.pin-chip-title{font-size:11.5px;color:var(--text)}
+.pin-chip-x{background:none;border:none;color:var(--micro);font-size:11px;padding:0 0 0 2px;cursor:pointer;line-height:1;transition:color .1s}
+.pin-chip-x:hover{color:var(--accent)}
+.pin-empty{font-size:11px;color:var(--micro);font-family:var(--font-mono)}
+
+/* ─── FEED ─── */
+#feed{flex:1;overflow-y:auto;padding:18px}
+
+/* MASONRY */
+#grid.masonry{columns:4;column-gap:11px}
+@media(max-width:1500px){#grid.masonry{columns:3}}
+@media(max-width:1100px){#grid.masonry{columns:2}}
+
+/* ─── CARDS ─── */
+.card{
+  break-inside:avoid;margin-bottom:11px;
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:8px;padding:13px;cursor:pointer;
+  position:relative;overflow:visible;
+  transition:border-color .16s,transform .16s,box-shadow .16s;
+}
+.card:hover{
+  border-color:var(--accent);transform:translateY(-2px);
+  box-shadow:0 0 0 1px var(--accent-glow),0 8px 28px rgba(0,0,0,.22),inset 0 0 40px rgba(139,92,246,.03);
+}
+.card.selected{border-color:var(--accent);background:var(--accent-dim)}
+.card.chain-selectable:hover{border-color:var(--teal);box-shadow:0 0 0 1px rgba(20,184,166,.2)}
+.card.chain-linked{border-color:var(--teal);background:rgba(20,184,166,.05)}
+
+/* card anatomy */
+.card-type{font-size:9px;font-family:var(--font-mono);font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--micro);margin-bottom:7px;display:flex;align-items:center;gap:5px}
+.type-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.type-dot.text{background:#A1A1AA}.type-dot.code{background:var(--green)}
+.type-dot.image{background:var(--amber)}.type-dot.link{background:var(--blue)}
+.type-dot.prompt{background:var(--accent)}.type-dot.note{background:var(--pink)}
+
+.card-title{font-size:13px;font-weight:500;line-height:1.4;margin-bottom:6px;padding-right:126px}
+.card-preview{font-size:12px;color:var(--muted);line-height:1.6;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.card-preview.one-line{-webkit-line-clamp:1}
+.card-preview.two-line{-webkit-line-clamp:2}
+.card-preview.prompt-preview{font-family:var(--font-serif);font-size:14px;line-height:1.6;font-style:italic;border-left:2px solid var(--accent);padding-left:11px;margin:2px 0;-webkit-line-clamp:4}
+
+/* sensitive */
+.sensitive-wrap{transition:filter .28s ease}
+.card:not(:hover) .sensitive-wrap.blur{filter:blur(5px);user-select:none;pointer-events:none}
+
+/* code */
+.card-code{
+  font-family:var(--font-mono);font-size:11px;color:#A3E635;
+  background:rgba(163,230,53,.05);border:1px solid rgba(163,230,53,.1);
+  border-radius:4px;padding:9px;line-height:1.6;max-height:92px;overflow:hidden;white-space:pre;
+}
+[data-theme="light"] .card-code{color:#166534;background:rgba(22,101,52,.04);border-color:rgba(22,101,52,.12)}
+
+/* prompt */
+.prompt-body{font-family:var(--font-serif);font-size:14px;line-height:1.65;font-style:italic;border-left:2px solid var(--accent);padding-left:11px;margin:2px 0}
+
+/* link */
+.card-link{display:flex;align-items:center;gap:7px;padding:7px 8px;background:var(--surface2);border-radius:4px;border:1px solid var(--border);margin-top:6px;min-width:0}
+.card-link-url{font-size:11px;color:var(--micro);font-family:var(--font-mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.link-title{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
+.link-ico{width:16px;height:16px;border-radius:3px;background:var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--micro)}
+
+/* image */
+.card-img-wrap{width:100%;border-radius:5px;overflow:hidden;margin-bottom:7px;background:var(--surface2);border:1px solid var(--border);min-height:80px;display:flex;align-items:center;justify-content:center}
+.card-img-wrap img{width:100%;height:auto;display:block;border-radius:4px}
+.card-img-placeholder{font-size:11px;color:var(--micro);font-family:var(--font-mono);text-align:center;padding:20px}
+
+/* chain badge */
+.chain-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-family:var(--font-mono);color:var(--teal);background:rgba(20,184,166,.08);border:1px solid rgba(20,184,166,.2);border-radius:3px;padding:2px 6px;margin-top:5px}
+
+/* meta */
+.card-meta{margin-top:9px;padding-top:7px;border-top:1px solid var(--border);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.tag{font-size:10px;font-family:var(--font-mono);color:var(--micro);background:rgba(255,255,255,.03);padding:2px 6px;border-radius:3px;border:1px solid var(--border2);cursor:pointer;transition:border-color .12s,color .12s}
+.tag:hover{border-color:var(--accent);color:var(--accent)}
+[data-theme="light"] .tag{background:rgba(0,0,0,.03)}
+.card-date{margin-left:auto;font-size:10px;font-family:var(--font-mono);color:var(--micro)}
+.fav-star{position:absolute;top:10px;left:10px;font-size:11px;color:var(--amber);display:none}
+.card.favorited .fav-star{display:block}
+
+/* AI hint */
+.ai-hint{display:none;align-items:center;gap:4px;font-size:10px;color:var(--accent);font-family:var(--font-mono);opacity:.7;margin-top:5px;cursor:pointer;width:fit-content}
+.card:hover .ai-hint{display:flex}
+
+/* actions rail */
+.card-actions{
+  position:absolute;top:9px;right:9px;
+  opacity:0;pointer-events:none;
+  display:flex;align-items:center;gap:3px;
+  background:color-mix(in srgb,var(--bg) 86%,var(--surface3));border:1px solid var(--border2);
+  border-radius:6px;padding:4px;
+  box-shadow:0 8px 24px rgba(0,0,0,.22);
+  transition:opacity .16s,transform .16s,background .16s;z-index:40;
+  transform:translateY(-2px);
+}
+.card:hover .card-actions,.card:focus-within .card-actions,.card-actions.menu-open{opacity:1;pointer-events:all;transform:translateY(0)}
+.act-btn{
+  width:22px;height:22px;border:none;background:none;
+  border-radius:3px;color:var(--micro);font-size:10px;
+  font-family:var(--font-mono);font-weight:500;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;cursor:pointer;
+  transition:background .12s,color .12s,opacity .12s;
+}
+.act-btn:hover{background:var(--surface2);color:var(--accent)}
+.act-btn[data-active="true"]{color:var(--accent)}
+.act-btn .tip{
+  position:absolute;bottom:calc(100% + 5px);left:50%;transform:translateX(-50%);
+  background:var(--surface3);border:1px solid var(--border2);color:var(--muted);
+  font-size:9px;padding:2px 5px;border-radius:3px;white-space:nowrap;
+  pointer-events:none;opacity:0;transition:opacity .1s;
+}
+.act-btn:hover .tip{opacity:1}
+.action-menu{position:absolute;top:calc(100% + 5px);right:0;min-width:126px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:4px;box-shadow:0 16px 36px rgba(0,0,0,.34);display:none;z-index:60}
+.card-actions.menu-open .action-menu{display:block}
+.menu-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;border:none;background:none;color:var(--muted);border-radius:4px;font-size:11px;text-align:left;cursor:pointer;transition:background .12s,color .12s}
+.menu-btn:hover{background:var(--surface3);color:var(--text)}
+.menu-btn.danger{color:var(--red)}
+
+/* ─── LIST VIEW ─── */
+#grid.list-view .card{
+  break-inside:unset;border-radius:0;
+  border:none;border-bottom:1px solid var(--border);
+  padding:8px 8px;margin-bottom:0;
+  display:flex;align-items:center;gap:11px;
+  transform:none!important;box-shadow:none!important;
+}
+#grid.list-view .card:first-child{border-top:1px solid var(--border)}
+#grid.list-view .card:hover{background:var(--surface)}
+#grid.list-view .l-type{font-size:9px;font-family:var(--font-mono);text-transform:uppercase;color:var(--micro);width:38px;flex-shrink:0}
+#grid.list-view .l-title{font-size:13px;font-weight:500;width:160px;flex-shrink:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#grid.list-view .l-preview{font-size:12px;color:var(--muted);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#grid.list-view .l-tags{display:flex;gap:3px;flex-shrink:0}
+#grid.list-view .l-date{font-size:10px;font-family:var(--font-mono);color:var(--micro);width:52px;text-align:right;flex-shrink:0}
+#grid.list-view .card-actions{top:50%;transform:translateY(-50%)}
+#grid.list-view .card-type,#grid.list-view .card-title,#grid.list-view .card-preview,
+#grid.list-view .card-code,#grid.list-view .prompt-body,#grid.list-view .card-link,
+#grid.list-view .card-img-wrap,#grid.list-view .card-meta,#grid.list-view .ai-hint,
+#grid.list-view .fav-star,#grid.list-view .chain-badge{display:none}
+
+/* ════════════════════
+   EDITOR PANEL
+════════════════════ */
+#editorPanel{
+  width:var(--editor);min-width:var(--editor);
+  height:100vh;border-left:1px solid var(--border);
+  display:flex;flex-direction:column;
+  background:var(--bg);flex-shrink:0;
+  transition:transform .24s var(--ease-panel),width .24s var(--ease-panel),min-width .24s var(--ease-panel),opacity .2s;
+  overflow:hidden;
+}
+#editorPanel.closed{transform:translateX(100%);width:0;min-width:0;border-left:none;opacity:0}
+.ep-head{padding:14px 14px 10px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
+.ep-mode{font-size:9px;font-family:var(--font-mono);color:var(--accent);text-transform:uppercase;letter-spacing:.07em;margin-bottom:2px}
+.ep-name{font-size:14px;font-weight:500;line-height:1.3}
+.ep-close-btn{width:24px;height:24px;border:none;background:none;color:var(--micro);border-radius:4px;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .12s;cursor:pointer;flex-shrink:0;margin-top:-1px}
+.ep-close-btn:hover{background:var(--surface2);color:var(--text)}
+.ep-meta{padding:9px 14px;border-bottom:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column;gap:6px}
+.ep-field{width:100%;background:var(--surface);border:1px solid var(--border2);border-radius:4px;padding:5px 8px;font-size:11px;font-family:var(--font-mono);color:var(--muted);outline:none;transition:border-color .15s}
+.ep-field:focus{border-color:var(--accent)}
+.ep-field::placeholder{color:var(--micro)}
+.ep-body{flex:1;padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
+.ep-textarea{flex:1;background:none;border:none;outline:none;resize:none;color:var(--text);font-size:13px;line-height:1.65;width:100%;min-height:160px}
+.ep-textarea::placeholder{color:var(--micro)}
+.ep-image-preview{display:none;border:1px solid var(--border2);border-radius:6px;background:var(--surface);overflow:hidden;flex-shrink:0}
+.ep-image-preview.visible{display:block}
+.ep-image-preview img{width:100%;max-height:240px;object-fit:contain;display:block;background:var(--surface2)}
+.ep-image-meta{padding:6px 8px;font-size:10px;font-family:var(--font-mono);color:var(--micro);border-top:1px solid var(--border)}
+.ep-save-row{display:flex;align-items:center;justify-content:space-between}
+.ep-autosave{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--font-mono);color:var(--micro)}
+.ep-as-dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+
+/* Chain section in editor */
+.ep-chain{border-top:1px solid var(--border);padding:11px 14px;flex-shrink:0}
+.ep-chain-label{font-size:9px;font-family:var(--font-mono);color:var(--micro);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
+.chain-clips-list{display:flex;flex-direction:column;gap:4px;margin-bottom:7px}
+.chain-clip-item{display:flex;align-items:center;gap:6px;padding:4px 7px;background:var(--surface2);border-radius:4px;border:1px solid var(--border2);cursor:pointer;transition:border-color .12s}
+.chain-clip-item:hover{border-color:var(--teal)}
+.cci-type{font-size:9px;font-family:var(--font-mono);color:var(--teal);text-transform:uppercase}
+.cci-title{font-size:12px;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.cci-rm{background:none;border:none;color:var(--micro);cursor:pointer;font-size:11px;padding:0;transition:color .1s}
+.cci-rm:hover{color:var(--red)}
+.chain-add-btn{
+  width:100%;padding:5px;border:1px dashed var(--border2);border-radius:4px;
+  background:none;color:var(--micro);font-size:11px;font-family:var(--font-mono);
+  cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:center;gap:5px;
+}
+.chain-add-btn:hover{border-color:var(--teal);color:var(--teal);background:rgba(20,184,166,.05)}
+
+/* AI section */
+.ep-ai{border-top:1px solid var(--border);padding:11px 14px;flex-shrink:0}
+.ep-ai-label{font-size:9px;font-family:var(--font-mono);color:var(--micro);text-transform:uppercase;letter-spacing:.07em;margin-bottom:7px}
+.ep-ai-btns{display:flex;flex-wrap:wrap;gap:5px}
+.ep-ai-btn{
+  padding:4px 8px;border:1px solid var(--border2);border-radius:4px;
+  background:none;color:var(--muted);font-size:11px;font-family:var(--font-mono);
+  display:flex;align-items:center;gap:3px;cursor:pointer;
+  transition:all .12s;
+}
+.ep-ai-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.ep-ai-btn.loading{opacity:.6;pointer-events:none}
+.ep-ai-btn.loading::after{content:' …'}
+.ai-star{color:var(--accent);font-size:9px}
+.ep-ai-result{
+  margin-top:7px;padding:8px;
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:4px;font-size:12px;color:var(--muted);line-height:1.55;
+  display:none;
+}
+.ep-ai-result.visible{display:block}
+.ep-ai-apply{
+  margin-top:5px;padding:4px 8px;
+  border:1px solid var(--accent);border-radius:4px;
+  background:var(--accent-dim);color:var(--accent);
+  font-size:11px;font-family:var(--font-mono);cursor:pointer;
+  transition:all .12s;
+}
+.ep-ai-apply:hover{background:var(--accent);color:#fff}
+
+/* ════════════════════
+   NEW CLIP OVERLAY
+════════════════════ */
+#ncOverlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .18s;
+}
+#ncOverlay.open{opacity:1;pointer-events:all}
+.nc-surface{
+  width:660px;max-width:93vw;
+  background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;
+  box-shadow:0 40px 100px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.03);
+  transform:scale(.97) translateY(7px);transition:transform .2s var(--ease-panel);
+}
+#ncOverlay.open .nc-surface{transform:scale(1) translateY(0)}
+.nc-head{padding:18px 22px 12px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between}
+.nc-title{font-size:15px;font-weight:500}
+.nc-sub{font-size:11px;color:var(--micro);font-family:var(--font-mono);margin-top:2px}
+.nc-types{display:flex;gap:5px;padding:11px 22px;border-bottom:1px solid var(--border);overflow-x:auto}
+.nc-type-btn{
+  padding:4px 9px;border:1px solid var(--border2);border-radius:4px;
+  background:none;color:var(--muted);font-size:11px;font-family:var(--font-mono);
+  text-transform:uppercase;letter-spacing:.05em;white-space:nowrap;flex-shrink:0;
+  cursor:pointer;transition:all .12s;
+}
+.nc-type-btn.active{border-color:var(--accent);color:var(--accent);background:var(--accent-dim)}
+.nc-body{padding:18px 22px;display:flex;flex-direction:column;gap:10px}
+.nc-field{
+  width:100%;background:var(--surface2);border:1px solid var(--border2);
+  border-radius:6px;padding:9px 12px;font-size:13px;color:var(--text);outline:none;
+  transition:border-color .15s;
+}
+.nc-field::placeholder{color:var(--micro)}
+.nc-field:focus{border-color:var(--accent)}
+textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
+/* image drop zone */
+.nc-drop{
+  width:100%;min-height:90px;border:1.5px dashed var(--border2);border-radius:6px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  cursor:pointer;transition:border-color .15s,background .15s;background:none;
+}
+.nc-drop:hover,.nc-drop.dragover{border-color:var(--accent);background:var(--accent-dim)}
+.nc-drop-label{font-size:12px;color:var(--micro)}
+.nc-drop-sub{font-size:10px;font-family:var(--font-mono);color:var(--micro)}
+.nc-img-preview{width:100%;max-height:160px;object-fit:cover;border-radius:5px;display:none}
+.nc-foot{padding:12px 22px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.nc-ai-note{font-size:11px;color:var(--accent);font-family:var(--font-mono);display:flex;align-items:center;gap:4px;opacity:.75}
+.nc-save{
+  background:var(--accent);border:none;border-radius:var(--r);
+  padding:8px 16px;color:#fff;font-size:13px;font-weight:500;
+  display:flex;align-items:center;gap:6px;cursor:pointer;
+  transition:background .12s,transform .08s;
+}
+.nc-save:hover{background:#7C3AED}
+.nc-save:active{transform:scale(.98)}
+[data-theme="light"] .nc-save{background:#0A0A0B}
+[data-theme="light"] .nc-save:hover{background:#18181B}
+.nc-kbd{font-size:10px;font-family:var(--font-mono);opacity:.6}
+
+/* ════════════════════
+   COMMAND PALETTE
+════════════════════ */
+#cmdOverlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;
+  display:flex;align-items:flex-start;justify-content:center;padding-top:13vh;
+  opacity:0;pointer-events:none;transition:opacity .16s;
+}
+#cmdOverlay.open{opacity:1;pointer-events:all}
+.cmd-box{
+  width:530px;max-width:92vw;
+  background:var(--surface);border:1px solid var(--border2);border-radius:10px;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04);
+  transform:scale(.97) translateY(-7px);transition:transform .18s var(--ease-panel);
+}
+#cmdOverlay.open .cmd-box{transform:scale(1) translateY(0)}
+.cmd-in-row{display:flex;align-items:center;gap:9px;padding:13px 15px;border-bottom:1px solid var(--border)}
+#cmdInput{flex:1;background:none;border:none;outline:none;color:var(--text);font-size:14px}
+#cmdInput::placeholder{color:var(--micro)}
+.cmd-esc{font-size:10px;font-family:var(--font-mono);color:var(--micro);border:1px solid var(--border2);padding:2px 5px;border-radius:3px}
+.cmd-results{max-height:370px;overflow-y:auto;padding:5px 0}
+.cmd-group{padding:7px 14px 2px;font-size:9px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--micro)}
+.cmd-item{display:flex;align-items:center;gap:9px;padding:8px 14px;cursor:pointer;transition:background .1s}
+.cmd-item:hover,.cmd-item.cmd-sel{background:var(--surface2)}
+.cmd-ico{width:28px;height:28px;border-radius:6px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;color:var(--muted)}
+.cmd-lbl{font-size:13px}
+.cmd-kd{font-size:10px;color:var(--micro);font-family:var(--font-mono);margin-left:auto}
+
+/* ════════════════════
+   AI LOADING
+════════════════════ */
+.ai-loading-bar{
+  position:fixed;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(90deg,var(--accent),rgba(139,92,246,.3));
+  z-index:999;transform-origin:left;transform:scaleX(0);
+  transition:transform .3s,opacity .3s;opacity:0;
+}
+.ai-loading-bar.active{opacity:1;animation:aibar 1.8s ease-in-out infinite}
+@keyframes aibar{0%{transform:scaleX(0) translateX(0)}50%{transform:scaleX(.6) translateX(60%)}100%{transform:scaleX(0) translateX(200%)}}
+
+/* ════════════════════
+   CHAIN MODE OVERLAY
+════════════════════ */
+#chainBanner{
+  position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(10px);
+  background:var(--surface2);border:1px solid var(--teal);border-radius:8px;
+  padding:10px 18px;display:flex;align-items:center;gap:12px;
+  box-shadow:0 16px 48px rgba(0,0,0,.4);z-index:100;
+  opacity:0;pointer-events:none;transition:all .2s;
+}
+#chainBanner.visible{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0)}
+.cb-label{font-size:12px;font-weight:500;color:var(--teal)}
+.cb-count{font-size:12px;color:var(--muted)}
+.cb-sep{width:1px;height:18px;background:var(--border2)}
+.cb-done{padding:5px 12px;border:1px solid var(--teal);border-radius:4px;background:rgba(20,184,166,.1);color:var(--teal);font-size:12px;cursor:pointer;transition:all .12s}
+.cb-done:hover{background:var(--teal);color:#000}
+.cb-cancel{background:none;border:none;color:var(--micro);font-size:11px;font-family:var(--font-mono);cursor:pointer}
+.cb-cancel:hover{color:var(--muted)}
+
+/* ════════════════════
+   BULK BAR
+════════════════════ */
+.bulk-bar{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(10px);
+  background:var(--surface2);border:1px solid var(--border2);border-radius:8px;
+  padding:10px 16px;display:flex;align-items:center;gap:10px;
+  box-shadow:0 16px 48px rgba(0,0,0,.4);z-index:100;
+  opacity:0;pointer-events:none;transition:all .2s;
+}
+.bulk-bar.visible{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0)}
+.bulk-count{font-size:12px;font-weight:500}
+.bulk-sep{width:1px;height:18px;background:var(--border2)}
+.bulk-btn{padding:5px 10px;border:1px solid var(--border2);border-radius:4px;background:none;color:var(--muted);font-size:12px;cursor:pointer;transition:all .12s}
+.bulk-btn:hover{background:var(--surface3);color:var(--text)}
+.bulk-clear{background:none;border:none;color:var(--micro);font-size:11px;font-family:var(--font-mono);cursor:pointer}
+.bulk-clear:hover{color:var(--muted)}
+
+/* ════════════════════
+   TOASTS
+════════════════════ */
+#toastArea{position:fixed;bottom:20px;right:20px;z-index:500;display:flex;flex-direction:column;gap:6px;pointer-events:none}
+.toast{
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:6px;padding:8px 13px;font-size:12px;
+  display:flex;align-items:center;gap:7px;
+  box-shadow:0 8px 24px rgba(0,0,0,.3);
+  animation:tin .2s var(--ease-panel);pointer-events:auto;
+}
+@keyframes tin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.toast.out{animation:tout .18s ease forwards}
+@keyframes tout{to{opacity:0;transform:translateY(4px)}}
+.t-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.t-dot.green{background:var(--green)}
+.t-dot.red{background:var(--red)}
+.toast-action{border:none;background:none;color:var(--accent);font-family:var(--font-mono);font-size:10px;cursor:pointer;padding:2px 0;margin-left:4px}
+
+/* ════════════════════
+   EMPTY STATE
+════════════════════ */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:72px 24px;text-align:center}
+.empty-glyph{font-size:28px;font-family:var(--font-serif);font-style:italic;color:var(--micro);margin-bottom:13px}
+.empty-title{font-size:15px;font-weight:500;margin-bottom:5px}
+.empty-sub{font-size:12px;color:var(--muted)}
+
+/* ════════════════════
+   FLIP ANIMATION
+════════════════════ */
+.card.flipping{
+  animation:cardFlip .3s var(--ease-panel) forwards;
+}
+@keyframes cardFlip{
+  0%{transform:translateY(0) scale(1);opacity:1}
+  40%{transform:translateY(-18px) scale(.97);opacity:.7}
+  100%{transform:translateY(-40px) scale(.92);opacity:0}
+}
+.pin-chip.chip-in{
+  animation:chipIn .28s var(--ease-panel) forwards;
+}
+@keyframes chipIn{
+  from{opacity:0;transform:scale(.9) translateX(-6px)}
+  to{opacity:1;transform:scale(1) translateX(0)}
+}
+
+/* AI loading spinner inline */
+@keyframes spin{to{transform:rotate(360deg)}}
+.ai-spin{display:inline-block;width:10px;height:10px;border:1.5px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-left:3px;vertical-align:middle}
 </style>
 </head>
 <body>
+<div class="ai-loading-bar" id="aiBar"></div>
+<div class="sidebar-tip" id="sidebarTip" role="tooltip" aria-hidden="true"></div>
+
 <div id="app">
-  <aside class="sidebar" aria-label="Trace navigation">
-    <div class="logo"><strong>Trace</strong><span>Sprint 0.5</span></div>
-    <nav class="nav">
-      <button id="homeNav" class="active" type="button">Home</button>
-      <button id="archiveNav" type="button">All Clips <small id="clipCount">0</small></button>
-    </nav>
-    <div class="sidebar-note">Local-first.<br>Fresh current clip on every launch.<br>Autosaved while you type.</div>
-  </aside>
 
-  <main class="main">
-    <section id="homeScreen" class="screen active" aria-label="Home">
-      <div class="home-shell">
-        <div class="pinned-strip" aria-label="Pinned strip placeholder"><strong>Pinned</strong><span>Reserved space</span></div>
-        <article class="current-card" aria-label="Current Clip">
-          <header class="current-head">
-            <div class="current-label">Current Clip</div>
-            <div id="autosaveState" aria-live="polite">Saved</div>
-          </header>
-          <div class="editor">
-            <input id="clipTitle" type="text" autocomplete="off" placeholder="Optional title" aria-label="Current clip title">
-            <textarea id="clipContent" placeholder="Start typing..." aria-label="Current clip content"></textarea>
-          </div>
-        </article>
-        <div class="home-actions"><button id="newClipBtn" class="primary-btn" type="button">New Clip</button></div>
-      </div>
-    </section>
+<!-- ════ SIDEBAR ════ -->
+<aside id="sidebar" aria-label="Workspace navigation">
+  <div class="logo">
+    <div class="logo-mark">
+      <svg viewBox="0 0 13 13" fill="none"><path d="M2 3.5h9M2 6.5h6M2 9.5h8" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>
+    </div>
+    <span class="logo-name">Trace</span>
+    <span class="logo-ver">local</span>
+    <button id="sidebarToggle" data-tip="Collapse sidebar" data-kbd="⌘B" title="" aria-label="Collapse sidebar" aria-expanded="true">←</button>
+  </div>
 
-    <section id="archiveScreen" class="screen" aria-label="All Clips">
-      <div class="archive-shell">
-        <header class="archive-head">
-          <div><h1>All Clips</h1><p class="muted">Every stored clip. Open or delete.</p></div>
-          <button id="archiveNewClipBtn" class="primary-btn" type="button">New Clip</button>
-        </header>
-        <div id="clipList" class="clip-list"></div>
+  <button id="newClipBtn" data-tip="New Clip" data-meta="paste · drop · type" data-kbd="⌘N">
+    <div class="ncb-inner">
+      <span>New Clip</span>
+      <span class="ncb-sub">paste · drop · type</span>
+    </div>
+    <span class="kbd-chip">⌘N</span>
+  </button>
+
+  <div class="sb-section">
+    <div class="sb-label">Library</div>
+    <div class="nav-item active" data-filter="all" data-tip="All Clips" data-section="Library"><div class="nav-dot v"></div><span>All Clips</span><span class="nav-count" id="cntAll">0</span></div>
+    <div class="nav-item" data-filter="favorites" data-tip="Favorites" data-section="Library"><div class="nav-dot a"></div><span>Favorites</span><span class="nav-count" id="cntFav">0</span></div>
+    <div class="nav-item" data-filter="pinned" data-tip="Pinned" data-section="Library"><div class="nav-dot v"></div><span>Pinned</span><span class="nav-count" id="cntPin">0</span></div>
+    <div class="nav-item" data-filter="archived" data-tip="Archived" data-section="Library"><div class="nav-dot g"></div><span>Archived</span><span class="nav-count" id="cntArch">0</span></div>
+  </div>
+
+  <div class="sb-div"></div>
+
+  <div class="sb-section">
+    <div class="sb-label">Collections</div>
+    <div class="nav-item" data-collection="research" data-tip="Research" data-section="Collection" data-meta="#research"><div class="nav-dot t"></div><span>Research</span></div>
+    <div class="nav-item" data-collection="writing" data-tip="Writing" data-section="Collection" data-meta="#writing"><div class="nav-dot a"></div><span>Writing</span></div>
+    <div class="nav-item" data-collection="design" data-tip="Design refs" data-section="Collection" data-meta="#design"><div class="nav-dot r"></div><span>Design refs</span></div>
+  </div>
+
+  <div class="sb-div"></div>
+
+  <div class="sb-section">
+    <div class="sb-label">Type</div>
+    <div class="nav-item" data-type="text" data-tip="Text" data-section="Type"><span class="nav-glyph">T</span><span>Text</span></div>
+    <div class="nav-item" data-type="code" data-tip="Code" data-section="Type"><span class="nav-glyph">{}</span><span>Code</span></div>
+    <div class="nav-item" data-type="prompt" data-tip="Prompts" data-section="Type"><span class="nav-glyph">✦</span><span>Prompts</span></div>
+    <div class="nav-item" data-type="link" data-tip="Links" data-section="Type"><span class="nav-glyph">↗</span><span>Links</span></div>
+    <div class="nav-item" data-type="image" data-tip="Images" data-section="Type"><span class="nav-glyph">⊟</span><span>Images</span></div>
+    <div class="nav-item" data-type="note" data-tip="Notes" data-section="Type"><span class="nav-glyph">◎</span><span>Notes</span></div>
+  </div>
+
+  <!-- Chain mode indicator -->
+  <div class="chain-indicator" id="sbChainIndicator">
+    <span class="ci-label">⬡ Chain mode</span>
+    <span class="ci-count" id="sbChainCount">0 clips linked</span>
+    <span class="ci-esc">Esc to cancel</span>
+  </div>
+
+  <div class="sb-bottom">
+    <div class="sb-status" data-tip="Local-first" data-meta="stored in this browser"><div class="sb-dot"></div><span class="sb-status-txt">local-first</span></div>
+    <div class="theme-btns">
+      <button class="theme-btn" data-theme="auto">auto</button>
+      <button class="theme-btn active" data-theme="dark">dark</button>
+      <button class="theme-btn" data-theme="light">light</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ════ MAIN ════ -->
+<main id="main">
+  <div id="topbar">
+    <div class="search-pill" id="searchPill">
+      <span class="s-ico">⌕</span>
+      <input type="text" id="searchInput" placeholder="Search clips...">
+      <span class="s-slash">/</span>
+    </div>
+    <div class="topbar-r">
+      <div class="view-toggle">
+        <button class="vt-btn active" id="btnCards">⊞ Cards</button>
+        <button class="vt-btn" id="btnList">≡ List</button>
       </div>
-    </section>
-  </main>
+      <button id="cmdBtn">⌘K</button>
+    </div>
+  </div>
+
+  <div id="pinnedStrip"><span class="pin-label">Pinned</span></div>
+
+  <div id="feed">
+    <div id="grid" class="masonry"></div>
+  </div>
+</main>
+
+<!-- ════ EDITOR ════ -->
+<aside id="editorPanel" class="closed">
+  <div class="ep-head">
+    <div><div class="ep-mode" id="epMode">editing</div><div class="ep-name" id="epName">—</div></div>
+    <button class="ep-close-btn" id="epClose">×</button>
+  </div>
+  <div class="ep-meta">
+    <input class="ep-field" id="epTitle" type="text" placeholder="Title...">
+    <input class="ep-field" id="epTags" type="text" placeholder="Tags: research, writing...">
+  </div>
+  <div class="ep-body">
+    <div class="ep-image-preview" id="epImagePreview"></div>
+    <textarea class="ep-textarea" id="epTextarea" placeholder="Content..."></textarea>
+    <div class="ep-save-row">
+      <div class="ep-autosave" id="epAS"><div class="ep-as-dot"></div><span>autosaved</span></div>
+    </div>
+  </div>
+
+  <!-- Chain -->
+  <div class="ep-chain">
+    <div class="ep-chain-label">
+      <span>⬡ Workflow chain</span>
+      <button class="chain-add-btn" id="startChainBtn" style="width:auto;padding:2px 8px;font-size:10px">+ Link clip</button>
+    </div>
+    <div class="chain-clips-list" id="chainClipsList"></div>
+  </div>
+
+  <!-- AI -->
+  <div class="ep-ai">
+    <div class="ep-ai-label">✦ AI assist</div>
+    <div class="ep-ai-btns">
+      <button class="ep-ai-btn" data-ai="title"><span class="ai-star">✦</span>Auto-title</button>
+      <button class="ep-ai-btn" data-ai="tags"><span class="ai-star">✦</span>Suggest tags</button>
+      <button class="ep-ai-btn" data-ai="summarize"><span class="ai-star">✦</span>Summarize</button>
+      <button class="ep-ai-btn" data-ai="rewrite"><span class="ai-star">✦</span>Rewrite</button>
+      <button class="ep-ai-btn" data-ai="describe"><span class="ai-star">✦</span>Describe</button>
+    </div>
+    <div class="ep-ai-result" id="aiResult"></div>
+    <button class="ep-ai-apply" id="aiApply" style="display:none">Apply suggestion</button>
+  </div>
+</aside>
+
+</div><!-- /app -->
+
+<!-- ════ NEW CLIP OVERLAY ════ -->
+<div id="ncOverlay">
+  <div class="nc-surface">
+    <div class="nc-head">
+      <div><div class="nc-title">New Clip</div><div class="nc-sub">paste · drop · type</div></div>
+      <button class="ep-close-btn" id="ncClose">×</button>
+    </div>
+    <div class="nc-types" id="ncTypes">
+      <button class="nc-type-btn active" data-type="text">Text</button>
+      <button class="nc-type-btn" data-type="code">Code</button>
+      <button class="nc-type-btn" data-type="prompt">Prompt</button>
+      <button class="nc-type-btn" data-type="link">Link</button>
+      <button class="nc-type-btn" data-type="image">Image</button>
+      <button class="nc-type-btn" data-type="note">Note</button>
+    </div>
+    <div class="nc-body" id="ncBody">
+      <input class="nc-field" id="ncTitle" type="text" placeholder="Title (or ✦ AI will generate one)">
+      <textarea class="nc-field" id="ncContent" placeholder="Paste, type, or drop content here..."></textarea>
+      <input class="nc-field" id="ncTags" type="text" list="tagOptions" placeholder="Tags: research, writing...">
+    </div>
+    <div class="nc-foot">
+      <span class="nc-ai-note">✦ auto-title · auto-tags on save</span>
+      <button class="nc-save" id="ncSave"><span>Save clip</span><span class="nc-kbd">⌘↵</span></button>
+    </div>
+  </div>
 </div>
 
+<!-- ════ CMD PALETTE ════ -->
+<div id="cmdOverlay">
+  <div class="cmd-box">
+    <div class="cmd-in-row">
+      <span style="color:var(--micro);font-size:14px">⌕</span>
+      <input id="cmdInput" type="text" placeholder="Type a command or search...">
+      <span class="cmd-esc">esc</span>
+    </div>
+    <div class="cmd-results" id="cmdResults"></div>
+  </div>
+</div>
+
+<!-- ════ CHAIN BANNER ════ -->
+<div id="chainBanner">
+  <span class="cb-label">⬡ Chain mode</span>
+  <span class="cb-count" id="cbCount">Select clips to link</span>
+  <div class="cb-sep"></div>
+  <button class="cb-done" id="cbDone">Done</button>
+  <button class="cb-cancel" id="cbCancel">cancel</button>
+</div>
+
+<!-- ════ BULK BAR ════ -->
+<div class="bulk-bar" id="bulkBar">
+  <span class="bulk-count" id="bulkCount">0 selected</span>
+  <div class="bulk-sep"></div>
+  <button class="bulk-btn" id="bulkFav">★ Favorite</button>
+  <button class="bulk-btn" id="bulkPin">⊕ Pin</button>
+  <button class="bulk-btn" id="bulkArchive">↓ Archive</button>
+  <button class="bulk-btn" id="bulkDel" style="color:var(--red)">✕ Delete</button>
+  <div class="bulk-sep"></div>
+  <button class="bulk-clear" id="bulkClear">clear</button>
+</div>
+
+<!-- ════ TOASTS ════ -->
+<div id="toastArea"></div>
+<datalist id="tagOptions"></datalist>
+
 <script>
-const CLIPS_KEY='trace_clips_sprint_0_5';
-const STATE_KEY='trace_state_sprint_0_5';
-const THEME_KEY='trace_theme';
+/* ═══════════════════════════════════════════════════
+   TRACE — Complete implementation
+   Local-first · AI-assisted · Keyboard-native
+   ═══════════════════════════════════════════════════ */
 
-let clips=[];
-let state={currentClipId:null};
-let saveTimer=null;
-let activeView='home';
+/* ── Constants ── */
+const SK = 'trace_clips_v1';
+const PK = 'trace_prefs_v1';
 
-const $=id=>document.getElementById(id);
-const nowIso=()=>new Date().toISOString();
-const makeId=()=>`clip_${Date.now().toString(36)}_${Math.random().toString(36).slice(2,8)}`;
+/* ── State ── */
+let clips = [];
+let prefs = { theme:'dark', view:'card', sidebarCollapsed:false };
+let filter = 'all';
+let view = 'card';
+let openId = null;
+let selected = new Set();
+let chainMode = false;
+let chainSourceId = null;   // which clip we're adding chains TO
+let aiLastResult = null;
+let aiLastAction = null;
+let ncType = 'text';
+let ncImageData = null;
+let cmdIdx = 0;
+let searchQ = '';
 
-function createClip(){
-  const timestamp=nowIso();
-  return {id:makeId(),title:'',content:'',createdAt:timestamp,updatedAt:timestamp};
+/* ── Persistence ── */
+function save(){ try{ localStorage.setItem(SK, JSON.stringify(clips)) }catch(e){} }
+function saveP(){ try{ localStorage.setItem(PK, JSON.stringify(prefs)) }catch(e){} }
+function load(){
+  try{ const d=localStorage.getItem(SK); if(d) clips=JSON.parse(d) }catch(e){ clips=[] }
+  try{ const p=localStorage.getItem(PK); if(p) prefs={...prefs,...JSON.parse(p)} }catch(e){}
 }
 
-function loadClips(){
-  try{
-    const parsed=JSON.parse(localStorage.getItem(CLIPS_KEY)||'[]');
-    clips=Array.isArray(parsed)?parsed.map(normalizeClip):[];
-  }catch{
-    clips=[];
+/* ── Seed ── */
+const SEED = [
+  {id:'s1',type:'prompt',title:'System prompt v3',content:'You are a precise research assistant. Your task is to synthesize information from multiple sources while maintaining epistemic humility about uncertainty. Never overstate confidence. When you are unsure, say so.',tags:['ai','research'],date:Date.now()-7200000,pinned:true,favorited:false,sensitive:false,chains:[]},
+  {id:'s2',type:'code',title:'Auth middleware (Next.js)',content:`export function middleware(req) {\n  const token = req.cookies.get('auth')\n  if (!token) {\n    return NextResponse.redirect(\n      new URL('/login', req.url)\n    )\n  }\n  return NextResponse.next()\n}`,tags:['nextjs','auth'],date:Date.now()-14400000,pinned:true,favorited:false,sensitive:false,chains:[]},
+  {id:'s3',type:'text',title:'Fragment on attention',content:'The quality of attention determines the quality of thought. Not the quantity of information processed, but the depth of engagement with each fragment. Slowness is not a deficiency — it is a method.',tags:['philosophy','writing'],date:Date.now()-86400000,pinned:false,favorited:true,sensitive:false,chains:['s5']},
+  {id:'s4',type:'link',title:'Linear\'s design system',content:'Comprehensive guide to Linear\'s approach to motion, color, and typography in product design.',url:'linear.app/design-system',tags:['design','reference'],date:Date.now()-172800000,pinned:false,favorited:false,sensitive:false,chains:[]},
+  {id:'s5',type:'text',title:'Research hypothesis',content:'Local-first architectures may fundamentally change how we think about knowledge work — not just as a performance optimization, but as a philosophical stance about data ownership and longevity.',tags:['research'],date:Date.now()-259200000,pinned:true,favorited:true,sensitive:false,chains:['s3']},
+  {id:'s6',type:'prompt',title:'Socratic debugger',content:'Do not immediately fix the bug. Instead, ask three clarifying questions that would help the programmer understand the root cause themselves. Guide, never solve directly.',tags:['prompts','debugging'],date:Date.now()-345600000,pinned:false,favorited:false,sensitive:false,chains:[]},
+  {id:'s7',type:'code',title:'useLocalStorage hook',content:`function useLocalStorage(key, init) {\n  const [val, setVal] = useState(\n    () => JSON.parse(localStorage.getItem(key) ?? 'null') ?? init\n  )\n  useEffect(() => {\n    localStorage.setItem(key, JSON.stringify(val))\n  }, [key, val])\n  return [val, setVal]\n}`,tags:['react','hooks'],date:Date.now()-432000000,pinned:false,favorited:false,sensitive:false,chains:[]},
+  {id:'s8',type:'note',title:'API keys — prod',content:'OPENAI_KEY=sk-proj-••••••••••••••••\nANTHROPIC_KEY=sk-ant-••••••••••••••',tags:['keys'],date:Date.now()-518400000,pinned:false,favorited:false,sensitive:true,chains:[]},
+  {id:'s9',type:'text',title:'On invisible tools',content:'The best tools disappear. You stop seeing the hammer and start seeing the nail. The interface becomes invisible; only the intention remains.',tags:['philosophy','tools'],date:Date.now()-604800000,pinned:false,favorited:true,sensitive:false,chains:[]},
+  {id:'s10',type:'link',title:'Obsidian PKM philosophy',content:'Local files, plain text, longevity. The bet that your notes will outlive any app.',url:'obsidian.md/about',tags:['pkm','tools'],date:Date.now()-691200000,pinned:false,favorited:false,sensitive:false,chains:[]},
+  {id:'s11',type:'code',title:'Masonry CSS',content:`.masonry {\n  columns: 4;\n  column-gap: 12px;\n}\n.card {\n  break-inside: avoid;\n  margin-bottom: 12px;\n}`,tags:['css','layout'],date:Date.now()-777600000,pinned:false,favorited:false,sensitive:false,chains:[]},
+  {id:'s12',type:'note',title:'Design tokens — Trace',content:'bg: #0A0A0B\ntext: #F4F4F5\nmuted: #71717A\nborder: #1C1C1F\naccent: #8B5CF6',tags:['design','trace'],date:Date.now()-864000000,pinned:true,favorited:false,sensitive:false,chains:[]}
+];
+
+/* ── Helpers ── */
+function uid(){ return 'c'+Math.random().toString(36).slice(2,10) }
+function rel(ts){
+  const d=Date.now()-ts,m=60000,h=3600000,day=86400000,wk=604800000;
+  if(d<m) return 'just now';if(d<h) return Math.floor(d/m)+'m ago';
+  if(d<day) return Math.floor(d/h)+'h ago';if(d<wk) return Math.floor(d/day)+'d ago';
+  return Math.floor(d/wk)+'w ago';
+}
+function esc(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
+function excerpt(text='',max=180){
+  const clean=String(text).replace(/\s+/g,' ').trim();
+  if(clean.length<=max) return clean;
+  const cut=clean.slice(0,max);
+  return cut.slice(0,Math.max(cut.lastIndexOf(' '),max-24)).trim()+'…';
+}
+function codeExcerpt(text=''){ return String(text||'').split('\n').slice(0,5).join('\n') }
+function normalizeTag(t){ return String(t||'').trim().replace(/^#/,'').replace(/\s+/g,'-').toLowerCase() }
+function uniqueTags(tags=[]){
+  const seen=new Set();
+  return tags.map(normalizeTag).filter(t=>t && !seen.has(t) && seen.add(t));
+}
+function allTags(){ return [...new Set(clips.flatMap(c=>c.tags||[]).map(normalizeTag).filter(Boolean))].sort() }
+function updateTagOptions(){
+  const dl=document.getElementById('tagOptions'); if(!dl) return;
+  dl.innerHTML=allTags().map(t=>`<option value="${esc(t)}"></option>`).join('');
+}
+function toast(msg,col='accent',action){
+  const a=document.getElementById('toastArea');
+  const t=document.createElement('div'); t.className='toast';
+  const dc=col==='green'?'green':col==='red'?'red':'';
+  t.innerHTML=`<div class="t-dot ${dc}"></div><span>${esc(msg)}</span>${action?`<button class="toast-action">${esc(action.label)}</button>`:''}`;
+  if(action) t.querySelector('.toast-action').addEventListener('click',()=>{ action.fn(); t.remove(); });
+  a.appendChild(t);
+  setTimeout(()=>{ if(t.isConnected){ t.classList.add('out'); setTimeout(()=>t.remove(),200) } }, action?5200:2400);
+}
+
+/* ── Theme ── */
+function applyTheme(t){
+  const r=document.documentElement;
+  const eff = t==='auto' ? (window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light') : t;
+  r.setAttribute('data-theme',eff);
+  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.dataset.theme===prefs.theme));
+}
+document.querySelectorAll('.theme-btn').forEach(b=>b.addEventListener('click',()=>{ prefs.theme=b.dataset.theme; saveP(); applyTheme(prefs.theme) }));
+window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{ if(prefs.theme==='auto') applyTheme('auto') });
+
+/* ── Filter / search ── */
+function filtered(){
+  let list=clips.filter(c=>filter==='archived' ? c.archived : !c.archived);
+  if(searchQ){
+    const raw=searchQ.trim().toLowerCase();
+    const q=raw.replace(/^#/,'');
+    list=list.filter(c=>
+      (c.title||'').toLowerCase().includes(raw)||
+      (c.content||'').toLowerCase().includes(raw)||
+      (c.url||'').toLowerCase().includes(raw)||
+      (c.tags||[]).some(t=>normalizeTag(t).includes(q))
+    );
   }
+  if(filter==='favorites') list=list.filter(c=>c.favorited);
+  else if(filter==='pinned') list=list.filter(c=>c.pinned);
+  else if(filter.startsWith('type:')) list=list.filter(c=>c.type===filter.slice(5));
+  else if(filter.startsWith('tag:')) list=list.filter(c=>(c.tags||[]).some(t=>normalizeTag(t)===filter.slice(4)));
+  return list.sort((a,b)=>b.date-a.date);
 }
 
-function normalizeClip(clip){
-  const createdAt=clip.createdAt||clip.date||nowIso();
-  const updatedAt=clip.updatedAt||clip.date||createdAt;
-  return {id:String(clip.id||makeId()),title:clip.title||'',content:clip.content||'',createdAt,updatedAt};
+/* ── Counts ── */
+function updateCounts(){
+  const active=clips.filter(c=>!c.archived);
+  document.getElementById('cntAll').textContent=active.length;
+  document.getElementById('cntFav').textContent=active.filter(c=>c.favorited).length;
+  document.getElementById('cntPin').textContent=active.filter(c=>c.pinned).length;
+  document.getElementById('cntArch').textContent=clips.filter(c=>c.archived).length;
+  document.querySelector('[data-filter="all"]')?.setAttribute('data-meta', `${active.length} active clips`);
+  document.querySelector('[data-filter="favorites"]')?.setAttribute('data-meta', `${active.filter(c=>c.favorited).length} favorites`);
+  document.querySelector('[data-filter="pinned"]')?.setAttribute('data-meta', `${active.filter(c=>c.pinned).length} pinned clips`);
+  document.querySelector('[data-filter="archived"]')?.setAttribute('data-meta', `${clips.filter(c=>c.archived).length} archived clips`);
+  updateTagOptions();
 }
 
-function persist(){
-  localStorage.setItem(CLIPS_KEY,JSON.stringify(clips));
-  localStorage.setItem(STATE_KEY,JSON.stringify(state));
+/* ── Pinned strip ── */
+function renderPinned(){
+  const s=document.getElementById('pinnedStrip');
+  const pinned=clips.filter(c=>c.pinned&&!c.archived);
+  s.innerHTML='<span class="pin-label">Pinned</span>';
+  if(!pinned.length){ s.innerHTML+='<span class="pin-empty">nothing pinned — press P on a card</span>'; return }
+  pinned.forEach(c=>{
+    const ch=document.createElement('div');
+    ch.className='pin-chip';
+    ch.innerHTML=`<span class="pin-chip-type">${esc(c.type)}</span><span class="pin-chip-title">${esc(c.title)}</span><button class="pin-chip-x" data-id="${c.id}" title="Unpin">📌</button>`;
+    ch.addEventListener('click',e=>{ if(!e.target.classList.contains('pin-chip-x')) openEditor(c.id) });
+    ch.querySelector('.pin-chip-x').addEventListener('click',e=>{ e.stopPropagation(); togglePin(c.id) });
+    s.appendChild(ch);
+  });
 }
 
-function beginFreshSession(){
-  const fresh=createClip();
-  clips.unshift(fresh);
-  state={currentClipId:fresh.id};
-  persist();
-}
-
-function currentClip(){
-  return clips.find(clip=>clip.id===state.currentClipId)||null;
-}
-
-function setCurrentClip(id){
-  if(!clips.some(clip=>clip.id===id)) return;
-  state.currentClipId=id;
-  persist();
-  renderCurrentClip();
-  renderArchive();
-}
-
-function newClip(){
-  const fresh=createClip();
-  clips.unshift(fresh);
-  state.currentClipId=fresh.id;
-  persist();
-  renderCurrentClip();
-  renderArchive();
-  showView('home');
-  $('clipContent').focus();
-}
-
-function scheduleAutosave(){
-  const clip=currentClip();
-  if(!clip) return;
-  clip.title=$('clipTitle').value;
-  clip.content=$('clipContent').value;
-  clip.updatedAt=nowIso();
-  $('autosaveState').textContent='Saving...';
-  clearTimeout(saveTimer);
-  saveTimer=setTimeout(()=>{
-    persist();
-    renderArchive();
-    $('autosaveState').textContent='Saved';
-  },180);
-}
-
-function renderCurrentClip(){
-  const clip=currentClip();
-  if(!clip){newClip();return;}
-  $('clipTitle').value=clip.title||'';
-  $('clipContent').value=clip.content||'';
-  $('autosaveState').textContent='Saved';
-}
-
-function titleFor(clip){
-  const title=(clip.title||'').trim();
-  if(title) return title;
-  const fromContent=(clip.content||'').trim().split(/\s+/).slice(0,6).join(' ');
-  return fromContent||'Untitled clip';
-}
-
-function previewFor(clip){
-  return (clip.content||'').trim().replace(/\s+/g,' ')||'No content yet';
-}
-
-function formatDate(value){
-  return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric',hour:'numeric',minute:'2-digit'}).format(new Date(value));
-}
-
-function renderArchive(){
-  $('clipCount').textContent=String(clips.length);
-  const list=$('clipList');
-  list.innerHTML='';
-  const ordered=[...clips].sort((a,b)=>new Date(b.updatedAt)-new Date(a.updatedAt));
-  if(!ordered.length){
-    list.innerHTML='<div class="empty">No clips stored.</div>';
-    return;
+/* ── Card HTML ── */
+function cardBodyHTML(c){
+  if(c.type==='code') return `<pre class="card-code">${esc(codeExcerpt(c.content))}</pre>`;
+  if(c.type==='prompt') return `<div class="card-preview prompt-preview ${c.sensitive?'sensitive-wrap blur':''}">${esc(excerpt(c.content,220))}</div>`;
+  if(c.type==='image'){
+    const img = c.imageData ? `<img src="${c.imageData}" alt="${esc(c.title)}" loading="lazy">` : `<div class="card-img-placeholder">⊟ image</div>`;
+    return `<div class="card-img-wrap">${img}</div>${c.content?`<div class="card-preview two-line ${c.sensitive?'sensitive-wrap blur':''}">${esc(excerpt(c.content,90))}</div>`:''}`;
   }
-  for(const clip of ordered){
-    const row=document.createElement('article');
-    row.className='clip-row';
-    row.innerHTML=`
-      <div>
-        <div class="clip-title"></div>
-        <div class="clip-preview"></div>
-        <div class="clip-date"></div>
+  if(c.type==='link') return `<div class="card-link"><div class="link-ico">↗</div><div style="min-width:0;flex:1"><div class="card-link-url">${esc(c.url||c.content||'')}</div><div class="link-title">${esc(excerpt(c.title||c.content,90))}</div></div></div>`;
+  return `<div class="card-preview ${c.sensitive?'sensitive-wrap blur':''}">${esc(excerpt(c.content,220))}</div>`;
+}
+function cardHTML(c){
+  const tags=(c.tags||[]).map(t=>`<span class="tag" data-tag="${esc(normalizeTag(t))}">#${esc(normalizeTag(t))}</span>`).join('');
+  const chains=(c.chains||[]).length ? `<span class="chain-badge">⬡ ${(c.chains||[]).length} linked</span>` : '';
+  return `
+    <div class="fav-star">★</div>
+    <div class="card-type"><div class="type-dot ${c.type}"></div>${c.type.toUpperCase()}</div>
+    <div class="card-title">${esc(c.title)}</div>
+    ${cardBodyHTML(c)}
+    ${chains}
+    <div class="card-meta">${tags}<span class="card-date">${rel(c.date)}</span></div>
+    <div class="ai-hint">✦ suggest tags</div>
+    <div class="card-actions">
+      <button class="act-btn" data-action="edit">E<span class="tip">Edit</span></button>
+      <button class="act-btn" data-action="favorite" data-active="${c.favorited}">★<span class="tip">Favorite</span></button>
+      <button class="act-btn" data-action="pin" data-active="${c.pinned}">${c.pinned?'📌':'⊕'}<span class="tip">${c.pinned?'Unpin':'Pin'}</span></button>
+      <button class="act-btn" data-action="copy">C<span class="tip">Copy</span></button>
+      <button class="act-btn" data-action="${c.archived?'restore':'archive'}">${c.archived?'↑':'↓'}<span class="tip">${c.archived?'Restore':'Archive'}</span></button>
+      <button class="act-btn" data-action="overflow">⋯<span class="tip">More</span></button>
+      <div class="action-menu">
+        <button class="menu-btn" data-action="sensitive">Sensitive <span>${c.sensitive?'✓':''}</span></button>
+        <button class="menu-btn" data-action="duplicate">Duplicate</button>
+        <button class="menu-btn danger" data-action="delete">Delete</button>
       </div>
-      <div class="row-actions">
-        <button class="ghost-btn" type="button" data-action="open">Open</button>
-        <button class="danger-btn" type="button" data-action="delete">Delete</button>
-      </div>`;
-    row.querySelector('.clip-title').textContent=titleFor(clip);
-    row.querySelector('.clip-preview').textContent=previewFor(clip);
-    row.querySelector('.clip-date').textContent=`Updated ${formatDate(clip.updatedAt)}`;
-    row.querySelector('[data-action="open"]').addEventListener('click',()=>{setCurrentClip(clip.id);showView('home');$('clipContent').focus();});
-    row.querySelector('[data-action="delete"]').addEventListener('click',()=>deleteClip(clip.id));
-    list.appendChild(row);
+    </div>`;
+}
+function listHTML(c){
+  const tags=(c.tags||[]).map(t=>`<span class="tag" data-tag="${esc(normalizeTag(t))}">#${esc(normalizeTag(t))}</span>`).join('');
+  const prev=excerpt(c.content||c.url||'',90);
+  return `<span class="l-type">${c.type}</span><span class="l-title">${esc(c.title)}</span><span class="l-preview">${esc(prev)}</span><div class="l-tags">${tags}</div><span class="l-date">${rel(c.date)}</span>
+    <div class="card-actions">
+      <button class="act-btn" data-action="edit">E<span class="tip">Edit</span></button>
+      <button class="act-btn" data-action="favorite" data-active="${c.favorited}">★<span class="tip">Favorite</span></button>
+      <button class="act-btn" data-action="pin" data-active="${c.pinned}">${c.pinned?'📌':'⊕'}<span class="tip">${c.pinned?'Unpin':'Pin'}</span></button>
+      <button class="act-btn" data-action="copy">C<span class="tip">Copy</span></button>
+      <button class="act-btn" data-action="${c.archived?'restore':'archive'}">${c.archived?'↑':'↓'}<span class="tip">${c.archived?'Restore':'Archive'}</span></button>
+      <button class="act-btn" data-action="overflow">⋯<span class="tip">More</span></button>
+      <div class="action-menu">
+        <button class="menu-btn" data-action="sensitive">Sensitive <span>${c.sensitive?'✓':''}</span></button>
+        <button class="menu-btn" data-action="duplicate">Duplicate</button>
+        <button class="menu-btn danger" data-action="delete">Delete</button>
+      </div>
+    </div>`;
+}
+
+/* ── Render ── */
+function render(){
+  const grid=document.getElementById('grid');
+  const list=filtered();
+  grid.className=view==='card'?'masonry':'list-view';
+
+  if(!list.length){
+    grid.innerHTML=`<div class="empty"><div class="empty-glyph">∅</div><div class="empty-title">No clips found</div><div class="empty-sub">Press ⌘N to create your first clip</div></div>`;
+    updateCounts(); renderPinned(); renderBulkBar(); return;
+  }
+
+  grid.innerHTML='';
+  list.forEach(c=>{
+    const card=document.createElement('div');
+    card.className='card'+(c.favorited?' favorited':'')+(selected.has(c.id)?' selected':'')+(chainMode&&c.id!==chainSourceId?' chain-selectable':'');
+    if((c.chains||[]).length && !chainMode) card.classList.add('chain-linked');
+    card.dataset.id=c.id;
+    card.innerHTML=view==='card'?cardHTML(c):listHTML(c);
+
+    card.addEventListener('click',e=>{
+      const tag=e.target.closest('.tag');
+      if(tag){ e.stopPropagation(); setTagFilter(tag.dataset.tag); return }
+      const menuBtn=e.target.closest('.menu-btn');
+      if(menuBtn){ e.stopPropagation(); closeActionMenus(); handleAction(menuBtn.dataset.action,c.id); return }
+      const btn=e.target.closest('.act-btn');
+      if(btn){ e.stopPropagation(); handleAction(btn.dataset.action,c.id,btn); return }
+
+      // chain mode: clicking a card links it
+      if(chainMode && c.id!==chainSourceId){
+        toggleChainLink(c.id);
+        return;
+      }
+
+      if(e.shiftKey){ toggleSelect(c.id); return }
+      openEditor(c.id);
+    });
+    grid.appendChild(card);
+  });
+
+  updateCounts(); renderPinned(); renderBulkBar();
+}
+
+/* ── Actions ── */
+function handleAction(action,id,btn){
+  switch(action){
+    case 'edit':      openEditor(id); break;
+    case 'favorite':  toggleFavorite(id); break;
+    case 'pin':       togglePinAnimated(id); break;
+    case 'copy':      copyClip(id); break;
+    case 'archive':   archiveClip(id); break;
+    case 'restore':   restoreClip(id); break;
+    case 'overflow':  toggleActionMenu(btn); break;
+    case 'sensitive': toggleSensitive(id); break;
+    case 'duplicate': duplicateClip(id); break;
+    case 'delete':    deleteClip(id); break;
   }
 }
+function closeActionMenus(){ document.querySelectorAll('.card-actions.menu-open').forEach(a=>a.classList.remove('menu-open')) }
+function toggleActionMenu(btn){ const rail=btn?.closest('.card-actions'); if(!rail) return; const open=rail.classList.contains('menu-open'); closeActionMenus(); rail.classList.toggle('menu-open',!open) }
+
+function toggleFavorite(id){
+  const c=clips.find(x=>x.id===id); if(!c) return;
+  c.favorited=!c.favorited; save(); render();
+  toast(c.favorited?'★ Added to favorites':'Removed from favorites', c.favorited?'accent':'');
+}
+
+function togglePinAnimated(id){
+  const card=document.querySelector(`.card[data-id="${id}"]`);
+  const c=clips.find(x=>x.id===id); if(!c) return;
+
+  if(!c.pinned && card){
+    // FLIP: animate card up into pinned strip
+    card.classList.add('flipping');
+    setTimeout(()=>{ c.pinned=true; save(); render(); toast('⊕ Pinned','green') }, 280);
+  } else {
+    c.pinned=false; save(); render(); toast('Unpinned');
+  }
+}
+
+function togglePin(id){
+  const c=clips.find(x=>x.id===id); if(!c) return;
+  c.pinned=!c.pinned; save(); render();
+  toast(c.pinned?'⊕ Pinned':'Unpinned', c.pinned?'green':'');
+}
+
+function copyClip(id){
+  const c=clips.find(x=>x.id===id); if(!c) return;
+  navigator.clipboard.writeText(c.content||c.url||'').then(()=>toast('Copied to clipboard','green'));
+}
+
+function archiveClip(id){
+  const c=clips.find(x=>x.id===id); if(!c) return;
+  c.archived=true; c.pinned=false;
+  if(openId===id) closeEditor();
+  save(); render();
+  toast('Clip archived','green',{label:'Undo',fn:()=>{ c.archived=false; save(); render(); toast('Archive undone','green') }});
+}
+function restoreClip(id){ const c=clips.find(x=>x.id===id); if(!c) return; c.archived=false; save(); render(); toast('Clip restored','green') }
+
+function toggleSensitive(id){ const c=clips.find(x=>x.id===id); if(!c) return; c.sensitive=!c.sensitive; save(); render(); toast(c.sensitive?'Marked sensitive':'Sensitive removed') }
+function duplicateClip(id){ const c=clips.find(x=>x.id===id); if(!c) return; const copy={...c,id:uid(),title:c.title+' copy',date:Date.now(),pinned:false,chains:[...(c.chains||[])]}; clips.unshift(copy); save(); render(); toast('Clip duplicated','green') }
 
 function deleteClip(id){
-  const wasCurrent=id===state.currentClipId;
-  clips=clips.filter(clip=>clip.id!==id);
-  if(wasCurrent){
-    const fresh=createClip();
-    clips.unshift(fresh);
-    state.currentClipId=fresh.id;
-    renderCurrentClip();
+  if(!confirm('Delete this clip?')) return;
+  clips=clips.filter(x=>x.id!==id);
+  // remove from any chains
+  clips.forEach(c=>{ c.chains=(c.chains||[]).filter(x=>x!==id) });
+  if(openId===id) closeEditor();
+  save(); render(); toast('Clip deleted','red');
+}
+
+/* ── Selection ── */
+function toggleSelect(id){ selected.has(id)?selected.delete(id):selected.add(id); render() }
+function clearSel(){ selected.clear(); render() }
+function renderBulkBar(){
+  const b=document.getElementById('bulkBar');
+  document.getElementById('bulkCount').textContent=selected.size+' selected';
+  b.classList.toggle('visible',selected.size>0);
+}
+
+document.getElementById('bulkFav').addEventListener('click',()=>{ selected.forEach(id=>{ const c=clips.find(x=>x.id===id); if(c)c.favorited=true }); clearSel(); save(); render(); toast('★ Favorited selection') });
+document.getElementById('bulkPin').addEventListener('click',()=>{ selected.forEach(id=>{ const c=clips.find(x=>x.id===id); if(c)c.pinned=true }); clearSel(); save(); render(); toast('Pinned selection','green') });
+document.getElementById('bulkArchive').addEventListener('click',()=>{ const ids=[...selected]; clips.forEach(c=>{ if(selected.has(c.id)){ c.archived=true; c.pinned=false } }); clearSel(); save(); render(); toast('Archived selection','green',{label:'Undo',fn:()=>{ clips.forEach(c=>{ if(ids.includes(c.id)) c.archived=false }); save(); render() }}) });
+document.getElementById('bulkDel').addEventListener('click',()=>{ if(!confirm(`Delete ${selected.size} clips?`)) return; clips=clips.filter(c=>!selected.has(c.id)); clearSel(); save(); render(); toast('Deleted selection','red') });
+document.getElementById('bulkClear').addEventListener('click',clearSel);
+
+/* ── Editor ── */
+function openEditor(id){
+  const c=clips.find(x=>x.id===id); if(!c) return;
+
+  // if editor already open, crossfade
+  const panel=document.getElementById('editorPanel');
+  const wasOpen=!panel.classList.contains('closed');
+  if(wasOpen && openId!==id){
+    panel.style.opacity='0';
+    setTimeout(()=>{ _fillEditor(c); panel.style.opacity='1' },120);
+  } else {
+    _fillEditor(c);
   }
-  persist();
-  renderArchive();
+  openId=id;
+  panel.classList.remove('closed');
+  hideAIResult();
 }
 
-function showView(view){
-  activeView=view;
-  $('homeScreen').classList.toggle('active',view==='home');
-  $('archiveScreen').classList.toggle('active',view==='archive');
-  $('homeNav').classList.toggle('active',view==='home');
-  $('archiveNav').classList.toggle('active',view==='archive');
-  if(view==='archive') renderArchive();
+function _fillEditor(c){
+  document.getElementById('epName').textContent=c.title;
+  document.getElementById('epTitle').value=c.title;
+  document.getElementById('epTextarea').value=c.content||'';
+  document.getElementById('epTags').value=(c.tags||[]).map(normalizeTag).join(', ');
+  document.getElementById('epTags').setAttribute('list','tagOptions');
+  const imgBox=document.getElementById('epImagePreview');
+  if(c.type==='image'&&c.imageData){ imgBox.innerHTML=`<img src="${c.imageData}" alt="${esc(c.title)}"><div class="ep-image-meta">${esc(c.imageName||'local image')} · ${(c.imageType||'image').replace('image/','')}</div>`; imgBox.classList.add('visible'); }
+  else { imgBox.innerHTML=''; imgBox.classList.remove('visible'); }
+  renderChainList(c);
+
+  // bind autosave
+  const ta=document.getElementById('epTextarea');
+  ta.oninput=()=>{ c.content=ta.value; c.date=Date.now(); save() };
+  document.getElementById('epTitle').oninput=()=>{ c.title=document.getElementById('epTitle').value; document.getElementById('epName').textContent=c.title; save() };
+  document.getElementById('epTags').oninput=()=>{ c.tags=uniqueTags(document.getElementById('epTags').value.split(',')); save(); updateTagOptions() };
 }
 
-function applyTheme(){
-  const stored=localStorage.getItem(THEME_KEY);
-  if(stored==='light') document.documentElement.dataset.theme='light';
+function closeEditor(){ document.getElementById('editorPanel').classList.add('closed'); openId=null; chainMode=false; render() }
+document.getElementById('epClose').addEventListener('click',closeEditor);
+
+/* ── Chain system ── */
+function renderChainList(c){
+  const list=document.getElementById('chainClipsList');
+  const linked=(c.chains||[]).map(id=>clips.find(x=>x.id===id)).filter(Boolean);
+  list.innerHTML='';
+  if(!linked.length){ list.innerHTML='<div style="font-size:11px;color:var(--micro);font-family:var(--font-mono)">No linked clips</div>'; return }
+  linked.forEach(lc=>{
+    const item=document.createElement('div');
+    item.className='chain-clip-item';
+    item.innerHTML=`<span class="cci-type">${esc(lc.type)}</span><span class="cci-title">${esc(lc.title)}</span><button class="cci-rm" data-id="${lc.id}">×</button>`;
+    item.addEventListener('click',e=>{ if(!e.target.classList.contains('cci-rm')) openEditor(lc.id) });
+    item.querySelector('.cci-rm').addEventListener('click',e=>{ e.stopPropagation(); removeChainLink(c.id,lc.id) });
+    list.appendChild(item);
+  });
 }
 
-function bindEvents(){
-  $('clipTitle').addEventListener('input',scheduleAutosave);
-  $('clipContent').addEventListener('input',scheduleAutosave);
-  $('newClipBtn').addEventListener('click',newClip);
-  $('archiveNewClipBtn').addEventListener('click',newClip);
-  $('homeNav').addEventListener('click',()=>showView('home'));
-  $('archiveNav').addEventListener('click',()=>showView('archive'));
+document.getElementById('startChainBtn').addEventListener('click',()=>{
+  if(!openId) return;
+  chainMode=true; chainSourceId=openId;
+  document.getElementById('chainBanner').classList.add('visible');
+  document.getElementById('sbChainIndicator').classList.add('active');
+  const src=clips.find(x=>x.id===openId);
+  updateChainBanner(src);
+  render();
+  toast('Click clips to link them');
+});
+
+function toggleChainLink(id){
+  const src=clips.find(x=>x.id===chainSourceId); if(!src) return;
+  src.chains=src.chains||[];
+  const idx=src.chains.indexOf(id);
+  if(idx>-1) src.chains.splice(idx,1);
+  else src.chains.push(id);
+  // bidirectional
+  const tgt=clips.find(x=>x.id===id); if(tgt){ tgt.chains=tgt.chains||[]; const ti=tgt.chains.indexOf(chainSourceId); if(ti<0) tgt.chains.push(chainSourceId); }
+  save(); render(); updateChainBanner(src);
 }
 
-function boot(){
-  applyTheme();
-  loadClips();
-  beginFreshSession();
-  bindEvents();
-  renderCurrentClip();
-  renderArchive();
-  $('clipContent').focus();
+function removeChainLink(srcId,tgtId){
+  const src=clips.find(x=>x.id===srcId); const tgt=clips.find(x=>x.id===tgtId);
+  if(src) src.chains=(src.chains||[]).filter(x=>x!==tgtId);
+  if(tgt) tgt.chains=(tgt.chains||[]).filter(x=>x!==srcId);
+  save();
+  const c=clips.find(x=>x.id===openId); if(c) renderChainList(c);
+  render();
 }
 
-boot();
+function updateChainBanner(src){
+  const n=(src.chains||[]).length;
+  document.getElementById('cbCount').textContent=n===0?'Select clips to link':`${n} clip${n>1?'s':''} linked`;
+  document.getElementById('sbChainCount').textContent=`${n} clip${n>1?'s':''} linked`;
+}
+
+function exitChainMode(){
+  chainMode=false; chainSourceId=null;
+  document.getElementById('chainBanner').classList.remove('visible');
+  document.getElementById('sbChainIndicator').classList.remove('active');
+  render();
+  if(openId){ const c=clips.find(x=>x.id===openId); if(c) renderChainList(c) }
+}
+
+document.getElementById('cbDone').addEventListener('click',exitChainMode);
+document.getElementById('cbCancel').addEventListener('click',exitChainMode);
+
+/* ── New clip ── */
+function openNC(){
+  document.getElementById('ncOverlay').classList.add('open');
+  ncType='text'; ncImageData=null;
+  document.querySelectorAll('.nc-type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type==='text'));
+  renderNCBody();
+  setTimeout(()=>document.getElementById('ncContent')?.focus(),50);
+}
+function closeNC(){ document.getElementById('ncOverlay').classList.remove('open') }
+
+function renderNCBody(){
+  const body=document.getElementById('ncBody');
+  document.getElementById('ncTitle').value='';
+  if(document.getElementById('ncContent')) document.getElementById('ncContent').value='';
+  if(document.getElementById('ncTags')) document.getElementById('ncTags').value='';
+
+  if(ncType==='image'){
+    body.innerHTML=`
+      <input class="nc-field" id="ncTitle" type="text" placeholder="Title (or ✦ AI will generate one)">
+      <div class="nc-drop" id="ncDrop">
+        <img class="nc-img-preview" id="ncImgPreview">
+        <span class="nc-drop-label" id="ncDropLabel">Drop image here or click to browse</span>
+        <span class="nc-drop-sub" id="ncDropSub">PNG, JPG, GIF, WebP</span>
+        <input type="file" id="ncFileInput" accept="image/*" style="display:none">
+      </div>
+      <input class="nc-field" id="ncTags" type="text" list="tagOptions" placeholder="Tags: design, reference...">
+    `;
+    setupImageDrop();
+  } else {
+    body.innerHTML=`
+      <input class="nc-field" id="ncTitle" type="text" placeholder="Title (or ✦ AI will generate one)">
+      <textarea class="nc-field" id="ncContent" placeholder="${ncType==='code'?'Paste code here...':ncType==='link'?'URL or description...':ncType==='prompt'?'Write your prompt...':'Paste, type, or drop content here...'}"></textarea>
+      <input class="nc-field" id="ncTags" type="text" list="tagOptions" placeholder="Tags: research, writing...">
+    `;
+  }
+}
+
+function setupImageDrop(){
+  const drop=document.getElementById('ncDrop');
+  const input=document.getElementById('ncFileInput');
+  if(!drop) return;
+
+  drop.addEventListener('click',()=>input?.click());
+  drop.addEventListener('dragover',e=>{ e.preventDefault(); drop.classList.add('dragover') });
+  drop.addEventListener('dragleave',()=>drop.classList.remove('dragover'));
+  drop.addEventListener('drop',e=>{ e.preventDefault(); drop.classList.remove('dragover'); const f=e.dataTransfer.files[0]; if(f) loadImageFile(f) });
+  input?.addEventListener('change',()=>{ if(input.files[0]) loadImageFile(input.files[0]) });
+}
+
+function loadImageFile(file){
+  const reader=new FileReader();
+  reader.onload=e=>{
+    ncImageData={data:e.target.result,name:file.name,type:file.type,size:file.size};
+    const prev=document.getElementById('ncImgPreview');
+    const lbl=document.getElementById('ncDropLabel');
+    const sub=document.getElementById('ncDropSub');
+    if(prev){ prev.src=ncImageData.data; prev.style.display='block' }
+    if(lbl) lbl.style.display='none';
+    if(sub) sub.textContent=file.name;
+  };
+  reader.readAsDataURL(file);
+}
+
+document.querySelectorAll('.nc-type-btn').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.nc-type-btn').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); ncType=b.dataset.type; renderNCBody();
+}));
+
+function saveNC(){
+  const titleEl=document.getElementById('ncTitle');
+  const contentEl=document.getElementById('ncContent');
+  const tagsEl=document.getElementById('ncTags');
+  const title=(titleEl?.value||'').trim();
+  const content=(contentEl?.value||'').trim();
+  const tags=uniqueTags((tagsEl?.value||'').split(','));
+
+  if(ncType==='image' && !ncImageData){ toast('Add an image first','red'); return }
+  if(ncType!=='image' && !content && !title){ toast('Add some content first','red'); return }
+
+  const clip={
+    id:uid(), type:ncType,
+    title: title || content.slice(0,48)+(content.length>48?'…':'') || 'Untitled',
+    content, tags, date:Date.now(),
+    pinned:false, favorited:false, sensitive:false, chains:[],
+    imageData: ncImageData?.data||ncImageData||null,
+    imageName: ncImageData?.name||null, imageType: ncImageData?.type||null, imageSize: ncImageData?.size||null,
+    url: ncType==='link'?content:undefined
+  };
+
+  clips.unshift(clip);
+  save(); render(); closeNC(); ncImageData=null;
+  toast('Clip saved','green');
+
+  // Background AI auto-title/tags if title was empty
+  if(!title && content && ncType!=='image'){
+    aiAutoTitleTags(clip);
+  }
+}
+
+/* ── AI Integration ── */
+function aiBar(on){
+  const bar=document.getElementById('aiBar');
+  if(on) bar.classList.add('active'); else bar.classList.remove('active');
+}
+
+async function callAI(systemPrompt, userContent){
+  aiBar(true);
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1000,
+        system: systemPrompt,
+        messages:[{role:'user',content:userContent}]
+      })
+    });
+    if(!res.ok) throw new Error('API error '+res.status);
+    const data=await res.json();
+    return data.content?.[0]?.text||'';
+  } catch(e){
+    console.error('AI call failed:',e);
+    throw e;
+  } finally{ aiBar(false) }
+}
+
+async function aiAutoTitleTags(clip){
+  try{
+    const result=await callAI(
+      'You are a precise assistant that generates concise clip metadata. Respond ONLY with JSON, no markdown, no explanation.',
+      `Generate a short title (max 8 words) and 2-4 relevant tags for this clip.\n\nType: ${clip.type}\nContent: ${clip.content?.slice(0,500)||''}\n\nRespond with exactly: {"title":"...","tags":["...","..."]}`
+    );
+    const clean=result.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    if(parsed.title){ clip.title=parsed.title; save() }
+    if(parsed.tags?.length){ clip.tags=uniqueTags([...(clip.tags||[]),...parsed.tags]); save() }
+    render();
+  } catch(e){ /* silent fail */ }
+}
+
+async function runAIAction(action){
+  const c=clips.find(x=>x.id===openId); if(!c||!c.content) { toast('Add content first','red'); return }
+
+  const btn=document.querySelector(`.ep-ai-btn[data-ai="${action}"]`);
+  if(btn) btn.classList.add('loading');
+  hideAIResult();
+
+  const prompts={
+    title: {
+      sys:'You are a precise assistant. Respond ONLY with the title, nothing else. No quotes, no punctuation at end.',
+      usr:`Write a concise, specific title (4-8 words) for this ${c.type} clip:\n\n${c.content.slice(0,800)}`
+    },
+    tags: {
+      sys:'You are a precise assistant. Respond ONLY with a JSON array of 2-5 lowercase tags. No explanation.',
+      usr:`Suggest tags for this ${c.type} clip:\n\n${c.content.slice(0,600)}\n\nExisting tags: ${c.tags.join(', ')}`
+    },
+    summarize: {
+      sys:'You are a precise assistant. Write a 1-2 sentence summary. Be specific, not generic.',
+      usr:`Summarize this ${c.type} clip concisely:\n\n${c.content.slice(0,1000)}`
+    },
+    rewrite: {
+      sys:'You are a precise assistant. Rewrite the content more clearly and concisely. Return only the rewritten text.',
+      usr:`Rewrite this for clarity:\n\n${c.content.slice(0,1000)}`
+    },
+    describe: {
+      sys:'You are a precise assistant. Write 1-2 sentences describing what this clip is and why it matters.',
+      usr:`Describe this ${c.type} clip:\n\n${c.content.slice(0,800)}`
+    }
+  };
+
+  try{
+    const p=prompts[action];
+    const result=await callAI(p.sys,p.usr);
+    aiLastResult=result.trim();
+    aiLastAction=action;
+    showAIResult(action,result.trim());
+  } catch(e){
+    toast('AI unavailable — add your Anthropic API key','red');
+  } finally{
+    if(btn) btn.classList.remove('loading');
+  }
+}
+
+function showAIResult(action,text){
+  const el=document.getElementById('aiResult');
+  const apply=document.getElementById('aiApply');
+  let display=text;
+  if(action==='tags'){
+    try{const t=JSON.parse(text.replace(/```json|```/g,'').trim());display=t.join(', ')}catch(e){}
+  }
+  el.textContent=display;
+  el.classList.add('visible');
+  apply.style.display='block';
+
+  const labels={title:'Apply title',tags:'Apply tags',summarize:'Insert summary',rewrite:'Apply rewrite',describe:'Insert description'};
+  apply.textContent=labels[action]||'Apply';
+}
+
+function hideAIResult(){
+  document.getElementById('aiResult').classList.remove('visible');
+  document.getElementById('aiApply').style.display='none';
+}
+
+document.getElementById('aiApply').addEventListener('click',()=>{
+  const c=clips.find(x=>x.id===openId); if(!c||!aiLastResult) return;
+  if(aiLastAction==='title'){
+    c.title=aiLastResult;
+    document.getElementById('epTitle').value=aiLastResult;
+    document.getElementById('epName').textContent=aiLastResult;
+  } else if(aiLastAction==='tags'){
+    try{
+      let tags=JSON.parse(aiLastResult.replace(/```json|```/g,'').trim());
+      c.tags=uniqueTags([...(c.tags||[]),...tags]);
+      document.getElementById('epTags').value=c.tags.join(', ');
+    } catch(e){ toast('Could not parse tags') }
+  } else if(aiLastAction==='rewrite'){
+    c.content=aiLastResult;
+    document.getElementById('epTextarea').value=aiLastResult;
+  } else {
+    c.content=c.content+'\n\n---\n'+aiLastResult;
+    document.getElementById('epTextarea').value=c.content;
+  }
+  c.date=Date.now(); save(); render(); hideAIResult();
+  toast('Applied','green');
+});
+
+document.querySelectorAll('.ep-ai-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>runAIAction(btn.dataset.ai));
+});
+
+/* ── Command palette ── */
+const CMDS=[
+  {label:'New Clip',ico:'+',kd:'⌘N',fn:()=>{ closePalette();openNC() }},
+  {label:'Card view',ico:'⊞',fn:()=>{ closePalette();switchView('card') }},
+  {label:'List view',ico:'≡',fn:()=>{ closePalette();switchView('list') }},
+  {label:'All clips',ico:'◎',fn:()=>{ closePalette();setFilter('all') }},
+  {label:'Favorites',ico:'★',fn:()=>{ closePalette();setFilter('favorites') }},
+  {label:'Pinned',ico:'⊕',fn:()=>{ closePalette();setFilter('pinned') }},
+  {label:'Archived',ico:'↓',fn:()=>{ closePalette();setFilter('archived') }},
+  {label:'Toggle sidebar',ico:'↔',kd:'⌘B',fn:()=>{ closePalette();toggleSidebar() }},
+  {label:'Toggle theme',ico:'◐',fn:()=>{ closePalette();cycleTheme() }},
+  {label:'Focus search',ico:'⌕',kd:'/',fn:()=>{ closePalette();document.getElementById('searchInput').focus() }},
+];
+
+function renderCMD(q){
+  const results=q?CMDS.filter(c=>c.label.toLowerCase().includes(q.toLowerCase())):CMDS;
+  const el=document.getElementById('cmdResults');
+  el.innerHTML='<div class="cmd-group">Actions</div>';
+  results.forEach((cmd,i)=>{
+    const item=document.createElement('div');
+    item.className='cmd-item'+(i===0?' cmd-sel':'');
+    item.innerHTML=`<div class="cmd-ico">${cmd.ico}</div><span class="cmd-lbl">${cmd.label}</span>${cmd.kd?`<span class="cmd-kd">${cmd.kd}</span>`:''}`;
+    item.addEventListener('click',cmd.fn);
+    el.appendChild(item);
+  });
+  cmdIdx=0;
+}
+function openPalette(){ document.getElementById('cmdOverlay').classList.add('open'); document.getElementById('cmdInput').value=''; renderCMD(''); setTimeout(()=>document.getElementById('cmdInput').focus(),30) }
+function closePalette(){ document.getElementById('cmdOverlay').classList.remove('open') }
+document.getElementById('cmdBtn').addEventListener('click',openPalette);
+document.getElementById('cmdOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('cmdOverlay')) closePalette() });
+document.getElementById('cmdInput').addEventListener('input',e=>renderCMD(e.target.value));
+
+/* ── View + filter ── */
+function switchView(v){ view=v; prefs.view=v; saveP(); document.getElementById('btnCards').classList.toggle('active',v==='card'); document.getElementById('btnList').classList.toggle('active',v==='list'); render() }
+function setFilter(f){ filter=f; document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',(n.dataset.filter||'')===f)); render() }
+function setTagFilter(tag){ filter='tag:'+normalizeTag(tag); searchQ='#'+normalizeTag(tag); document.getElementById('searchInput').value=searchQ; document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); render(); toast('Filtering #'+normalizeTag(tag)) }
+function cycleTheme(){ const t=['dark','light','auto']; prefs.theme=t[(t.indexOf(prefs.theme)+1)%t.length]; saveP(); applyTheme(prefs.theme); toast('Theme: '+prefs.theme) }
+
+document.getElementById('btnCards').addEventListener('click',()=>switchView('card'));
+document.getElementById('btnList').addEventListener('click',()=>switchView('list'));
+
+/* ── Search ── */
+document.getElementById('searchInput').addEventListener('focus',()=>document.getElementById('searchPill').classList.add('focused'));
+document.getElementById('searchInput').addEventListener('blur',()=>document.getElementById('searchPill').classList.remove('focused'));
+document.getElementById('searchInput').addEventListener('input',e=>{ searchQ=e.target.value; render() });
+
+/* ── Sidebar nav ── */
+document.querySelectorAll('.nav-item').forEach(item=>{
+  item.addEventListener('click',()=>{
+    document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+    item.classList.add('active');
+    if(item.dataset.filter) filter=item.dataset.filter;
+    else if(item.dataset.type) filter='type:'+item.dataset.type;
+    else if(item.dataset.collection) { filter='tag:'+normalizeTag(item.dataset.collection); searchQ='#'+normalizeTag(item.dataset.collection); document.getElementById('searchInput').value=searchQ; }
+    render();
+  });
+});
+
+/* ── New clip wiring ── */
+document.getElementById('newClipBtn').addEventListener('click',openNC);
+document.getElementById('ncClose').addEventListener('click',closeNC);
+document.getElementById('ncSave').addEventListener('click',saveNC);
+document.getElementById('ncOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('ncOverlay')) closeNC() });
+
+/* ── Sidebar collapse ── */
+function reflowTargets(){ return [...document.querySelectorAll('.card,.pin-chip')]; }
+function animateWorkspaceReflow(change){
+  const before=new Map(reflowTargets().map(el=>[el,el.getBoundingClientRect()]));
+  change();
+  requestAnimationFrame(()=>{
+    reflowTargets().forEach(el=>{
+      const first=before.get(el); if(!first) return;
+      const last=el.getBoundingClientRect();
+      const dx=first.left-last.left, dy=first.top-last.top;
+      if(Math.abs(dx)<.5&&Math.abs(dy)<.5) return;
+      el.classList.add('reflowing');
+      el.style.transform=`translate(${dx}px,${dy}px)`;
+      el.style.opacity='.96';
+      requestAnimationFrame(()=>{
+        el.style.transform='translate(0,0)';
+        el.style.opacity='1';
+        setTimeout(()=>{ el.classList.remove('reflowing'); el.style.transform=''; el.style.opacity='' },310);
+      });
+    });
+  });
+}
+function applySidebar(){
+  const sb=document.getElementById('sidebar');
+  const toggle=document.getElementById('sidebarToggle');
+  const collapsed=!!prefs.sidebarCollapsed;
+  sb.classList.toggle('collapsed',collapsed);
+  toggle.textContent=collapsed?'→':'←';
+  toggle.dataset.tip=collapsed?'Open sidebar':'Collapse sidebar';
+  toggle.setAttribute('aria-label',collapsed?'Open sidebar':'Collapse sidebar');
+  toggle.setAttribute('aria-expanded',String(!collapsed));
+}
+function toggleSidebar(){
+  prefs.sidebarCollapsed=!prefs.sidebarCollapsed;
+  saveP();
+  hideSidebarTip();
+  animateWorkspaceReflow(applySidebar);
+}
+document.getElementById('sidebarToggle').addEventListener('click',toggleSidebar);
+
+/* ── Collapsed sidebar tooltips ── */
+const sidebarTip=document.getElementById('sidebarTip');
+let sidebarTipTimer=null;
+function sidebarTipHTML(el){
+  const title=el.dataset.tip||el.getAttribute('aria-label')||'';
+  const section=el.dataset.section||'';
+  const count=el.querySelector?.('.nav-count')?.textContent;
+  const meta=el.dataset.meta||(count!==undefined?`${count} clips`:'' );
+  const kbd=el.dataset.kbd||'';
+  return `${section?`<div class="sidebar-tip-section">${esc(section)}</div>`:''}<div class="sidebar-tip-title"><span>${esc(title)}</span>${kbd?`<span class="sidebar-tip-kbd">${esc(kbd)}</span>`:''}</div>${meta?`<div class="sidebar-tip-meta">${esc(meta)}</div>`:''}`;
+}
+function showSidebarTip(el){
+  const sb=document.getElementById('sidebar');
+  if(!sb.classList.contains('collapsed')) return;
+  clearTimeout(sidebarTipTimer);
+  sidebarTip.innerHTML=sidebarTipHTML(el);
+  sidebarTip.setAttribute('aria-hidden','false');
+  const r=el.getBoundingClientRect();
+  sidebarTip.style.left=(r.right+10)+'px';
+  sidebarTip.style.top=Math.max(10,Math.min(window.innerHeight-sidebarTip.offsetHeight-10,r.top+r.height/2-24))+'px';
+  requestAnimationFrame(()=>sidebarTip.classList.add('visible'));
+}
+function hideSidebarTip(){
+  clearTimeout(sidebarTipTimer);
+  sidebarTip.classList.remove('visible');
+  sidebarTip.setAttribute('aria-hidden','true');
+}
+document.querySelectorAll('#sidebar [data-tip]').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ sidebarTipTimer=setTimeout(()=>showSidebarTip(el),90) });
+  el.addEventListener('mouseleave',hideSidebarTip);
+  el.addEventListener('focus',()=>showSidebarTip(el));
+  el.addEventListener('blur',hideSidebarTip);
+});
+window.addEventListener('resize',hideSidebarTip);
+
+/* ── Global keyboard ── */
+document.addEventListener('click',e=>{ if(!e.target.closest('.card-actions')) closeActionMenus() });
+document.addEventListener('keydown',e=>{
+  const tag=document.activeElement.tagName;
+  const typing=tag==='INPUT'||tag==='TEXTAREA';
+  const cmdOpen=document.getElementById('cmdOverlay').classList.contains('open');
+  const ncOpen=document.getElementById('ncOverlay').classList.contains('open');
+
+  if((e.metaKey||e.ctrlKey)&&e.key==='k'){ e.preventDefault(); openPalette(); return }
+  if((e.metaKey||e.ctrlKey)&&e.key==='n'){ e.preventDefault(); openNC(); return }
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='b'){ e.preventDefault(); toggleSidebar(); return }
+
+  if(e.key==='Escape'){
+    if(chainMode){ exitChainMode(); return }
+    if(cmdOpen){ closePalette(); return }
+    if(ncOpen){ closeNC(); return }
+    if(selected.size){ clearSel(); return }
+    if(openId){ closeEditor(); return }
+  }
+
+  if(e.key==='/'&&!typing&&!cmdOpen&&!ncOpen){ e.preventDefault(); document.getElementById('searchInput').focus(); return }
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&ncOpen){ e.preventDefault(); saveNC(); return }
+
+  // palette navigation
+  if(cmdOpen){
+    const items=document.querySelectorAll('.cmd-item');
+    if(e.key==='ArrowDown'){ e.preventDefault(); items[cmdIdx]?.classList.remove('cmd-sel'); cmdIdx=Math.min(cmdIdx+1,items.length-1); items[cmdIdx]?.classList.add('cmd-sel') }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); items[cmdIdx]?.classList.remove('cmd-sel'); cmdIdx=Math.max(cmdIdx-1,0); items[cmdIdx]?.classList.add('cmd-sel') }
+    else if(e.key==='Enter'){ e.preventDefault(); items[cmdIdx]?.click() }
+    return;
+  }
+
+  // editor shortcuts
+  if(!typing&&!cmdOpen&&!ncOpen&&openId){
+    const c=clips.find(x=>x.id===openId);
+    if(e.key.toLowerCase()==='f'&&!e.metaKey) toggleFavorite(openId);
+    if(e.key.toLowerCase()==='p'&&!e.metaKey) togglePinAnimated(openId);
+    if(e.key.toLowerCase()==='c'&&!e.metaKey) copyClip(openId);
+  }
+});
+
+/* ── Drag & drop to main ── */
+document.addEventListener('dragover',e=>e.preventDefault());
+document.addEventListener('drop',e=>{
+  e.preventDefault();
+  const ncOpen=document.getElementById('ncOverlay').classList.contains('open');
+  const text=e.dataTransfer.getData('text');
+  const file=e.dataTransfer.files?.[0];
+  if(text&&!ncOpen){ openNC(); setTimeout(()=>{ const el=document.getElementById('ncContent'); if(el)el.value=text },60) }
+  else if(file&&file.type.startsWith('image/')&&!ncOpen){ openNC(); document.querySelectorAll('.nc-type-btn').forEach(b=>{ b.classList.toggle('active',b.dataset.type==='image') }); ncType='image'; renderNCBody(); setTimeout(()=>loadImageFile(file),80) }
+});
+
+/* ── Paste anywhere ── */
+document.addEventListener('paste',e=>{
+  const tag=document.activeElement.tagName;
+  const typing=tag==='INPUT'||tag==='TEXTAREA';
+  const ncOpen=document.getElementById('ncOverlay').classList.contains('open');
+  if(!typing&&!ncOpen){
+    const text=e.clipboardData?.getData('text');
+    const file=e.clipboardData?.files?.[0];
+    if(text){ openNC(); setTimeout(()=>{ const el=document.getElementById('ncContent'); if(el)el.value=text },60) }
+    else if(file&&file.type.startsWith('image/')){ openNC(); document.querySelectorAll('.nc-type-btn').forEach(b=>{ b.classList.toggle('active',b.dataset.type==='image') }); ncType='image'; renderNCBody(); setTimeout(()=>loadImageFile(file),80) }
+  }
+});
+
+/* ── Init ── */
+load();
+if(!clips.length){ clips=SEED.map(c=>({...c,chains:c.chains||[]})); save() }
+else { clips=clips.map(c=>({...c,chains:c.chains||[],archived:!!c.archived,tags:uniqueTags(c.tags||[])})) } // migrate old data
+applyTheme(prefs.theme);
+applySidebar();
+updateTagOptions();
+switchView(prefs.view||'card');
 </script>
 </body>
 </html>
