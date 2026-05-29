@@ -35,6 +35,7 @@
   --font-mono:'DM Mono',ui-monospace,monospace;
   --font-serif:'Instrument Serif',Georgia,serif;
   --sidebar:224px;
+  --sidebar-collapsed:56px;
   --editor:364px;
   --r:6px;
   --ease-panel:cubic-bezier(0.16,1,0.3,1);
@@ -80,8 +81,21 @@ button,input,textarea,select{font-family:var(--font-sans)}
   height:100vh;border-right:1px solid var(--border);
   display:flex;flex-direction:column;
   background:var(--bg);flex-shrink:0;z-index:10;
-  transition:background .2s;
+  transition:width .22s var(--ease-panel),min-width .22s var(--ease-panel),background .2s;
+  overflow:hidden;
 }
+#sidebar.collapsed{width:var(--sidebar-collapsed);min-width:var(--sidebar-collapsed)}
+#sidebar.collapsed .logo{justify-content:center;padding-left:10px;padding-right:10px}
+#sidebar.collapsed .logo-name,#sidebar.collapsed .logo-ver,#sidebar.collapsed .ncb-inner,#sidebar.collapsed .kbd-chip,#sidebar.collapsed .sb-label,#sidebar.collapsed .nav-item span:not(.nav-glyph),#sidebar.collapsed .nav-count,#sidebar.collapsed .sb-status-txt,#sidebar.collapsed .theme-btns,#sidebar.collapsed .chain-indicator{display:none}
+#sidebar.collapsed #newClipBtn{width:36px;height:36px;margin:11px 10px 5px;padding:0;justify-content:center}
+#sidebar.collapsed #newClipBtn::before{content:'+';font-size:18px;line-height:1}
+#sidebar.collapsed .nav-item{justify-content:center;padding:7px}
+#sidebar.collapsed .nav-dot{width:8px;height:8px}
+#sidebar.collapsed .nav-glyph{width:auto}
+#sidebar.collapsed .sb-bottom{justify-content:center}
+#sidebarToggle{width:24px;height:24px;border:none;background:none;color:var(--micro);border-radius:4px;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .12s,color .12s;flex-shrink:0}
+#sidebarToggle:hover{background:var(--surface2);color:var(--text)}
+#sidebar.collapsed #sidebarToggle{position:absolute;bottom:10px;left:16px}
 
 .logo{
   padding:17px 14px 13px;
@@ -228,7 +242,7 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .pin-chip-type{font-size:9px;font-family:var(--font-mono);color:var(--accent);text-transform:uppercase}
 .pin-chip-title{font-size:11.5px;color:var(--text)}
 .pin-chip-x{background:none;border:none;color:var(--micro);font-size:11px;padding:0 0 0 2px;cursor:pointer;line-height:1;transition:color .1s}
-.pin-chip-x:hover{color:var(--red)}
+.pin-chip-x:hover{color:var(--accent)}
 .pin-empty{font-size:11px;color:var(--micro);font-family:var(--font-mono)}
 
 /* ─── FEED ─── */
@@ -244,7 +258,7 @@ button,input,textarea,select{font-family:var(--font-sans)}
   break-inside:avoid;margin-bottom:11px;
   background:var(--surface);border:1px solid var(--border2);
   border-radius:8px;padding:13px;cursor:pointer;
-  position:relative;overflow:hidden;
+  position:relative;overflow:visible;
   transition:border-color .16s,transform .16s,box-shadow .16s;
 }
 .card:hover{
@@ -262,8 +276,11 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .type-dot.image{background:var(--amber)}.type-dot.link{background:var(--blue)}
 .type-dot.prompt{background:var(--accent)}.type-dot.note{background:var(--pink)}
 
-.card-title{font-size:13px;font-weight:500;line-height:1.4;margin-bottom:6px}
-.card-preview{font-size:12px;color:var(--muted);line-height:1.6}
+.card-title{font-size:13px;font-weight:500;line-height:1.4;margin-bottom:6px;padding-right:126px}
+.card-preview{font-size:12px;color:var(--muted);line-height:1.6;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.card-preview.one-line{-webkit-line-clamp:1}
+.card-preview.two-line{-webkit-line-clamp:2}
+.card-preview.prompt-preview{font-family:var(--font-serif);font-size:14px;line-height:1.6;font-style:italic;border-left:2px solid var(--accent);padding-left:11px;margin:2px 0;-webkit-line-clamp:4}
 
 /* sensitive */
 .sensitive-wrap{transition:filter .28s ease}
@@ -273,7 +290,7 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .card-code{
   font-family:var(--font-mono);font-size:11px;color:#A3E635;
   background:rgba(163,230,53,.05);border:1px solid rgba(163,230,53,.1);
-  border-radius:4px;padding:9px;line-height:1.6;max-height:110px;overflow:hidden;white-space:pre;
+  border-radius:4px;padding:9px;line-height:1.6;max-height:92px;overflow:hidden;white-space:pre;
 }
 [data-theme="light"] .card-code{color:#166534;background:rgba(22,101,52,.04);border-color:rgba(22,101,52,.12)}
 
@@ -281,8 +298,9 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .prompt-body{font-family:var(--font-serif);font-size:14px;line-height:1.65;font-style:italic;border-left:2px solid var(--accent);padding-left:11px;margin:2px 0}
 
 /* link */
-.card-link{display:flex;align-items:center;gap:7px;padding:7px 8px;background:var(--surface2);border-radius:4px;border:1px solid var(--border);margin-top:6px}
+.card-link{display:flex;align-items:center;gap:7px;padding:7px 8px;background:var(--surface2);border-radius:4px;border:1px solid var(--border);margin-top:6px;min-width:0}
 .card-link-url{font-size:11px;color:var(--micro);font-family:var(--font-mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.link-title{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
 .link-ico{width:16px;height:16px;border-radius:3px;background:var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--micro)}
 
 /* image */
@@ -295,7 +313,8 @@ button,input,textarea,select{font-family:var(--font-sans)}
 
 /* meta */
 .card-meta{margin-top:9px;padding-top:7px;border-top:1px solid var(--border);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.tag{font-size:10px;font-family:var(--font-mono);color:var(--micro);background:rgba(255,255,255,.03);padding:2px 6px;border-radius:3px;border:1px solid var(--border2)}
+.tag{font-size:10px;font-family:var(--font-mono);color:var(--micro);background:rgba(255,255,255,.03);padding:2px 6px;border-radius:3px;border:1px solid var(--border2);cursor:pointer;transition:border-color .12s,color .12s}
+.tag:hover{border-color:var(--accent);color:var(--accent)}
 [data-theme="light"] .tag{background:rgba(0,0,0,.03)}
 .card-date{margin-left:auto;font-size:10px;font-family:var(--font-mono);color:var(--micro)}
 .fav-star{position:absolute;top:10px;left:10px;font-size:11px;color:var(--amber);display:none}
@@ -309,19 +328,21 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .card-actions{
   position:absolute;top:9px;right:9px;
   opacity:0;pointer-events:none;
-  display:flex;align-items:center;gap:1px;
-  background:var(--bg);border:1px solid var(--border2);
-  border-radius:5px;padding:3px;
-  transition:opacity .14s;z-index:5;
+  display:flex;align-items:center;gap:3px;
+  background:color-mix(in srgb,var(--bg) 86%,var(--surface3));border:1px solid var(--border2);
+  border-radius:6px;padding:4px;
+  box-shadow:0 8px 24px rgba(0,0,0,.22);
+  transition:opacity .16s,transform .16s,background .16s;z-index:40;
+  transform:translateY(-2px);
 }
-.card:hover .card-actions{opacity:1;pointer-events:all}
+.card:hover .card-actions,.card:focus-within .card-actions,.card-actions.menu-open{opacity:1;pointer-events:all;transform:translateY(0)}
 .act-btn{
   width:22px;height:22px;border:none;background:none;
   border-radius:3px;color:var(--micro);font-size:10px;
   font-family:var(--font-mono);font-weight:500;
   display:flex;align-items:center;justify-content:center;
   position:relative;cursor:pointer;
-  transition:background .1s,color .1s;
+  transition:background .12s,color .12s,opacity .12s;
 }
 .act-btn:hover{background:var(--surface2);color:var(--accent)}
 .act-btn[data-active="true"]{color:var(--accent)}
@@ -332,6 +353,11 @@ button,input,textarea,select{font-family:var(--font-sans)}
   pointer-events:none;opacity:0;transition:opacity .1s;
 }
 .act-btn:hover .tip{opacity:1}
+.action-menu{position:absolute;top:calc(100% + 5px);right:0;min-width:126px;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:4px;box-shadow:0 16px 36px rgba(0,0,0,.34);display:none;z-index:60}
+.card-actions.menu-open .action-menu{display:block}
+.menu-btn{width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 8px;border:none;background:none;color:var(--muted);border-radius:4px;font-size:11px;text-align:left;cursor:pointer;transition:background .12s,color .12s}
+.menu-btn:hover{background:var(--surface3);color:var(--text)}
+.menu-btn.danger{color:var(--red)}
 
 /* ─── LIST VIEW ─── */
 #grid.list-view .card{
@@ -378,6 +404,10 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .ep-body{flex:1;padding:14px;overflow-y:auto;display:flex;flex-direction:column;gap:10px}
 .ep-textarea{flex:1;background:none;border:none;outline:none;resize:none;color:var(--text);font-size:13px;line-height:1.65;width:100%;min-height:160px}
 .ep-textarea::placeholder{color:var(--micro)}
+.ep-image-preview{display:none;border:1px solid var(--border2);border-radius:6px;background:var(--surface);overflow:hidden;flex-shrink:0}
+.ep-image-preview.visible{display:block}
+.ep-image-preview img{width:100%;max-height:240px;object-fit:contain;display:block;background:var(--surface2)}
+.ep-image-meta{padding:6px 8px;font-size:10px;font-family:var(--font-mono);color:var(--micro);border-top:1px solid var(--border)}
 .ep-save-row{display:flex;align-items:center;justify-content:space-between}
 .ep-autosave{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--font-mono);color:var(--micro)}
 .ep-as-dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
@@ -575,7 +605,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
   border-radius:6px;padding:8px 13px;font-size:12px;
   display:flex;align-items:center;gap:7px;
   box-shadow:0 8px 24px rgba(0,0,0,.3);
-  animation:tin .2s var(--ease-panel);pointer-events:none;
+  animation:tin .2s var(--ease-panel);pointer-events:auto;
 }
 @keyframes tin{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
 .toast.out{animation:tout .18s ease forwards}
@@ -583,6 +613,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 .t-dot{width:5px;height:5px;border-radius:50%;background:var(--accent);flex-shrink:0}
 .t-dot.green{background:var(--green)}
 .t-dot.red{background:var(--red)}
+.toast-action{border:none;background:none;color:var(--accent);font-family:var(--font-mono);font-size:10px;cursor:pointer;padding:2px 0;margin-left:4px}
 
 /* ════════════════════
    EMPTY STATE
@@ -629,6 +660,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
     </div>
     <span class="logo-name">Trace</span>
     <span class="logo-ver">local</span>
+    <button id="sidebarToggle" title="Collapse sidebar (⌘B)" aria-label="Collapse sidebar">←</button>
   </div>
 
   <button id="newClipBtn">
@@ -644,6 +676,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
     <div class="nav-item active" data-filter="all"><div class="nav-dot v"></div><span>All Clips</span><span class="nav-count" id="cntAll">0</span></div>
     <div class="nav-item" data-filter="favorites"><div class="nav-dot a"></div><span>Favorites</span><span class="nav-count" id="cntFav">0</span></div>
     <div class="nav-item" data-filter="pinned"><div class="nav-dot v"></div><span>Pinned</span><span class="nav-count" id="cntPin">0</span></div>
+    <div class="nav-item" data-filter="archived"><div class="nav-dot g"></div><span>Archived</span><span class="nav-count" id="cntArch">0</span></div>
   </div>
 
   <div class="sb-div"></div>
@@ -719,6 +752,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
     <input class="ep-field" id="epTags" type="text" placeholder="Tags: research, writing...">
   </div>
   <div class="ep-body">
+    <div class="ep-image-preview" id="epImagePreview"></div>
     <textarea class="ep-textarea" id="epTextarea" placeholder="Content..."></textarea>
     <div class="ep-save-row">
       <div class="ep-autosave" id="epAS"><div class="ep-as-dot"></div><span>autosaved</span></div>
@@ -769,7 +803,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
     <div class="nc-body" id="ncBody">
       <input class="nc-field" id="ncTitle" type="text" placeholder="Title (or ✦ AI will generate one)">
       <textarea class="nc-field" id="ncContent" placeholder="Paste, type, or drop content here..."></textarea>
-      <input class="nc-field" id="ncTags" type="text" placeholder="Tags: research, writing...">
+      <input class="nc-field" id="ncTags" type="text" list="tagOptions" placeholder="Tags: research, writing...">
     </div>
     <div class="nc-foot">
       <span class="nc-ai-note">✦ auto-title · auto-tags on save</span>
@@ -813,6 +847,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 
 <!-- ════ TOASTS ════ -->
 <div id="toastArea"></div>
+<datalist id="tagOptions"></datalist>
 
 <script>
 /* ═══════════════════════════════════════════════════
@@ -826,7 +861,7 @@ const PK = 'trace_prefs_v1';
 
 /* ── State ── */
 let clips = [];
-let prefs = { theme:'dark', view:'card' };
+let prefs = { theme:'dark', view:'card', sidebarCollapsed:false };
 let filter = 'all';
 let view = 'card';
 let openId = null;
@@ -873,14 +908,31 @@ function rel(ts){
   return Math.floor(d/wk)+'w ago';
 }
 function esc(s){ if(!s) return ''; return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;') }
-function toast(msg,col='accent'){
+function excerpt(text='',max=180){
+  const clean=String(text).replace(/\s+/g,' ').trim();
+  if(clean.length<=max) return clean;
+  const cut=clean.slice(0,max);
+  return cut.slice(0,Math.max(cut.lastIndexOf(' '),max-24)).trim()+'…';
+}
+function codeExcerpt(text=''){ return String(text||'').split('\n').slice(0,5).join('\n') }
+function normalizeTag(t){ return String(t||'').trim().replace(/^#/,'').replace(/\s+/g,'-').toLowerCase() }
+function uniqueTags(tags=[]){
+  const seen=new Set();
+  return tags.map(normalizeTag).filter(t=>t && !seen.has(t) && seen.add(t));
+}
+function allTags(){ return [...new Set(clips.flatMap(c=>c.tags||[]).map(normalizeTag).filter(Boolean))].sort() }
+function updateTagOptions(){
+  const dl=document.getElementById('tagOptions'); if(!dl) return;
+  dl.innerHTML=allTags().map(t=>`<option value="${esc(t)}"></option>`).join('');
+}
+function toast(msg,col='accent',action){
   const a=document.getElementById('toastArea');
-  const t=document.createElement('div');
-  t.className='toast';
+  const t=document.createElement('div'); t.className='toast';
   const dc=col==='green'?'green':col==='red'?'red':'';
-  t.innerHTML=`<div class="t-dot ${dc}"></div><span>${esc(msg)}</span>`;
+  t.innerHTML=`<div class="t-dot ${dc}"></div><span>${esc(msg)}</span>${action?`<button class="toast-action">${esc(action.label)}</button>`:''}`;
+  if(action) t.querySelector('.toast-action').addEventListener('click',()=>{ action.fn(); t.remove(); });
   a.appendChild(t);
-  setTimeout(()=>{ t.classList.add('out'); setTimeout(()=>t.remove(),200) },2400);
+  setTimeout(()=>{ if(t.isConnected){ t.classList.add('out'); setTimeout(()=>t.remove(),200) } }, action?5200:2400);
 }
 
 /* ── Theme ── */
@@ -895,31 +947,44 @@ window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{
 
 /* ── Filter / search ── */
 function filtered(){
-  let list=[...clips];
-  if(searchQ){ const q=searchQ.toLowerCase(); list=list.filter(c=>c.title.toLowerCase().includes(q)||(c.content||'').toLowerCase().includes(q)||(c.tags||[]).join(' ').includes(q)) }
+  let list=clips.filter(c=>filter==='archived' ? c.archived : !c.archived);
+  if(searchQ){
+    const raw=searchQ.trim().toLowerCase();
+    const q=raw.replace(/^#/,'');
+    list=list.filter(c=>
+      (c.title||'').toLowerCase().includes(raw)||
+      (c.content||'').toLowerCase().includes(raw)||
+      (c.url||'').toLowerCase().includes(raw)||
+      (c.tags||[]).some(t=>normalizeTag(t).includes(q))
+    );
+  }
   if(filter==='favorites') list=list.filter(c=>c.favorited);
   else if(filter==='pinned') list=list.filter(c=>c.pinned);
   else if(filter.startsWith('type:')) list=list.filter(c=>c.type===filter.slice(5));
+  else if(filter.startsWith('tag:')) list=list.filter(c=>(c.tags||[]).some(t=>normalizeTag(t)===filter.slice(4)));
   return list.sort((a,b)=>b.date-a.date);
 }
 
 /* ── Counts ── */
 function updateCounts(){
-  document.getElementById('cntAll').textContent=clips.length;
-  document.getElementById('cntFav').textContent=clips.filter(c=>c.favorited).length;
-  document.getElementById('cntPin').textContent=clips.filter(c=>c.pinned).length;
+  const active=clips.filter(c=>!c.archived);
+  document.getElementById('cntAll').textContent=active.length;
+  document.getElementById('cntFav').textContent=active.filter(c=>c.favorited).length;
+  document.getElementById('cntPin').textContent=active.filter(c=>c.pinned).length;
+  document.getElementById('cntArch').textContent=clips.filter(c=>c.archived).length;
+  updateTagOptions();
 }
 
 /* ── Pinned strip ── */
 function renderPinned(){
   const s=document.getElementById('pinnedStrip');
-  const pinned=clips.filter(c=>c.pinned);
+  const pinned=clips.filter(c=>c.pinned&&!c.archived);
   s.innerHTML='<span class="pin-label">Pinned</span>';
   if(!pinned.length){ s.innerHTML+='<span class="pin-empty">nothing pinned — press P on a card</span>'; return }
   pinned.forEach(c=>{
     const ch=document.createElement('div');
     ch.className='pin-chip';
-    ch.innerHTML=`<span class="pin-chip-type">${esc(c.type)}</span><span class="pin-chip-title">${esc(c.title)}</span><button class="pin-chip-x" data-id="${c.id}">×</button>`;
+    ch.innerHTML=`<span class="pin-chip-type">${esc(c.type)}</span><span class="pin-chip-title">${esc(c.title)}</span><button class="pin-chip-x" data-id="${c.id}" title="Unpin">📌</button>`;
     ch.addEventListener('click',e=>{ if(!e.target.classList.contains('pin-chip-x')) openEditor(c.id) });
     ch.querySelector('.pin-chip-x').addEventListener('click',e=>{ e.stopPropagation(); togglePin(c.id) });
     s.appendChild(ch);
@@ -928,17 +993,17 @@ function renderPinned(){
 
 /* ── Card HTML ── */
 function cardBodyHTML(c){
-  if(c.type==='code') return `<pre class="card-code">${esc(c.content)}</pre>`;
-  if(c.type==='prompt') return `<div class="prompt-body ${c.sensitive?'sensitive-wrap blur':''}">${esc(c.content)}</div>`;
+  if(c.type==='code') return `<pre class="card-code">${esc(codeExcerpt(c.content))}</pre>`;
+  if(c.type==='prompt') return `<div class="card-preview prompt-preview ${c.sensitive?'sensitive-wrap blur':''}">${esc(excerpt(c.content,220))}</div>`;
   if(c.type==='image'){
     const img = c.imageData ? `<img src="${c.imageData}" alt="${esc(c.title)}" loading="lazy">` : `<div class="card-img-placeholder">⊟ image</div>`;
-    return `<div class="card-img-wrap">${img}</div>${c.content?`<div class="card-preview ${c.sensitive?'sensitive-wrap blur':''}">${esc(c.content)}</div>`:''}`;
+    return `<div class="card-img-wrap">${img}</div>${c.content?`<div class="card-preview two-line ${c.sensitive?'sensitive-wrap blur':''}">${esc(excerpt(c.content,90))}</div>`:''}`;
   }
-  if(c.type==='link') return `<div class="card-preview ${c.sensitive?'sensitive-wrap blur':''}">${esc(c.content)}</div><div class="card-link"><div class="link-ico">↗</div><span class="card-link-url">${esc(c.url||'')}</span></div>`;
-  return `<div class="card-preview ${c.sensitive?'sensitive-wrap blur':''}">${esc(c.content)}</div>`;
+  if(c.type==='link') return `<div class="card-link"><div class="link-ico">↗</div><div style="min-width:0;flex:1"><div class="card-link-url">${esc(c.url||c.content||'')}</div><div class="link-title">${esc(excerpt(c.title||c.content,90))}</div></div></div>`;
+  return `<div class="card-preview ${c.sensitive?'sensitive-wrap blur':''}">${esc(excerpt(c.content,220))}</div>`;
 }
 function cardHTML(c){
-  const tags=(c.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('');
+  const tags=(c.tags||[]).map(t=>`<span class="tag" data-tag="${esc(normalizeTag(t))}">#${esc(normalizeTag(t))}</span>`).join('');
   const chains=(c.chains||[]).length ? `<span class="chain-badge">⬡ ${(c.chains||[]).length} linked</span>` : '';
   return `
     <div class="fav-star">★</div>
@@ -950,22 +1015,34 @@ function cardHTML(c){
     <div class="ai-hint">✦ suggest tags</div>
     <div class="card-actions">
       <button class="act-btn" data-action="edit">E<span class="tip">Edit</span></button>
-      <button class="act-btn" data-action="favorite" data-active="${c.favorited}">★<span class="tip">Fav</span></button>
-      <button class="act-btn" data-action="pin" data-active="${c.pinned}">⊕<span class="tip">Pin</span></button>
+      <button class="act-btn" data-action="favorite" data-active="${c.favorited}">★<span class="tip">Favorite</span></button>
+      <button class="act-btn" data-action="pin" data-active="${c.pinned}">${c.pinned?'📌':'⊕'}<span class="tip">${c.pinned?'Unpin':'Pin'}</span></button>
       <button class="act-btn" data-action="copy">C<span class="tip">Copy</span></button>
-      <button class="act-btn" data-action="delete">✕<span class="tip">Del</span></button>
+      <button class="act-btn" data-action="${c.archived?'restore':'archive'}">${c.archived?'↑':'↓'}<span class="tip">${c.archived?'Restore':'Archive'}</span></button>
+      <button class="act-btn" data-action="overflow">⋯<span class="tip">More</span></button>
+      <div class="action-menu">
+        <button class="menu-btn" data-action="sensitive">Sensitive <span>${c.sensitive?'✓':''}</span></button>
+        <button class="menu-btn" data-action="duplicate">Duplicate</button>
+        <button class="menu-btn danger" data-action="delete">Delete</button>
+      </div>
     </div>`;
 }
 function listHTML(c){
-  const tags=(c.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('');
-  const prev=(c.content||c.url||'').replace(/\n/g,' ').slice(0,90);
+  const tags=(c.tags||[]).map(t=>`<span class="tag" data-tag="${esc(normalizeTag(t))}">#${esc(normalizeTag(t))}</span>`).join('');
+  const prev=excerpt(c.content||c.url||'',90);
   return `<span class="l-type">${c.type}</span><span class="l-title">${esc(c.title)}</span><span class="l-preview">${esc(prev)}</span><div class="l-tags">${tags}</div><span class="l-date">${rel(c.date)}</span>
     <div class="card-actions">
       <button class="act-btn" data-action="edit">E<span class="tip">Edit</span></button>
-      <button class="act-btn" data-action="favorite" data-active="${c.favorited}">★<span class="tip">Fav</span></button>
-      <button class="act-btn" data-action="pin" data-active="${c.pinned}">⊕<span class="tip">Pin</span></button>
+      <button class="act-btn" data-action="favorite" data-active="${c.favorited}">★<span class="tip">Favorite</span></button>
+      <button class="act-btn" data-action="pin" data-active="${c.pinned}">${c.pinned?'📌':'⊕'}<span class="tip">${c.pinned?'Unpin':'Pin'}</span></button>
       <button class="act-btn" data-action="copy">C<span class="tip">Copy</span></button>
-      <button class="act-btn" data-action="delete">✕<span class="tip">Del</span></button>
+      <button class="act-btn" data-action="${c.archived?'restore':'archive'}">${c.archived?'↑':'↓'}<span class="tip">${c.archived?'Restore':'Archive'}</span></button>
+      <button class="act-btn" data-action="overflow">⋯<span class="tip">More</span></button>
+      <div class="action-menu">
+        <button class="menu-btn" data-action="sensitive">Sensitive <span>${c.sensitive?'✓':''}</span></button>
+        <button class="menu-btn" data-action="duplicate">Duplicate</button>
+        <button class="menu-btn danger" data-action="delete">Delete</button>
+      </div>
     </div>`;
 }
 
@@ -989,8 +1066,12 @@ function render(){
     card.innerHTML=view==='card'?cardHTML(c):listHTML(c);
 
     card.addEventListener('click',e=>{
+      const tag=e.target.closest('.tag');
+      if(tag){ e.stopPropagation(); setTagFilter(tag.dataset.tag); return }
+      const menuBtn=e.target.closest('.menu-btn');
+      if(menuBtn){ e.stopPropagation(); closeActionMenus(); handleAction(menuBtn.dataset.action,c.id); return }
       const btn=e.target.closest('.act-btn');
-      if(btn){ e.stopPropagation(); handleAction(btn.dataset.action,c.id); return }
+      if(btn){ e.stopPropagation(); handleAction(btn.dataset.action,c.id,btn); return }
 
       // chain mode: clicking a card links it
       if(chainMode && c.id!==chainSourceId){
@@ -1008,15 +1089,22 @@ function render(){
 }
 
 /* ── Actions ── */
-function handleAction(action,id){
+function handleAction(action,id,btn){
   switch(action){
-    case 'edit':     openEditor(id); break;
-    case 'favorite': toggleFavorite(id); break;
-    case 'pin':      togglePinAnimated(id); break;
-    case 'copy':     copyClip(id); break;
-    case 'delete':   deleteClip(id); break;
+    case 'edit':      openEditor(id); break;
+    case 'favorite':  toggleFavorite(id); break;
+    case 'pin':       togglePinAnimated(id); break;
+    case 'copy':      copyClip(id); break;
+    case 'archive':   archiveClip(id); break;
+    case 'restore':   restoreClip(id); break;
+    case 'overflow':  toggleActionMenu(btn); break;
+    case 'sensitive': toggleSensitive(id); break;
+    case 'duplicate': duplicateClip(id); break;
+    case 'delete':    deleteClip(id); break;
   }
 }
+function closeActionMenus(){ document.querySelectorAll('.card-actions.menu-open').forEach(a=>a.classList.remove('menu-open')) }
+function toggleActionMenu(btn){ const rail=btn?.closest('.card-actions'); if(!rail) return; const open=rail.classList.contains('menu-open'); closeActionMenus(); rail.classList.toggle('menu-open',!open) }
 
 function toggleFavorite(id){
   const c=clips.find(x=>x.id===id); if(!c) return;
@@ -1045,8 +1133,20 @@ function togglePin(id){
 
 function copyClip(id){
   const c=clips.find(x=>x.id===id); if(!c) return;
-  navigator.clipboard.writeText(c.content||'').then(()=>toast('Copied to clipboard','green'));
+  navigator.clipboard.writeText(c.content||c.url||'').then(()=>toast('Copied to clipboard','green'));
 }
+
+function archiveClip(id){
+  const c=clips.find(x=>x.id===id); if(!c) return;
+  c.archived=true; c.pinned=false;
+  if(openId===id) closeEditor();
+  save(); render();
+  toast('Clip archived','green',{label:'Undo',fn:()=>{ c.archived=false; save(); render(); toast('Archive undone','green') }});
+}
+function restoreClip(id){ const c=clips.find(x=>x.id===id); if(!c) return; c.archived=false; save(); render(); toast('Clip restored','green') }
+
+function toggleSensitive(id){ const c=clips.find(x=>x.id===id); if(!c) return; c.sensitive=!c.sensitive; save(); render(); toast(c.sensitive?'Marked sensitive':'Sensitive removed') }
+function duplicateClip(id){ const c=clips.find(x=>x.id===id); if(!c) return; const copy={...c,id:uid(),title:c.title+' copy',date:Date.now(),pinned:false,chains:[...(c.chains||[])]}; clips.unshift(copy); save(); render(); toast('Clip duplicated','green') }
 
 function deleteClip(id){
   if(!confirm('Delete this clip?')) return;
@@ -1068,7 +1168,7 @@ function renderBulkBar(){
 
 document.getElementById('bulkFav').addEventListener('click',()=>{ selected.forEach(id=>{ const c=clips.find(x=>x.id===id); if(c)c.favorited=true }); clearSel(); save(); render(); toast('★ Favorited selection') });
 document.getElementById('bulkPin').addEventListener('click',()=>{ selected.forEach(id=>{ const c=clips.find(x=>x.id===id); if(c)c.pinned=true }); clearSel(); save(); render(); toast('Pinned selection','green') });
-document.getElementById('bulkArchive').addEventListener('click',()=>{ clearSel(); toast('Archived selection') });
+document.getElementById('bulkArchive').addEventListener('click',()=>{ const ids=[...selected]; clips.forEach(c=>{ if(selected.has(c.id)){ c.archived=true; c.pinned=false } }); clearSel(); save(); render(); toast('Archived selection','green',{label:'Undo',fn:()=>{ clips.forEach(c=>{ if(ids.includes(c.id)) c.archived=false }); save(); render() }}) });
 document.getElementById('bulkDel').addEventListener('click',()=>{ if(!confirm(`Delete ${selected.size} clips?`)) return; clips=clips.filter(c=>!selected.has(c.id)); clearSel(); save(); render(); toast('Deleted selection','red') });
 document.getElementById('bulkClear').addEventListener('click',clearSel);
 
@@ -1094,14 +1194,18 @@ function _fillEditor(c){
   document.getElementById('epName').textContent=c.title;
   document.getElementById('epTitle').value=c.title;
   document.getElementById('epTextarea').value=c.content||'';
-  document.getElementById('epTags').value=(c.tags||[]).join(', ');
+  document.getElementById('epTags').value=(c.tags||[]).map(normalizeTag).join(', ');
+  document.getElementById('epTags').setAttribute('list','tagOptions');
+  const imgBox=document.getElementById('epImagePreview');
+  if(c.type==='image'&&c.imageData){ imgBox.innerHTML=`<img src="${c.imageData}" alt="${esc(c.title)}"><div class="ep-image-meta">${esc(c.imageName||'local image')} · ${(c.imageType||'image').replace('image/','')}</div>`; imgBox.classList.add('visible'); }
+  else { imgBox.innerHTML=''; imgBox.classList.remove('visible'); }
   renderChainList(c);
 
   // bind autosave
   const ta=document.getElementById('epTextarea');
   ta.oninput=()=>{ c.content=ta.value; c.date=Date.now(); save() };
   document.getElementById('epTitle').oninput=()=>{ c.title=document.getElementById('epTitle').value; document.getElementById('epName').textContent=c.title; save() };
-  document.getElementById('epTags').oninput=()=>{ c.tags=document.getElementById('epTags').value.split(',').map(t=>t.trim()).filter(Boolean); save() };
+  document.getElementById('epTags').oninput=()=>{ c.tags=uniqueTags(document.getElementById('epTags').value.split(',')); save(); updateTagOptions() };
 }
 
 function closeEditor(){ document.getElementById('editorPanel').classList.add('closed'); openId=null; chainMode=false; render() }
@@ -1196,14 +1300,14 @@ function renderNCBody(){
         <span class="nc-drop-sub" id="ncDropSub">PNG, JPG, GIF, WebP</span>
         <input type="file" id="ncFileInput" accept="image/*" style="display:none">
       </div>
-      <input class="nc-field" id="ncTags" type="text" placeholder="Tags: design, reference...">
+      <input class="nc-field" id="ncTags" type="text" list="tagOptions" placeholder="Tags: design, reference...">
     `;
     setupImageDrop();
   } else {
     body.innerHTML=`
       <input class="nc-field" id="ncTitle" type="text" placeholder="Title (or ✦ AI will generate one)">
       <textarea class="nc-field" id="ncContent" placeholder="${ncType==='code'?'Paste code here...':ncType==='link'?'URL or description...':ncType==='prompt'?'Write your prompt...':'Paste, type, or drop content here...'}"></textarea>
-      <input class="nc-field" id="ncTags" type="text" placeholder="Tags: research, writing...">
+      <input class="nc-field" id="ncTags" type="text" list="tagOptions" placeholder="Tags: research, writing...">
     `;
   }
 }
@@ -1223,11 +1327,11 @@ function setupImageDrop(){
 function loadImageFile(file){
   const reader=new FileReader();
   reader.onload=e=>{
-    ncImageData=e.target.result;
+    ncImageData={data:e.target.result,name:file.name,type:file.type,size:file.size};
     const prev=document.getElementById('ncImgPreview');
     const lbl=document.getElementById('ncDropLabel');
     const sub=document.getElementById('ncDropSub');
-    if(prev){ prev.src=ncImageData; prev.style.display='block' }
+    if(prev){ prev.src=ncImageData.data; prev.style.display='block' }
     if(lbl) lbl.style.display='none';
     if(sub) sub.textContent=file.name;
   };
@@ -1245,7 +1349,7 @@ function saveNC(){
   const tagsEl=document.getElementById('ncTags');
   const title=(titleEl?.value||'').trim();
   const content=(contentEl?.value||'').trim();
-  const tags=(tagsEl?.value||'').split(',').map(t=>t.trim()).filter(Boolean);
+  const tags=uniqueTags((tagsEl?.value||'').split(','));
 
   if(ncType==='image' && !ncImageData){ toast('Add an image first','red'); return }
   if(ncType!=='image' && !content && !title){ toast('Add some content first','red'); return }
@@ -1255,7 +1359,8 @@ function saveNC(){
     title: title || content.slice(0,48)+(content.length>48?'…':'') || 'Untitled',
     content, tags, date:Date.now(),
     pinned:false, favorited:false, sensitive:false, chains:[],
-    imageData: ncImageData||null,
+    imageData: ncImageData?.data||ncImageData||null,
+    imageName: ncImageData?.name||null, imageType: ncImageData?.type||null, imageSize: ncImageData?.size||null,
     url: ncType==='link'?content:undefined
   };
 
@@ -1306,7 +1411,7 @@ async function aiAutoTitleTags(clip){
     const clean=result.replace(/```json|```/g,'').trim();
     const parsed=JSON.parse(clean);
     if(parsed.title){ clip.title=parsed.title; save() }
-    if(parsed.tags?.length){ clip.tags=[...new Set([...clip.tags,...parsed.tags])]; save() }
+    if(parsed.tags?.length){ clip.tags=uniqueTags([...(clip.tags||[]),...parsed.tags]); save() }
     render();
   } catch(e){ /* silent fail */ }
 }
@@ -1383,7 +1488,7 @@ document.getElementById('aiApply').addEventListener('click',()=>{
   } else if(aiLastAction==='tags'){
     try{
       let tags=JSON.parse(aiLastResult.replace(/```json|```/g,'').trim());
-      c.tags=[...new Set([...c.tags,...tags])];
+      c.tags=uniqueTags([...(c.tags||[]),...tags]);
       document.getElementById('epTags').value=c.tags.join(', ');
     } catch(e){ toast('Could not parse tags') }
   } else if(aiLastAction==='rewrite'){
@@ -1409,6 +1514,8 @@ const CMDS=[
   {label:'All clips',ico:'◎',fn:()=>{ closePalette();setFilter('all') }},
   {label:'Favorites',ico:'★',fn:()=>{ closePalette();setFilter('favorites') }},
   {label:'Pinned',ico:'⊕',fn:()=>{ closePalette();setFilter('pinned') }},
+  {label:'Archived',ico:'↓',fn:()=>{ closePalette();setFilter('archived') }},
+  {label:'Toggle sidebar',ico:'↔',kd:'⌘B',fn:()=>{ closePalette();toggleSidebar() }},
   {label:'Toggle theme',ico:'◐',fn:()=>{ closePalette();cycleTheme() }},
   {label:'Focus search',ico:'⌕',kd:'/',fn:()=>{ closePalette();document.getElementById('searchInput').focus() }},
 ];
@@ -1435,6 +1542,7 @@ document.getElementById('cmdInput').addEventListener('input',e=>renderCMD(e.targ
 /* ── View + filter ── */
 function switchView(v){ view=v; prefs.view=v; saveP(); document.getElementById('btnCards').classList.toggle('active',v==='card'); document.getElementById('btnList').classList.toggle('active',v==='list'); render() }
 function setFilter(f){ filter=f; document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',(n.dataset.filter||'')===f)); render() }
+function setTagFilter(tag){ filter='tag:'+normalizeTag(tag); searchQ='#'+normalizeTag(tag); document.getElementById('searchInput').value=searchQ; document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active')); render(); toast('Filtering #'+normalizeTag(tag)) }
 function cycleTheme(){ const t=['dark','light','auto']; prefs.theme=t[(t.indexOf(prefs.theme)+1)%t.length]; saveP(); applyTheme(prefs.theme); toast('Theme: '+prefs.theme) }
 
 document.getElementById('btnCards').addEventListener('click',()=>switchView('card'));
@@ -1452,6 +1560,7 @@ document.querySelectorAll('.nav-item').forEach(item=>{
     item.classList.add('active');
     if(item.dataset.filter) filter=item.dataset.filter;
     else if(item.dataset.type) filter='type:'+item.dataset.type;
+    else if(item.dataset.collection) { filter='tag:'+normalizeTag(item.dataset.collection); searchQ='#'+normalizeTag(item.dataset.collection); document.getElementById('searchInput').value=searchQ; }
     render();
   });
 });
@@ -1462,7 +1571,18 @@ document.getElementById('ncClose').addEventListener('click',closeNC);
 document.getElementById('ncSave').addEventListener('click',saveNC);
 document.getElementById('ncOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('ncOverlay')) closeNC() });
 
+/* ── Sidebar collapse ── */
+function applySidebar(){
+  const sb=document.getElementById('sidebar');
+  sb.classList.toggle('collapsed',!!prefs.sidebarCollapsed);
+  document.getElementById('sidebarToggle').textContent=prefs.sidebarCollapsed?'→':'←';
+  document.getElementById('sidebarToggle').setAttribute('aria-label',prefs.sidebarCollapsed?'Expand sidebar':'Collapse sidebar');
+}
+function toggleSidebar(){ prefs.sidebarCollapsed=!prefs.sidebarCollapsed; saveP(); applySidebar(); }
+document.getElementById('sidebarToggle').addEventListener('click',toggleSidebar);
+
 /* ── Global keyboard ── */
+document.addEventListener('click',e=>{ if(!e.target.closest('.card-actions')) closeActionMenus() });
 document.addEventListener('keydown',e=>{
   const tag=document.activeElement.tagName;
   const typing=tag==='INPUT'||tag==='TEXTAREA';
@@ -1471,6 +1591,7 @@ document.addEventListener('keydown',e=>{
 
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){ e.preventDefault(); openPalette(); return }
   if((e.metaKey||e.ctrlKey)&&e.key==='n'){ e.preventDefault(); openNC(); return }
+  if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='b'){ e.preventDefault(); toggleSidebar(); return }
 
   if(e.key==='Escape'){
     if(chainMode){ exitChainMode(); return }
@@ -1507,7 +1628,9 @@ document.addEventListener('drop',e=>{
   e.preventDefault();
   const ncOpen=document.getElementById('ncOverlay').classList.contains('open');
   const text=e.dataTransfer.getData('text');
+  const file=e.dataTransfer.files?.[0];
   if(text&&!ncOpen){ openNC(); setTimeout(()=>{ const el=document.getElementById('ncContent'); if(el)el.value=text },60) }
+  else if(file&&file.type.startsWith('image/')&&!ncOpen){ openNC(); document.querySelectorAll('.nc-type-btn').forEach(b=>{ b.classList.toggle('active',b.dataset.type==='image') }); ncType='image'; renderNCBody(); setTimeout(()=>loadImageFile(file),80) }
 });
 
 /* ── Paste anywhere ── */
@@ -1526,8 +1649,10 @@ document.addEventListener('paste',e=>{
 /* ── Init ── */
 load();
 if(!clips.length){ clips=SEED.map(c=>({...c,chains:c.chains||[]})); save() }
-else { clips=clips.map(c=>({...c,chains:c.chains||[]})) } // migrate old data
+else { clips=clips.map(c=>({...c,chains:c.chains||[],archived:!!c.archived,tags:uniqueTags(c.tags||[])})) } // migrate old data
 applyTheme(prefs.theme);
+applySidebar();
+updateTagOptions();
 switchView(prefs.view||'card');
 </script>
 </body>
