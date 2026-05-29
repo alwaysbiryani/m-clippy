@@ -34,11 +34,12 @@
   --font-sans:'DM Sans',system-ui,sans-serif;
   --font-mono:'DM Mono',ui-monospace,monospace;
   --font-serif:'Instrument Serif',Georgia,serif;
-  --sidebar:224px;
-  --sidebar-collapsed:56px;
+  --sidebar:236px;
+  --sidebar-collapsed:64px;
   --editor:364px;
   --r:6px;
   --ease-panel:cubic-bezier(0.16,1,0.3,1);
+  --ease-reflow:cubic-bezier(0.2,0,0,1);
 }
 
 [data-theme="light"]{
@@ -80,23 +81,48 @@ button,input,textarea,select{font-family:var(--font-sans)}
   width:var(--sidebar);min-width:var(--sidebar);
   height:100vh;border-right:1px solid var(--border);
   display:flex;flex-direction:column;
-  background:var(--bg);flex-shrink:0;z-index:10;
-  transition:width .22s var(--ease-panel),min-width .22s var(--ease-panel),background .2s;
-  overflow:hidden;
+  background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 96%,var(--surface2)),var(--bg));flex-shrink:0;z-index:10;
+  transition:width .28s var(--ease-reflow),min-width .28s var(--ease-reflow),background .2s,border-color .2s;
+  overflow:hidden;position:relative;contain:layout paint;
+}
+#sidebar::after{
+  content:'';position:absolute;top:0;right:0;width:1px;height:100%;
+  background:linear-gradient(180deg,transparent,var(--border2),transparent);opacity:.75;pointer-events:none;
 }
 #sidebar.collapsed{width:var(--sidebar-collapsed);min-width:var(--sidebar-collapsed)}
-#sidebar.collapsed .logo{justify-content:center;padding-left:10px;padding-right:10px}
-#sidebar.collapsed .logo-name,#sidebar.collapsed .logo-ver,#sidebar.collapsed .ncb-inner,#sidebar.collapsed .kbd-chip,#sidebar.collapsed .sb-label,#sidebar.collapsed .nav-item span:not(.nav-glyph),#sidebar.collapsed .nav-count,#sidebar.collapsed .sb-status-txt,#sidebar.collapsed .theme-btns,#sidebar.collapsed .chain-indicator{display:none}
-#sidebar.collapsed #newClipBtn{width:36px;height:36px;margin:11px 10px 5px;padding:0;justify-content:center}
-#sidebar.collapsed #newClipBtn::before{content:'+';font-size:18px;line-height:1}
-#sidebar.collapsed .nav-item{justify-content:center;padding:7px}
-#sidebar.collapsed .nav-dot{width:8px;height:8px}
-#sidebar.collapsed .nav-glyph{width:auto}
-#sidebar.collapsed .sb-bottom{justify-content:center}
-#sidebarToggle{width:24px;height:24px;border:none;background:none;color:var(--micro);border-radius:4px;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .12s,color .12s;flex-shrink:0}
-#sidebarToggle:hover{background:var(--surface2);color:var(--text)}
-#sidebar.collapsed #sidebarToggle{position:absolute;bottom:10px;left:16px}
-
+#sidebar.collapsed .logo{justify-content:center;padding-left:12px;padding-right:12px}
+#sidebar.collapsed .logo-name,#sidebar.collapsed .logo-ver,#sidebar.collapsed .ncb-inner,#sidebar.collapsed .kbd-chip,#sidebar.collapsed .sb-label,#sidebar.collapsed .nav-item span:not(.nav-glyph),#sidebar.collapsed .nav-count,#sidebar.collapsed .sb-status-txt,#sidebar.collapsed .theme-btns,#sidebar.collapsed .chain-indicator{opacity:0;pointer-events:none;width:0;max-width:0;overflow:hidden;white-space:nowrap}
+#sidebar.collapsed #newClipBtn{width:40px;height:40px;margin:12px;padding:0;justify-content:center;border-radius:50%}
+#sidebar.collapsed #newClipBtn::before{content:'+';font-size:19px;line-height:1;font-weight:400}
+#sidebar.collapsed .sb-section{padding:12px 10px 2px}
+#sidebar.collapsed .nav-item{justify-content:center;padding:9px 0;gap:0;width:44px;margin:0 auto 2px}
+#sidebar.collapsed .nav-dot{width:8px;height:8px;box-shadow:0 0 0 4px color-mix(in srgb,currentColor 10%,transparent)}
+#sidebar.collapsed .nav-glyph{width:18px;font-size:11px;text-align:center}
+#sidebar.collapsed .sb-div{margin:8px 18px;background:color-mix(in srgb,var(--border) 80%,transparent)}
+#sidebar.collapsed .sb-bottom{justify-content:center;padding:12px 10px 48px}
+#sidebar.collapsed .chain-indicator.active{display:none}
+#sidebar.collapsed .sb-status{justify-content:center;width:40px;height:30px;border-radius:7px;background:var(--surface);border:1px solid var(--border)}
+#sidebarToggle{width:26px;height:26px;border:1px solid transparent;background:none;color:var(--micro);border-radius:6px;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .14s,color .14s,border-color .14s,transform .14s;flex-shrink:0}
+#sidebarToggle:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+#sidebarToggle:active{transform:scale(.96)}
+#sidebar.collapsed #sidebarToggle{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);background:var(--surface);border-color:var(--border)}
+#sidebar.collapsed #sidebarToggle:active{transform:translateX(-50%) scale(.96)}
+.sidebar-tip{
+  position:fixed;left:0;top:0;z-index:600;min-width:148px;max-width:230px;
+  padding:9px 10px;border-radius:8px;border:1px solid var(--border2);
+  background:color-mix(in srgb,var(--surface2) 94%,transparent);color:var(--text);
+  box-shadow:0 18px 48px rgba(0,0,0,.34),0 0 0 1px rgba(255,255,255,.035);
+  backdrop-filter:blur(14px);opacity:0;pointer-events:none;
+  transform:translateX(-3px) scale(.985);transform-origin:left center;
+  transition:opacity .12s var(--ease-panel),transform .16s var(--ease-panel);
+}
+.sidebar-tip.visible{opacity:1;transform:translateX(0) scale(1)}
+.sidebar-tip-title{font-size:12px;font-weight:500;letter-spacing:-.1px;display:flex;align-items:center;gap:8px}
+.sidebar-tip-meta{margin-top:3px;font-size:10px;font-family:var(--font-mono);color:var(--micro);letter-spacing:.02em}
+.sidebar-tip-kbd{margin-left:auto;font-family:var(--font-mono);font-size:10px;color:var(--micro);border:1px solid var(--border2);border-radius:4px;padding:1px 5px;background:var(--surface)}
+.sidebar-tip-section{font-size:9px;font-family:var(--font-mono);letter-spacing:.08em;text-transform:uppercase;color:var(--micro);margin-bottom:4px}
+#main{transition:min-width .28s var(--ease-reflow);will-change:contents}
+.card.reflowing,.pin-chip.reflowing{transition:transform .28s var(--ease-reflow),opacity .18s var(--ease-reflow)!important;will-change:transform}
 .logo{
   padding:17px 14px 13px;
   border-bottom:1px solid var(--border);
@@ -108,8 +134,8 @@ button,input,textarea,select{font-family:var(--font-sans)}
   box-shadow:0 2px 8px rgba(139,92,246,.3);
 }
 .logo-mark svg{width:13px;height:13px}
-.logo-name{font-size:14px;font-weight:500;letter-spacing:-.3px}
-.logo-ver{font-size:9px;font-family:var(--font-mono);color:var(--micro);margin-left:auto}
+.logo-name{display:inline-block;white-space:nowrap;font-size:14px;font-weight:500;letter-spacing:-.3px;transition:opacity .16s,max-width .2s}
+.logo-ver{display:inline-block;white-space:nowrap;font-size:9px;font-family:var(--font-mono);color:var(--micro);margin-left:auto;transition:opacity .16s,max-width .2s}
 
 #newClipBtn{
   margin:11px 10px 5px;border:none;border-radius:var(--r);
@@ -123,21 +149,26 @@ button,input,textarea,select{font-family:var(--font-sans)}
 #newClipBtn:active{transform:scale(.98)}
 [data-theme="light"] #newClipBtn{background:#0A0A0B;box-shadow:none}
 [data-theme="light"] #newClipBtn:hover{background:#18181B}
-.ncb-inner{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
+.ncb-inner{display:flex;flex-direction:column;align-items:flex-start;gap:1px;transition:opacity .16s,max-width .2s}
 .ncb-sub{font-size:9px;font-family:var(--font-mono);opacity:.55;letter-spacing:.5px}
-.kbd-chip{font-family:var(--font-mono);font-size:9px;background:rgba(255,255,255,.14);padding:2px 5px;border-radius:3px;flex-shrink:0}
+.kbd-chip{font-family:var(--font-mono);font-size:9px;background:rgba(255,255,255,.14);padding:2px 5px;border-radius:3px;flex-shrink:0;transition:opacity .16s,max-width .2s}
 [data-theme="light"] .kbd-chip{background:rgba(0,0,0,.12)}
 
 .sb-section{padding:13px 10px 3px}
-.sb-label{font-size:9px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--micro);padding:0 4px;margin-bottom:4px}
+.sb-label{font-size:9px;font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--micro);padding:0 4px;margin-bottom:4px;transition:opacity .16s,max-width .2s}
 .nav-item{
   display:flex;align-items:center;gap:7px;
   padding:5px 7px;border-radius:5px;cursor:pointer;
   color:var(--muted);font-size:12.5px;user-select:none;
-  transition:background .12s,color .12s;
+  transition:background .12s,color .12s,box-shadow .12s;
+  position:relative;
 }
+.nav-item span:not(.nav-glyph),.nav-count{display:inline-block;white-space:nowrap;transition:opacity .16s,max-width .2s}
+.nav-item::before{content:'';position:absolute;left:0;top:50%;width:2px;height:14px;border-radius:2px;background:var(--accent);opacity:0;transform:translateY(-50%) scaleY(.6);transition:opacity .14s,transform .14s}
+.nav-item.active::before{opacity:1;transform:translateY(-50%) scaleY(1)}
 .nav-item:hover{background:var(--surface2);color:var(--text)}
-.nav-item.active{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--surface2);color:var(--text);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--border2) 70%,transparent)}
+#sidebar.collapsed .nav-item::before{left:-4px;height:18px}
 .nav-count{margin-left:auto;font-size:10px;font-family:var(--font-mono);color:var(--micro)}
 .nav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--micro)}
 .nav-dot.v{background:var(--accent)}.nav-dot.t{background:var(--teal)}
@@ -649,21 +680,22 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 </head>
 <body>
 <div class="ai-loading-bar" id="aiBar"></div>
+<div class="sidebar-tip" id="sidebarTip" role="tooltip" aria-hidden="true"></div>
 
 <div id="app">
 
 <!-- ════ SIDEBAR ════ -->
-<aside id="sidebar">
+<aside id="sidebar" aria-label="Workspace navigation">
   <div class="logo">
     <div class="logo-mark">
       <svg viewBox="0 0 13 13" fill="none"><path d="M2 3.5h9M2 6.5h6M2 9.5h8" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>
     </div>
     <span class="logo-name">Trace</span>
     <span class="logo-ver">local</span>
-    <button id="sidebarToggle" title="Collapse sidebar (⌘B)" aria-label="Collapse sidebar">←</button>
+    <button id="sidebarToggle" data-tip="Collapse sidebar" data-kbd="⌘B" title="" aria-label="Collapse sidebar" aria-expanded="true">←</button>
   </div>
 
-  <button id="newClipBtn">
+  <button id="newClipBtn" data-tip="New Clip" data-meta="paste · drop · type" data-kbd="⌘N">
     <div class="ncb-inner">
       <span>New Clip</span>
       <span class="ncb-sub">paste · drop · type</span>
@@ -673,31 +705,31 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 
   <div class="sb-section">
     <div class="sb-label">Library</div>
-    <div class="nav-item active" data-filter="all"><div class="nav-dot v"></div><span>All Clips</span><span class="nav-count" id="cntAll">0</span></div>
-    <div class="nav-item" data-filter="favorites"><div class="nav-dot a"></div><span>Favorites</span><span class="nav-count" id="cntFav">0</span></div>
-    <div class="nav-item" data-filter="pinned"><div class="nav-dot v"></div><span>Pinned</span><span class="nav-count" id="cntPin">0</span></div>
-    <div class="nav-item" data-filter="archived"><div class="nav-dot g"></div><span>Archived</span><span class="nav-count" id="cntArch">0</span></div>
+    <div class="nav-item active" data-filter="all" data-tip="All Clips" data-section="Library"><div class="nav-dot v"></div><span>All Clips</span><span class="nav-count" id="cntAll">0</span></div>
+    <div class="nav-item" data-filter="favorites" data-tip="Favorites" data-section="Library"><div class="nav-dot a"></div><span>Favorites</span><span class="nav-count" id="cntFav">0</span></div>
+    <div class="nav-item" data-filter="pinned" data-tip="Pinned" data-section="Library"><div class="nav-dot v"></div><span>Pinned</span><span class="nav-count" id="cntPin">0</span></div>
+    <div class="nav-item" data-filter="archived" data-tip="Archived" data-section="Library"><div class="nav-dot g"></div><span>Archived</span><span class="nav-count" id="cntArch">0</span></div>
   </div>
 
   <div class="sb-div"></div>
 
   <div class="sb-section">
     <div class="sb-label">Collections</div>
-    <div class="nav-item" data-collection="research"><div class="nav-dot t"></div><span>Research</span></div>
-    <div class="nav-item" data-collection="writing"><div class="nav-dot a"></div><span>Writing</span></div>
-    <div class="nav-item" data-collection="design"><div class="nav-dot r"></div><span>Design refs</span></div>
+    <div class="nav-item" data-collection="research" data-tip="Research" data-section="Collection" data-meta="#research"><div class="nav-dot t"></div><span>Research</span></div>
+    <div class="nav-item" data-collection="writing" data-tip="Writing" data-section="Collection" data-meta="#writing"><div class="nav-dot a"></div><span>Writing</span></div>
+    <div class="nav-item" data-collection="design" data-tip="Design refs" data-section="Collection" data-meta="#design"><div class="nav-dot r"></div><span>Design refs</span></div>
   </div>
 
   <div class="sb-div"></div>
 
   <div class="sb-section">
     <div class="sb-label">Type</div>
-    <div class="nav-item" data-type="text"><span class="nav-glyph">T</span><span>Text</span></div>
-    <div class="nav-item" data-type="code"><span class="nav-glyph">{}</span><span>Code</span></div>
-    <div class="nav-item" data-type="prompt"><span class="nav-glyph">✦</span><span>Prompts</span></div>
-    <div class="nav-item" data-type="link"><span class="nav-glyph">↗</span><span>Links</span></div>
-    <div class="nav-item" data-type="image"><span class="nav-glyph">⊟</span><span>Images</span></div>
-    <div class="nav-item" data-type="note"><span class="nav-glyph">◎</span><span>Notes</span></div>
+    <div class="nav-item" data-type="text" data-tip="Text" data-section="Type"><span class="nav-glyph">T</span><span>Text</span></div>
+    <div class="nav-item" data-type="code" data-tip="Code" data-section="Type"><span class="nav-glyph">{}</span><span>Code</span></div>
+    <div class="nav-item" data-type="prompt" data-tip="Prompts" data-section="Type"><span class="nav-glyph">✦</span><span>Prompts</span></div>
+    <div class="nav-item" data-type="link" data-tip="Links" data-section="Type"><span class="nav-glyph">↗</span><span>Links</span></div>
+    <div class="nav-item" data-type="image" data-tip="Images" data-section="Type"><span class="nav-glyph">⊟</span><span>Images</span></div>
+    <div class="nav-item" data-type="note" data-tip="Notes" data-section="Type"><span class="nav-glyph">◎</span><span>Notes</span></div>
   </div>
 
   <!-- Chain mode indicator -->
@@ -708,7 +740,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
   </div>
 
   <div class="sb-bottom">
-    <div class="sb-status"><div class="sb-dot"></div><span class="sb-status-txt">local-first</span></div>
+    <div class="sb-status" data-tip="Local-first" data-meta="stored in this browser"><div class="sb-dot"></div><span class="sb-status-txt">local-first</span></div>
     <div class="theme-btns">
       <button class="theme-btn" data-theme="auto">auto</button>
       <button class="theme-btn active" data-theme="dark">dark</button>
@@ -972,6 +1004,10 @@ function updateCounts(){
   document.getElementById('cntFav').textContent=active.filter(c=>c.favorited).length;
   document.getElementById('cntPin').textContent=active.filter(c=>c.pinned).length;
   document.getElementById('cntArch').textContent=clips.filter(c=>c.archived).length;
+  document.querySelector('[data-filter="all"]')?.setAttribute('data-meta', `${active.length} active clips`);
+  document.querySelector('[data-filter="favorites"]')?.setAttribute('data-meta', `${active.filter(c=>c.favorited).length} favorites`);
+  document.querySelector('[data-filter="pinned"]')?.setAttribute('data-meta', `${active.filter(c=>c.pinned).length} pinned clips`);
+  document.querySelector('[data-filter="archived"]')?.setAttribute('data-meta', `${clips.filter(c=>c.archived).length} archived clips`);
   updateTagOptions();
 }
 
@@ -1572,14 +1608,79 @@ document.getElementById('ncSave').addEventListener('click',saveNC);
 document.getElementById('ncOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('ncOverlay')) closeNC() });
 
 /* ── Sidebar collapse ── */
+function reflowTargets(){ return [...document.querySelectorAll('.card,.pin-chip')]; }
+function animateWorkspaceReflow(change){
+  const before=new Map(reflowTargets().map(el=>[el,el.getBoundingClientRect()]));
+  change();
+  requestAnimationFrame(()=>{
+    reflowTargets().forEach(el=>{
+      const first=before.get(el); if(!first) return;
+      const last=el.getBoundingClientRect();
+      const dx=first.left-last.left, dy=first.top-last.top;
+      if(Math.abs(dx)<.5&&Math.abs(dy)<.5) return;
+      el.classList.add('reflowing');
+      el.style.transform=`translate(${dx}px,${dy}px)`;
+      el.style.opacity='.96';
+      requestAnimationFrame(()=>{
+        el.style.transform='translate(0,0)';
+        el.style.opacity='1';
+        setTimeout(()=>{ el.classList.remove('reflowing'); el.style.transform=''; el.style.opacity='' },310);
+      });
+    });
+  });
+}
 function applySidebar(){
   const sb=document.getElementById('sidebar');
-  sb.classList.toggle('collapsed',!!prefs.sidebarCollapsed);
-  document.getElementById('sidebarToggle').textContent=prefs.sidebarCollapsed?'→':'←';
-  document.getElementById('sidebarToggle').setAttribute('aria-label',prefs.sidebarCollapsed?'Expand sidebar':'Collapse sidebar');
+  const toggle=document.getElementById('sidebarToggle');
+  const collapsed=!!prefs.sidebarCollapsed;
+  sb.classList.toggle('collapsed',collapsed);
+  toggle.textContent=collapsed?'→':'←';
+  toggle.dataset.tip=collapsed?'Open sidebar':'Collapse sidebar';
+  toggle.setAttribute('aria-label',collapsed?'Open sidebar':'Collapse sidebar');
+  toggle.setAttribute('aria-expanded',String(!collapsed));
 }
-function toggleSidebar(){ prefs.sidebarCollapsed=!prefs.sidebarCollapsed; saveP(); applySidebar(); }
+function toggleSidebar(){
+  prefs.sidebarCollapsed=!prefs.sidebarCollapsed;
+  saveP();
+  hideSidebarTip();
+  animateWorkspaceReflow(applySidebar);
+}
 document.getElementById('sidebarToggle').addEventListener('click',toggleSidebar);
+
+/* ── Collapsed sidebar tooltips ── */
+const sidebarTip=document.getElementById('sidebarTip');
+let sidebarTipTimer=null;
+function sidebarTipHTML(el){
+  const title=el.dataset.tip||el.getAttribute('aria-label')||'';
+  const section=el.dataset.section||'';
+  const count=el.querySelector?.('.nav-count')?.textContent;
+  const meta=el.dataset.meta||(count!==undefined?`${count} clips`:'' );
+  const kbd=el.dataset.kbd||'';
+  return `${section?`<div class="sidebar-tip-section">${esc(section)}</div>`:''}<div class="sidebar-tip-title"><span>${esc(title)}</span>${kbd?`<span class="sidebar-tip-kbd">${esc(kbd)}</span>`:''}</div>${meta?`<div class="sidebar-tip-meta">${esc(meta)}</div>`:''}`;
+}
+function showSidebarTip(el){
+  const sb=document.getElementById('sidebar');
+  if(!sb.classList.contains('collapsed')) return;
+  clearTimeout(sidebarTipTimer);
+  sidebarTip.innerHTML=sidebarTipHTML(el);
+  sidebarTip.setAttribute('aria-hidden','false');
+  const r=el.getBoundingClientRect();
+  sidebarTip.style.left=(r.right+10)+'px';
+  sidebarTip.style.top=Math.max(10,Math.min(window.innerHeight-sidebarTip.offsetHeight-10,r.top+r.height/2-24))+'px';
+  requestAnimationFrame(()=>sidebarTip.classList.add('visible'));
+}
+function hideSidebarTip(){
+  clearTimeout(sidebarTipTimer);
+  sidebarTip.classList.remove('visible');
+  sidebarTip.setAttribute('aria-hidden','true');
+}
+document.querySelectorAll('#sidebar [data-tip]').forEach(el=>{
+  el.addEventListener('mouseenter',()=>{ sidebarTipTimer=setTimeout(()=>showSidebarTip(el),90) });
+  el.addEventListener('mouseleave',hideSidebarTip);
+  el.addEventListener('focus',()=>showSidebarTip(el));
+  el.addEventListener('blur',hideSidebarTip);
+});
+window.addEventListener('resize',hideSidebarTip);
 
 /* ── Global keyboard ── */
 document.addEventListener('click',e=>{ if(!e.target.closest('.card-actions')) closeActionMenus() });
