@@ -34,8 +34,8 @@
   --font-sans:'DM Sans',system-ui,sans-serif;
   --font-mono:'DM Mono',ui-monospace,monospace;
   --font-serif:'Instrument Serif',Georgia,serif;
-  --sidebar:260px;
-  --sidebar-collapsed:0px;
+  --sidebar:220px;
+  --sidebar-collapsed:56px;
   --editor:364px;
   --r:6px;
   --ease-panel:cubic-bezier(0.16,1,0.3,1);
@@ -81,66 +81,72 @@ button,input,textarea,select{font-family:var(--font-sans)}
   width:var(--sidebar);min-width:var(--sidebar);
   height:100vh;border-right:1px solid var(--border);
   display:flex;flex-direction:column;
-  background:color-mix(in srgb,var(--bg) 92%,var(--surface2));
-  backdrop-filter:blur(16px);
-  flex-shrink:0;z-index:20;
-  transition:transform .3s var(--ease-panel),opacity .25s,visibility .3s;
+  background:var(--bg);flex-shrink:0;z-index:20;
+  transition:width .25s var(--ease-reflow),min-width .25s var(--ease-reflow);
   overflow:hidden;position:relative;
 }
-#sidebar::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,var(--accent),var(--teal),var(--accent));
-  background-size:200% 100%;
-  animation:gradientShift 8s ease infinite;
-  opacity:.8;z-index:1;
-}
-@keyframes gradientShift{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 #sidebar::after{
   content:'';position:absolute;top:0;right:0;width:1px;height:100%;
-  background:linear-gradient(180deg,transparent,var(--border2),transparent);opacity:.5;pointer-events:none;
+  background:linear-gradient(180deg,transparent,var(--border2),transparent);opacity:.4;pointer-events:none;
 }
-#sidebar.collapsed{transform:translateX(-100%);opacity:0;visibility:hidden;position:absolute;top:0;left:0}
-#sidebar:not(.collapsed) .sb-section .nav-item{animation:sidebarItemIn .35s var(--ease-panel) both}
-#sidebar:not(.collapsed) .sb-section .nav-item:nth-child(2){animation-delay:.03s}
-#sidebar:not(.collapsed) .sb-section .nav-item:nth-child(3){animation-delay:.05s}
-#sidebar:not(.collapsed) .sb-section .nav-item:nth-child(4){animation-delay:.07s}
-#sidebar:not(.collapsed) .sb-section .nav-item:nth-child(5){animation-delay:.09s}
-#sidebar:not(.collapsed) .sb-section .nav-item:nth-child(6){animation-delay:.11s}
-#sidebar:not(.collapsed) .sb-section .nav-item:nth-child(7){animation-delay:.13s}
-@keyframes sidebarItemIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
-#sidebarToggle{width:28px;height:28px;border:1px solid transparent;background:none;color:var(--muted);border-radius:7px;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .14s,color .14s,border-color .14s,transform .14s;flex-shrink:0}
+
+/* ── Collapsed icon rail ── */
+#sidebar.collapsed{width:var(--sidebar-collapsed);min-width:var(--sidebar-collapsed)}
+#sidebar.collapsed .logo-name,
+#sidebar.collapsed .logo-ver,
+#sidebar.collapsed .sb-label,
+#sidebar.collapsed .nav-text,
+#sidebar.collapsed .nav-count,
+#sidebar.collapsed .kbd-chip,
+#sidebar.collapsed .ncb-label,
+#sidebar.collapsed .sb-status-txt,
+#sidebar.collapsed .sb-recent,
+#sidebar.collapsed .chain-indicator{
+  opacity:0;width:0;max-width:0;overflow:hidden;pointer-events:none;white-space:nowrap;
+  transition:opacity .15s,width .15s,max-width .15s;
+}
+#sidebar:not(.collapsed) .nav-text,
+#sidebar:not(.collapsed) .nav-count,
+#sidebar:not(.collapsed) .ncb-label,
+#sidebar:not(.collapsed) .kbd-chip{
+  transition:opacity .2s .08s,max-width .2s .08s;
+}
+#sidebar.collapsed .logo{padding:14px 0;justify-content:center}
+#sidebar.collapsed #sidebarToggle{margin:0 auto}
+#sidebar.collapsed #newClipBtn{width:38px;height:38px;margin:6px auto;padding:0;justify-content:center;border-radius:10px}
+#sidebar.collapsed .sb-section{padding:6px 8px 2px}
+#sidebar.collapsed .nav-item{justify-content:center;padding:8px 0;width:40px;margin:0 auto 2px;border-radius:8px}
+#sidebar.collapsed .nav-ico{width:20px;height:20px}
+#sidebar.collapsed .sb-div{margin:4px 14px}
+#sidebar.collapsed .sb-bottom{flex-direction:column;gap:6px;padding:8px;align-items:center}
+#sidebar.collapsed .sb-bottom-item{width:40px;height:36px;justify-content:center;border-radius:8px;padding:0}
+#sidebar.collapsed .sb-bottom-text{display:none}
+
+#sidebarToggle{
+  width:28px;height:28px;border:1px solid transparent;background:none;
+  color:var(--muted);border-radius:6px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;
+  transition:background .14s,color .14s,border-color .14s,transform .14s;flex-shrink:0;
+}
 #sidebarToggle:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
 #sidebarToggle:active{transform:scale(.94)}
+#sidebarToggle .chevron{transition:transform .25s var(--ease-reflow)}
+#sidebar.collapsed #sidebarToggle .chevron{transform:rotate(180deg)}
 
-/* Floating toggle when sidebar is hidden */
-#floatingToggle{
-  position:fixed;top:14px;left:14px;z-index:15;
-  width:36px;height:36px;border-radius:10px;
-  border:1px solid var(--border2);
-  background:color-mix(in srgb,var(--surface) 80%,transparent);
-  backdrop-filter:blur(14px);
-  color:var(--muted);font-size:16px;
-  display:none;align-items:center;justify-content:center;cursor:pointer;
-  box-shadow:0 2px 16px rgba(0,0,0,.3);
-  transition:background .14s,color .14s,transform .2s,box-shadow .14s,opacity .25s;
-}
-#floatingToggle:hover{background:var(--surface2);color:var(--text);box-shadow:0 4px 24px rgba(0,0,0,.4);transform:scale(1.05)}
-#floatingToggle:active{transform:scale(.92)}
-#floatingToggle.visible{display:flex;animation:fadeSlideIn .3s var(--ease-panel) both}
-@keyframes fadeSlideIn{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}
-[data-theme="light"] #floatingToggle{box-shadow:0 2px 12px rgba(0,0,0,.08);border-color:var(--border)}
+/* Floating toggle — hidden, using icon rail instead */
+#floatingToggle{display:none}
 
 /* Floating new clip FAB + speed dial */
 #fabNewClip{
   position:fixed;bottom:24px;right:24px;z-index:15;
-  width:54px;height:54px;border-radius:16px;border:none;
+  width:52px;height:52px;border-radius:14px;border:none;
   background:linear-gradient(135deg,var(--accent),#6D28D9);
-  color:#fff;font-size:24px;font-weight:300;
+  color:#fff;font-size:22px;font-weight:300;
   display:flex;align-items:center;justify-content:center;cursor:pointer;
-  box-shadow:0 6px 28px rgba(139,92,246,.4),0 0 0 1px rgba(139,92,246,.15);
-  transition:transform .2s var(--ease-panel),box-shadow .2s,background .2s;
+  box-shadow:0 4px 20px rgba(139,92,246,.35),0 0 0 1px rgba(139,92,246,.12);
+  transition:transform .2s var(--ease-panel),box-shadow .2s;
 }
-#fabNewClip:hover{transform:scale(1.08) translateY(-2px);box-shadow:0 10px 40px rgba(139,92,246,.5),0 0 0 1px rgba(139,92,246,.3)}
+#fabNewClip:hover{transform:scale(1.06) translateY(-2px);box-shadow:0 8px 32px rgba(139,92,246,.45)}
 #fabNewClip:active{transform:scale(.95)}
 #fabNewClip .fab-kbd{
   position:absolute;top:-8px;right:-8px;
@@ -154,85 +160,68 @@ button,input,textarea,select{font-family:var(--font-sans)}
 
 /* FAB speed dial */
 .fab-dial{
-  position:fixed;bottom:86px;right:24px;z-index:14;
-  display:flex;flex-direction:column-reverse;gap:8px;
-  opacity:0;pointer-events:none;
-  transform:translateY(12px);
-  transition:opacity .2s var(--ease-panel),transform .25s var(--ease-panel);
+  position:fixed;bottom:84px;right:24px;z-index:14;
+  display:flex;flex-direction:column-reverse;gap:7px;
+  opacity:0;pointer-events:none;transform:translateY(10px);
+  transition:opacity .2s var(--ease-panel),transform .22s var(--ease-panel);
 }
 .fab-dial.open{opacity:1;pointer-events:all;transform:translateY(0)}
 .fab-dial-item{
-  width:42px;height:42px;border-radius:12px;border:none;
+  width:40px;height:40px;border-radius:10px;
   background:var(--surface2);border:1px solid var(--border2);
   color:var(--muted);font-size:12px;font-family:var(--font-mono);
   display:flex;align-items:center;justify-content:center;cursor:pointer;
-  box-shadow:0 4px 16px rgba(0,0,0,.3);
+  box-shadow:0 4px 14px rgba(0,0,0,.25);
   transition:transform .15s var(--ease-panel),background .12s,color .12s,border-color .12s;
   position:relative;
 }
-.fab-dial-item:hover{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);transform:scale(1.08)}
+.fab-dial-item:hover{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);transform:scale(1.06)}
 .fab-dial-item .dial-label{
   position:absolute;right:calc(100% + 8px);
   font-size:11px;white-space:nowrap;color:var(--muted);
   background:var(--surface2);border:1px solid var(--border2);
   padding:3px 8px;border-radius:6px;
   opacity:0;transition:opacity .12s;pointer-events:none;
-  box-shadow:0 2px 8px rgba(0,0,0,.2);
+  box-shadow:0 2px 8px rgba(0,0,0,.18);
 }
 .fab-dial-item:hover .dial-label{opacity:1}
-.fab-dial.open .fab-dial-item{animation:dialIn .25s var(--ease-panel) both}
+.fab-dial.open .fab-dial-item{animation:dialIn .22s var(--ease-panel) both}
 .fab-dial.open .fab-dial-item:nth-child(1){animation-delay:0s}
 .fab-dial.open .fab-dial-item:nth-child(2){animation-delay:.03s}
-.fab-dial.open .fab-dial-item:nth-child(3){animation-delay:.06s}
-.fab-dial.open .fab-dial-item:nth-child(4){animation-delay:.09s}
-.fab-dial.open .fab-dial-item:nth-child(5){animation-delay:.12s}
-.fab-dial.open .fab-dial-item:nth-child(6){animation-delay:.15s}
-@keyframes dialIn{from{opacity:0;transform:scale(.7) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
-
-/* Sidebar backdrop (unused, kept for potential mobile use) */
-#sidebarBackdrop{display:none}
+.fab-dial.open .fab-dial-item:nth-child(3){animation-delay:.05s}
+.fab-dial.open .fab-dial-item:nth-child(4){animation-delay:.07s}
+.fab-dial.open .fab-dial-item:nth-child(5){animation-delay:.09s}
+.fab-dial.open .fab-dial-item:nth-child(6){animation-delay:.11s}
+@keyframes dialIn{from{opacity:0;transform:scale(.8) translateY(5px)}to{opacity:1;transform:scale(1) translateY(0)}}
 
 #main{transition:min-width .28s var(--ease-reflow);will-change:contents}
 .card.reflowing,.pin-chip.reflowing{transition:transform .28s var(--ease-reflow),opacity .18s var(--ease-reflow)!important;will-change:transform}
 .logo{
-  padding:16px 14px 12px;
-  display:flex;align-items:center;gap:9px;flex-shrink:0;
+  padding:14px 12px 10px;
+  display:flex;align-items:center;gap:8px;flex-shrink:0;
 }
-.logo-mark{
-  width:24px;height:24px;background:var(--accent);border-radius:6px;
-  display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  box-shadow:0 2px 8px rgba(139,92,246,.25);
-}
-.logo-mark svg{width:13px;height:13px}
-.logo-name{display:inline-block;white-space:nowrap;font-size:14px;font-weight:500;letter-spacing:-.3px}
-.logo-ver{display:inline-block;white-space:nowrap;font-size:9px;font-family:var(--font-mono);color:var(--micro);margin-left:auto}
+.logo-mark{display:none}
+.logo-name{font-size:15px;font-weight:600;letter-spacing:-.4px;white-space:nowrap}
+.logo-ver{font-size:9px;font-family:var(--font-mono);color:var(--micro);white-space:nowrap;margin-right:auto}
 
 #newClipBtn{
-  margin:6px 10px 8px;border:none;border-radius:10px;
-  padding:11px 14px;color:#fff;font-size:13px;font-weight:500;
-  display:flex;align-items:center;gap:9px;
-  background:linear-gradient(135deg,var(--accent),#6D28D9);
-  box-shadow:0 2px 12px rgba(139,92,246,.25);
-  transition:box-shadow .2s,transform .1s,filter .15s;cursor:pointer;
-  position:relative;overflow:hidden;
+  margin:4px 8px 6px;border:1px solid var(--border2);border-radius:8px;
+  padding:8px 10px;color:var(--text);font-size:12.5px;font-weight:400;
+  display:flex;align-items:center;gap:7px;
+  background:var(--surface);
+  transition:background .14s,border-color .14s,transform .08s;cursor:pointer;
 }
-#newClipBtn::after{
-  content:'';position:absolute;inset:0;
-  background:linear-gradient(135deg,rgba(255,255,255,.12),transparent);
-  opacity:0;transition:opacity .2s;
+#newClipBtn:hover{background:var(--surface2);border-color:color-mix(in srgb,var(--border2) 80%,var(--accent))}
+#newClipBtn:active{transform:scale(.97)}
+.ncb-plus{
+  width:18px;height:18px;display:flex;align-items:center;justify-content:center;
+  font-size:16px;font-weight:300;color:var(--muted);line-height:1;flex-shrink:0;
 }
-#newClipBtn:hover{box-shadow:0 4px 20px rgba(139,92,246,.4);transform:translateY(-1px)}
-#newClipBtn:hover::after{opacity:1}
-#newClipBtn:active{transform:scale(.97) translateY(0)}
-[data-theme="light"] #newClipBtn{background:linear-gradient(135deg,#18181B,#0A0A0B);box-shadow:0 2px 8px rgba(0,0,0,.15)}
-.ncb-inner{display:flex;flex-direction:column;align-items:flex-start;gap:1px}
-.ncb-sub{display:none}
-.ncb-plus{font-size:18px;font-weight:300;line-height:1;opacity:.8}
-.kbd-chip{font-family:var(--font-mono);font-size:9px;margin-left:auto;background:rgba(255,255,255,.15);padding:2px 6px;border-radius:4px;flex-shrink:0;opacity:.7}
-[data-theme="light"] .kbd-chip{background:rgba(255,255,255,.15)}
+.ncb-label{font-size:12.5px;white-space:nowrap}
+.kbd-chip{font-family:var(--font-mono);font-size:9px;color:var(--micro);margin-left:auto;flex-shrink:0;white-space:nowrap}
 
-.sb-section{padding:8px 10px 2px}
-.sb-label{font-size:9.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--micro);padding:0 6px;margin-bottom:3px}
+.sb-section{padding:6px 8px 2px}
+.sb-label{font-size:9px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--micro);padding:0 6px;margin-bottom:2px;white-space:nowrap;transition:opacity .15s,width .15s,max-width .15s}
 .nav-item{
   display:flex;align-items:center;gap:8px;
   padding:6px 8px;border-radius:7px;cursor:pointer;
@@ -240,53 +229,52 @@ button,input,textarea,select{font-family:var(--font-sans)}
   transition:background .12s,color .12s;
   position:relative;
 }
-.nav-item span:not(.nav-glyph),.nav-count{display:inline-block;white-space:nowrap}
-.nav-item::before{content:'';position:absolute;left:0;top:50%;width:2.5px;height:16px;border-radius:2px;background:var(--accent);opacity:0;transform:translateY(-50%) scaleY(.5);transition:opacity .14s,transform .14s}
-.nav-item.active::before{opacity:1;transform:translateY(-50%) scaleY(1)}
+.nav-text{white-space:nowrap;transition:opacity .15s,width .15s,max-width .15s}
+.nav-count{margin-left:auto;font-size:10px;font-family:var(--font-mono);color:var(--micro);white-space:nowrap;transition:opacity .15s,width .15s,max-width .15s}
 .nav-item:hover{background:var(--surface2);color:var(--text)}
 .nav-item.active{background:var(--surface2);color:var(--text)}
-.nav-count{margin-left:auto;font-size:10px;font-family:var(--font-mono);color:var(--micro)}
-.nav-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;background:var(--micro)}
-.nav-dot.v{background:var(--accent)}.nav-dot.t{background:var(--teal)}
-.nav-dot.a{background:var(--amber)}.nav-dot.r{background:var(--red)}
-.nav-dot.b{background:var(--blue)}.nav-dot.g{background:var(--green)}
-.nav-glyph{font-family:var(--font-mono);font-size:10px;color:var(--micro);width:14px;flex-shrink:0;text-align:center}
+.nav-ico{
+  width:18px;height:18px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);transition:color .12s;
+}
+.nav-ico svg{width:16px;height:16px}
+.nav-item.active .nav-ico{color:var(--text)}
+.nav-item:hover .nav-ico{color:var(--text)}
 
-.sb-div{height:1px;background:var(--border);margin:5px 14px}
+.sb-div{height:1px;background:var(--border);margin:4px 12px}
+#sidebar.collapsed .sb-div{margin:4px 10px}
 
 /* Recent clips list */
 .sb-recent{
   flex:1;overflow-y:auto;overflow-x:hidden;
-  padding:4px 10px 8px;min-height:0;
+  padding:4px 8px 8px;min-height:0;
+  transition:opacity .15s;
 }
-.sb-recent-label{font-size:9.5px;font-weight:500;letter-spacing:.06em;text-transform:uppercase;color:var(--micro);padding:0 6px;margin-bottom:4px}
+.sb-recent-label{font-size:9px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--micro);padding:0 6px;margin-bottom:3px}
 .recent-group-label{
   font-size:9px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;
-  color:var(--micro);padding:8px 6px 3px;
+  color:var(--micro);padding:7px 6px 2px;
   font-family:var(--font-mono);
 }
-.recent-group-label:first-of-type{padding-top:2px}
+.recent-group-label:first-of-type{padding-top:0}
 .recent-item{
-  display:flex;align-items:center;gap:8px;
-  padding:7px 8px;border-radius:8px;cursor:pointer;
+  display:flex;align-items:center;gap:7px;
+  padding:6px 8px;border-radius:7px;cursor:pointer;
   color:var(--muted);font-size:12px;
-  transition:background .14s,color .14s,transform .14s;
+  transition:background .12s,color .12s;
   overflow:hidden;
-  border-left:2px solid transparent;
 }
-.recent-item:hover{background:var(--surface2);color:var(--text);transform:translateX(2px);border-left-color:var(--accent)}
-.recent-item.active{background:var(--accent-dim);color:var(--text);border-left-color:var(--accent)}
+.recent-item:hover{background:var(--surface2);color:var(--text)}
+.recent-item.active{background:var(--surface2);color:var(--text)}
 .recent-type{
   font-family:var(--font-mono);font-size:9px;color:var(--micro);
-  width:16px;flex-shrink:0;text-align:center;
-  transition:color .14s;
+  width:14px;flex-shrink:0;text-align:center;
 }
-.recent-item:hover .recent-type{color:var(--accent)}
 .recent-title{
   flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
-  font-size:12.5px;
+  font-size:12px;
 }
-.recent-time{font-size:9px;font-family:var(--font-mono);color:var(--micro);flex-shrink:0}
 
 /* Chain mode indicator */
 .chain-indicator{
@@ -304,21 +292,29 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .ci-esc{font-size:10px;color:var(--muted);font-family:var(--font-mono)}
 
 .sb-bottom{
-  margin-top:auto;padding:8px 10px;
+  margin-top:auto;padding:6px 8px;
   border-top:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-between;flex-shrink:0;
+  display:flex;flex-direction:column;gap:2px;flex-shrink:0;
 }
-.sb-status{display:flex;align-items:center;gap:5px}
-.sb-dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
-.sb-status-txt{font-size:10px;font-family:var(--font-mono);color:var(--micro)}
-.theme-btns{display:flex;gap:1px}
-.theme-btn{
-  padding:3px 6px;border-radius:3px;border:1px solid transparent;
-  background:none;color:var(--micro);font-size:10px;font-family:var(--font-mono);
-  transition:all .12s;cursor:pointer;
+.sb-bottom-item{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 8px;border-radius:7px;cursor:pointer;
+  color:var(--muted);font-size:12px;
+  transition:background .12s,color .12s;
 }
-.theme-btn:hover{color:var(--muted)}
-.theme-btn.active{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+.sb-bottom-item:hover{background:var(--surface2);color:var(--text)}
+.sb-bottom-ico{
+  width:18px;height:18px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  color:var(--muted);
+}
+.sb-bottom-ico svg{width:16px;height:16px}
+.sb-bottom-text{font-size:12px;white-space:nowrap;transition:opacity .15s,width .15s,max-width .15s}
+.sb-bottom-hint{margin-left:auto;font-size:9px;font-family:var(--font-mono);color:var(--micro);white-space:nowrap;transition:opacity .15s}
+#sidebar.collapsed .sb-bottom-hint{opacity:0;width:0;overflow:hidden}
+.sb-status{display:none}
+.sb-dot{display:none}
+.sb-status-txt{display:none}
 
 /* ════════════════════
    MAIN
@@ -329,17 +325,15 @@ button,input,textarea,select{font-family:var(--font-sans)}
 #topbar{
   padding:10px 18px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;gap:10px;flex-shrink:0;
-  background:var(--bg);transition:background .2s,padding .3s;
+  background:var(--bg);transition:background .2s;
 }
-body.sidebar-hidden #topbar{padding-left:60px}
 .search-pill{
   flex:1;max-width:400px;height:34px;
   background:var(--surface);border:1px solid var(--border2);
   border-radius:20px;display:flex;align-items:center;gap:7px;
   padding:0 12px;cursor:text;
-  transition:border-color .16s,box-shadow .16s,max-width .3s var(--ease-panel);
+  transition:border-color .16s,box-shadow .16s;
 }
-body.sidebar-hidden .search-pill{max-width:560px}
 .search-pill.focused{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-dim)}
 .search-pill input{background:none;border:none;outline:none;color:var(--text);font-size:12.5px;flex:1}
 .search-pill input::placeholder{color:var(--micro)}
@@ -808,11 +802,8 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 </head>
 <body>
 <div class="ai-loading-bar" id="aiBar"></div>
-<div class="sidebar-tip" id="sidebarTip" role="tooltip" aria-hidden="true" style="display:none"></div>
-<div id="sidebarBackdrop"></div>
-<button id="floatingToggle" aria-label="Open sidebar" title="Open sidebar (⌘B)">
-  <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 4.5h12M3 9h12M3 13.5h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-</button>
+<button id="floatingToggle" style="display:none"></button>
+<div id="sidebarBackdrop" style="display:none"></div>
 <button id="fabNewClip" aria-label="New Clip" title="New Clip (⌘N)">+<span class="fab-kbd">⌘N</span></button>
 <div class="fab-dial">
   <button class="fab-dial-item" data-type="text"><span>T</span><span class="dial-label">Text</span></button>
@@ -828,50 +819,63 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 <!-- ════ SIDEBAR ════ -->
 <aside id="sidebar" aria-label="Workspace navigation">
   <div class="logo">
-    <div class="logo-mark">
-      <svg viewBox="0 0 13 13" fill="none"><path d="M2 3.5h9M2 6.5h6M2 9.5h8" stroke="white" stroke-width="1.6" stroke-linecap="round"/></svg>
-    </div>
     <span class="logo-name">Trace</span>
-    <button id="sidebarToggle" aria-label="Close sidebar" aria-expanded="true">
-      <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M14 4.5H4M14 9H4M14 13.5H4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    <span class="logo-ver">local</span>
+    <button id="sidebarToggle" aria-label="Toggle sidebar" title="Toggle sidebar (⌘B)">
+      <svg class="chevron" width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </button>
   </div>
 
-  <button id="newClipBtn">
+  <button id="newClipBtn" title="New Clip">
     <span class="ncb-plus">+</span>
-    <div class="ncb-inner">
-      <span>New Clip</span>
-    </div>
+    <span class="ncb-label">New Clip</span>
     <span class="kbd-chip">⌘N</span>
   </button>
 
   <div class="sb-section">
     <div class="sb-label">Library</div>
-    <div class="nav-item active" data-filter="all"><div class="nav-dot v"></div><span>All Clips</span><span class="nav-count" id="cntAll">0</span></div>
-    <div class="nav-item" data-filter="favorites"><div class="nav-dot a"></div><span>Favorites</span><span class="nav-count" id="cntFav">0</span></div>
-    <div class="nav-item" data-filter="pinned"><div class="nav-dot v"></div><span>Pinned</span><span class="nav-count" id="cntPin">0</span></div>
-    <div class="nav-item" data-filter="archived"><div class="nav-dot g"></div><span>Archived</span><span class="nav-count" id="cntArch">0</span></div>
+    <div class="nav-item active" data-filter="all" title="All Clips">
+      <div class="nav-ico"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg></div>
+      <span class="nav-text">All Clips</span><span class="nav-count" id="cntAll">0</span>
+    </div>
+    <div class="nav-item" data-filter="pinned" title="Pinned">
+      <div class="nav-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2v4M6 6l-1 4h6l-1-4M5 10l-1 4M11 10l1 4M6 6h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="nav-text">Pinned</span><span class="nav-count" id="cntPin">0</span>
+    </div>
+    <div class="nav-item" data-filter="archived" title="Archived">
+      <div class="nav-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M3 4v8a1 1 0 001 1h8a1 1 0 001-1V4M6.5 7h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="nav-text">Archived</span><span class="nav-count" id="cntArch">0</span>
+    </div>
   </div>
 
   <div class="sb-div"></div>
 
   <div class="sb-section">
-    <div class="sb-label">Collections</div>
-    <div class="nav-item" data-collection="research"><div class="nav-dot t"></div><span>Research</span></div>
-    <div class="nav-item" data-collection="writing"><div class="nav-dot a"></div><span>Writing</span></div>
-    <div class="nav-item" data-collection="design"><div class="nav-dot r"></div><span>Design refs</span></div>
-  </div>
-
-  <div class="sb-div"></div>
-
-  <div class="sb-section">
-    <div class="sb-label">Type</div>
-    <div class="nav-item" data-type="text"><span class="nav-glyph">T</span><span>Text</span></div>
-    <div class="nav-item" data-type="code"><span class="nav-glyph">{}</span><span>Code</span></div>
-    <div class="nav-item" data-type="prompt"><span class="nav-glyph">✦</span><span>Prompts</span></div>
-    <div class="nav-item" data-type="link"><span class="nav-glyph">↗</span><span>Links</span></div>
-    <div class="nav-item" data-type="image"><span class="nav-glyph">⊟</span><span>Images</span></div>
-    <div class="nav-item" data-type="note"><span class="nav-glyph">◎</span><span>Notes</span></div>
+    <div class="sb-label">Types</div>
+    <div class="nav-item" data-type="text" title="Text">
+      <div class="nav-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M4 3h8M8 3v10M5 13h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+      <span class="nav-text">Text</span>
+    </div>
+    <div class="nav-item" data-type="code" title="Code">
+      <div class="nav-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M5.5 4.5L2.5 8l3 3.5M10.5 4.5l3 3.5-3 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="nav-text">Code</span>
+    </div>
+    <div class="nav-item" data-type="prompt" title="Prompts">
+      <div class="nav-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2l1.5 4H14l-3.5 2.5L12 13 8 10l-4 3 1.5-4.5L2 6h4.5z" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="nav-text">Prompts</span>
+    </div>
+    <div class="nav-item" data-type="link" title="Links">
+      <div class="nav-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5l3-3M5 11a2.83 2.83 0 010-4l1-1a2.83 2.83 0 014 0M10 5a2.83 2.83 0 010 4l-1 1a2.83 2.83 0 01-4 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+      <span class="nav-text">Links</span>
+    </div>
+    <div class="nav-item" data-type="image" title="Images">
+      <div class="nav-ico"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><circle cx="5.5" cy="6.5" r="1" stroke="currentColor" stroke-width="1"/><path d="M2 11l3-3 2 2 3-3 4 4" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <span class="nav-text">Images</span>
+    </div>
+    <div class="nav-item" data-type="note" title="Notes">
+      <div class="nav-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M4 2h8a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V3a1 1 0 011-1zM6 5h4M6 8h4M6 11h2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+      <span class="nav-text">Notes</span>
+    </div>
   </div>
 
   <div class="sb-div"></div>
@@ -889,11 +893,18 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
   </div>
 
   <div class="sb-bottom">
-    <div class="sb-status"><div class="sb-dot"></div><span class="sb-status-txt">local-first</span></div>
-    <div class="theme-btns">
-      <button class="theme-btn" data-theme="auto">auto</button>
-      <button class="theme-btn active" data-theme="dark">dark</button>
-      <button class="theme-btn" data-theme="light">light</button>
+    <div class="sb-bottom-item" id="sbSearch" title="Search (/)">
+      <div class="sb-bottom-ico"><svg viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4" stroke="currentColor" stroke-width="1.3"/><path d="M10 10l3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+      <span class="sb-bottom-text">Search</span>
+      <span class="sb-bottom-hint">/</span>
+    </div>
+    <div class="sb-bottom-item" id="sbThemeToggle" title="Toggle theme">
+      <div class="sb-bottom-ico"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.75 3.75l1.06 1.06M11.19 11.19l1.06 1.06M3.75 12.25l1.06-1.06M11.19 4.81l1.06-1.06" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>
+      <span class="sb-bottom-text">Toggle theme</span>
+    </div>
+    <div class="sb-bottom-item" id="sbChainStatus" title="Linked clips" style="pointer-events:none">
+      <div class="sb-bottom-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5l3-3M5 11a2.83 2.83 0 010-4l1-1a2.83 2.83 0 014 0M10 5a2.83 2.83 0 010 4l-1 1a2.83 2.83 0 01-4 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+      <span class="sb-bottom-text" id="sbChainStatusText">0 clips linked</span>
     </div>
   </div>
 </aside>
@@ -1150,13 +1161,11 @@ function filtered(){
 function updateCounts(){
   const active=clips.filter(c=>!c.archived);
   document.getElementById('cntAll').textContent=active.length;
-  document.getElementById('cntFav').textContent=active.filter(c=>c.favorited).length;
   document.getElementById('cntPin').textContent=active.filter(c=>c.pinned).length;
   document.getElementById('cntArch').textContent=clips.filter(c=>c.archived).length;
-  document.querySelector('[data-filter="all"]')?.setAttribute('data-meta', `${active.length} active clips`);
-  document.querySelector('[data-filter="favorites"]')?.setAttribute('data-meta', `${active.filter(c=>c.favorited).length} favorites`);
-  document.querySelector('[data-filter="pinned"]')?.setAttribute('data-meta', `${active.filter(c=>c.pinned).length} pinned clips`);
-  document.querySelector('[data-filter="archived"]')?.setAttribute('data-meta', `${clips.filter(c=>c.archived).length} archived clips`);
+  const chainCount=clips.reduce((sum,c)=>(sum+(c.chains||[]).length),0);
+  const el=document.getElementById('sbChainStatusText');
+  if(el) el.textContent=chainCount+' clips linked';
   updateTagOptions();
 }
 
@@ -1697,8 +1706,7 @@ const CMDS=[
   {label:'Card view',ico:'⊞',fn:()=>{ closePalette();switchView('card') }},
   {label:'List view',ico:'≡',fn:()=>{ closePalette();switchView('list') }},
   {label:'All clips',ico:'◎',fn:()=>{ closePalette();setFilter('all') }},
-  {label:'Favorites',ico:'★',fn:()=>{ closePalette();setFilter('favorites') }},
-  {label:'Pinned',ico:'⊕',fn:()=>{ closePalette();setFilter('pinned') }},
+  {label:'Pinned',ico:'📌',fn:()=>{ closePalette();setFilter('pinned') }},
   {label:'Archived',ico:'↓',fn:()=>{ closePalette();setFilter('archived') }},
   {label:'Toggle sidebar',ico:'↔',kd:'⌘B',fn:()=>{ closePalette();toggleSidebar() }},
   {label:'Toggle theme',ico:'◐',fn:()=>{ closePalette();cycleTheme() }},
@@ -1756,32 +1764,27 @@ document.getElementById('ncClose').addEventListener('click',closeNC);
 document.getElementById('ncSave').addEventListener('click',saveNC);
 document.getElementById('ncOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('ncOverlay')) closeNC() });
 
-/* ── Sidebar toggle (ChatGPT/Claude style: full hide + floating toggle) ── */
+/* ── Sidebar toggle (icon rail collapse) ── */
 function applySidebar(){
   const sb=document.getElementById('sidebar');
-  const floatingToggle=document.getElementById('floatingToggle');
   const collapsed=!!prefs.sidebarCollapsed;
   sb.classList.toggle('collapsed',collapsed);
-  floatingToggle.classList.toggle('visible',collapsed);
-  document.body.classList.toggle('sidebar-hidden',collapsed);
-}
-function openSidebar(){
-  prefs.sidebarCollapsed=false;
-  saveP();
-  applySidebar();
-  renderRecent();
-}
-function closeSidebar(){
-  prefs.sidebarCollapsed=true;
-  saveP();
-  applySidebar();
 }
 function toggleSidebar(){
-  if(prefs.sidebarCollapsed) openSidebar(); else closeSidebar();
+  prefs.sidebarCollapsed=!prefs.sidebarCollapsed;
+  saveP();
+  applySidebar();
+  if(!prefs.sidebarCollapsed) renderRecent();
 }
-document.getElementById('sidebarToggle').addEventListener('click',closeSidebar);
-document.getElementById('floatingToggle').addEventListener('click',openSidebar);
-document.getElementById('sidebarBackdrop').addEventListener('click',closeSidebar);
+document.getElementById('sidebarToggle').addEventListener('click',toggleSidebar);
+
+/* ── Sidebar bottom actions ── */
+document.getElementById('sbSearch').addEventListener('click',()=>{
+  document.getElementById('searchInput').focus();
+});
+document.getElementById('sbThemeToggle').addEventListener('click',()=>{
+  cycleTheme();
+});
 
 /* ── Recent clips in sidebar (date-grouped) ── */
 const TYPE_GLYPHS={text:'T',code:'{}',prompt:'✦',link:'↗',image:'⊟',note:'◎'};
@@ -1871,7 +1874,6 @@ document.addEventListener('keydown',e=>{
     if(ncOpen){ closeNC(); return }
     if(selected.size){ clearSel(); return }
     if(openId){ closeEditor(); return }
-    if(!prefs.sidebarCollapsed){ closeSidebar(); return }
   }
 
   if(e.key==='/'&&!typing&&!cmdOpen&&!ncOpen){ e.preventDefault(); document.getElementById('searchInput').focus(); return }
