@@ -111,14 +111,15 @@ button,input,textarea,select{font-family:var(--font-sans)}
 #sidebar:not(.collapsed) .kbd-chip{
   transition:opacity .2s .08s,max-width .2s .08s;
 }
-#sidebar.collapsed .logo{padding:14px 0;justify-content:center}
+#sidebar.collapsed{align-items:center}
+#sidebar.collapsed .logo{padding:14px 0;justify-content:center;width:100%}
 #sidebar.collapsed #sidebarToggle{margin:0 auto}
-#sidebar.collapsed #newClipBtn{width:38px;height:38px;margin:6px auto;padding:0;justify-content:center;border-radius:10px}
-#sidebar.collapsed .sb-section{padding:6px 8px 2px}
-#sidebar.collapsed .nav-item{justify-content:center;padding:8px 0;width:40px;margin:0 auto 2px;border-radius:8px}
+#sidebar.collapsed #newClipBtn{width:38px;height:38px;margin:6px 0;padding:0;justify-content:center;border-radius:10px}
+#sidebar.collapsed .sb-section{padding:6px 0 2px;width:100%;display:flex;flex-direction:column;align-items:center}
+#sidebar.collapsed .nav-item{justify-content:center;padding:8px 0;width:40px;margin:0 0 2px;border-radius:8px}
 #sidebar.collapsed .nav-ico{width:20px;height:20px}
-#sidebar.collapsed .sb-div{margin:4px 14px}
-#sidebar.collapsed .sb-bottom{flex-direction:column;gap:6px;padding:8px;align-items:center}
+#sidebar.collapsed .sb-div{margin:4px 0;width:36px}
+#sidebar.collapsed .sb-bottom{flex-direction:column;gap:4px;padding:8px 0;width:100%;align-items:center}
 #sidebar.collapsed .sb-bottom-item{width:40px;height:36px;justify-content:center;border-radius:8px;padding:0}
 #sidebar.collapsed .sb-bottom-text{display:none}
 
