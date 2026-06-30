@@ -916,6 +916,100 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 /* AI loading spinner inline */
 @keyframes spin{to{transform:rotate(360deg)}}
 .ai-spin{display:inline-block;width:10px;height:10px;border:1.5px solid var(--border2);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;margin-left:3px;vertical-align:middle}
+
+/* ─── DRAG REORDER ─── */
+.card.dragging{opacity:.4;transform:scale(.96)!important;box-shadow:none!important}
+.card.drag-over-top{border-top:2px solid var(--accent);padding-top:11px}
+.card.drag-over-bottom{border-bottom:2px solid var(--accent);padding-bottom:11px}
+.card[draggable="true"]{cursor:grab}
+.card[draggable="true"]:active{cursor:grabbing}
+.drag-handle{
+  position:absolute;top:9px;left:6px;width:14px;height:20px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  opacity:0;transition:opacity .14s;cursor:grab;color:var(--micro);z-index:41;
+}
+.card:hover .drag-handle{opacity:1}
+.drag-handle::before,.drag-handle::after{
+  content:'';display:block;width:8px;height:1.5px;background:currentColor;border-radius:1px;
+}
+.drag-handle span{display:block;width:8px;height:1.5px;background:currentColor;border-radius:1px}
+
+/* ─── HOVER EXPAND ─── */
+.card-expand-overlay{
+  display:none;position:fixed;z-index:500;
+  background:var(--surface);border:1px solid var(--accent);
+  border-radius:8px;padding:14px;
+  box-shadow:0 16px 48px rgba(0,0,0,.45),0 0 0 1px var(--accent-glow);
+  max-width:420px;max-height:60vh;overflow-y:auto;
+  pointer-events:none;
+  animation:expandIn .16s var(--ease-panel);
+}
+.card-expand-overlay.visible{display:block}
+@keyframes expandIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
+.card-expand-overlay .expand-type{font-size:9px;font-family:var(--font-mono);text-transform:uppercase;color:var(--micro);margin-bottom:5px;display:flex;align-items:center;gap:5px}
+.card-expand-overlay .expand-title{font-size:13px;font-weight:500;margin-bottom:8px}
+.card-expand-overlay .expand-content{font-size:12px;color:var(--muted);line-height:1.65;white-space:pre-wrap;word-break:break-word}
+.card-expand-overlay .expand-content.code{font-family:var(--font-mono);font-size:11px;color:#A3E635;background:rgba(163,230,53,.05);border:1px solid rgba(163,230,53,.1);border-radius:4px;padding:9px}
+[data-theme="light"] .card-expand-overlay .expand-content.code{color:#166534;background:rgba(22,101,52,.04);border-color:rgba(22,101,52,.12)}
+.card-expand-overlay .expand-content.prompt{font-family:var(--font-serif);font-size:14px;font-style:italic;border-left:2px solid var(--accent);padding-left:11px}
+.card-expand-overlay .expand-img{width:100%;border-radius:5px;margin-bottom:7px}
+
+/* ─── IMAGE DOWNLOAD BUTTON ─── */
+.img-download-btn{
+  position:absolute;bottom:8px;right:8px;
+  padding:4px 8px;border-radius:4px;
+  background:rgba(0,0,0,.65);border:1px solid rgba(255,255,255,.12);
+  color:#fff;font-size:10px;font-family:var(--font-mono);
+  cursor:pointer;opacity:0;transition:opacity .14s,background .12s;
+  display:flex;align-items:center;gap:4px;z-index:5;
+}
+.card-img-wrap{position:relative}
+.card:hover .img-download-btn{opacity:1}
+.img-download-btn:hover{background:rgba(0,0,0,.85)}
+
+/* ─── LOCAL-ONLY BADGE ─── */
+.local-badge{
+  display:flex;align-items:center;gap:5px;
+  padding:4px 9px;border-radius:5px;
+  background:var(--surface);border:1px solid var(--border2);
+  font-size:10px;font-family:var(--font-mono);color:var(--muted);
+  cursor:default;transition:border-color .14s,color .14s;
+  white-space:nowrap;
+}
+.local-badge:hover{border-color:var(--green);color:var(--green)}
+.local-badge .lb-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
+.local-badge .lb-lock{font-size:11px;flex-shrink:0}
+
+/* ─── CLIPBOARD PROMPT TOAST ─── */
+.clip-prompt{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(80px);
+  background:var(--surface2);border:1px solid var(--accent);
+  border-radius:10px;padding:10px 14px;
+  display:flex;align-items:center;gap:10px;
+  box-shadow:0 16px 48px rgba(0,0,0,.4),0 0 0 1px var(--accent-glow);
+  z-index:400;
+  opacity:0;pointer-events:none;
+  transition:all .25s var(--ease-panel);
+  max-width:520px;
+}
+.clip-prompt.visible{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0)}
+.clip-prompt-preview{
+  flex:1;font-size:12px;color:var(--muted);
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  max-width:260px;
+}
+.clip-prompt-label{font-size:11px;font-family:var(--font-mono);color:var(--micro);flex-shrink:0}
+.clip-prompt-save{
+  padding:5px 12px;border:1px solid var(--accent);border-radius:5px;
+  background:var(--accent-dim);color:var(--accent);font-size:11px;font-family:var(--font-mono);
+  cursor:pointer;transition:all .12s;flex-shrink:0;
+}
+.clip-prompt-save:hover{background:var(--accent);color:#fff}
+.clip-prompt-dismiss{
+  background:none;border:none;color:var(--micro);font-size:14px;
+  cursor:pointer;padding:0 2px;transition:color .12s;flex-shrink:0;
+}
+.clip-prompt-dismiss:hover{color:var(--text)}
 </style>
 </head>
 <body>
@@ -1020,6 +1114,10 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
       <div class="sb-bottom-ico"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.75 3.75l1.06 1.06M11.19 11.19l1.06 1.06M3.75 12.25l1.06-1.06M11.19 4.81l1.06-1.06" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>
       <span class="sb-bottom-text">Toggle theme</span>
     </div>
+    <div class="sb-bottom-item" id="sbLocalBadge" title="All data stored locally in your browser — nothing leaves your machine" style="pointer-events:none">
+      <div class="sb-bottom-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M8 1.5a3.5 3.5 0 00-3.5 3.5v3h-1a1 1 0 00-1 1v5a1 1 0 001 1h9a1 1 0 001-1v-5a1 1 0 00-1-1h-1V5A3.5 3.5 0 008 1.5zM6 5a2 2 0 114 0v3H6V5z" fill="currentColor"/></svg></div>
+      <span class="sb-bottom-text">Local-only · Your device</span>
+    </div>
     <div class="sb-bottom-item" id="sbChainStatus" title="Linked clips" style="pointer-events:none">
       <div class="sb-bottom-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5l3-3M5 11a2.83 2.83 0 010-4l1-1a2.83 2.83 0 014 0M10 5a2.83 2.83 0 010 4l-1 1a2.83 2.83 0 01-4 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
       <span class="sb-bottom-text" id="sbChainStatusText">0 clips linked</span>
@@ -1031,6 +1129,12 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 <main id="main">
   <!-- Hero search -->
   <div class="hero-area" id="heroArea">
+    <div class="local-badge" title="All data stored locally in your browser — nothing leaves your machine">
+      <span class="lb-lock">🔒</span>
+      <span class="lb-dot"></span>
+      <span>100% local-only — your data never leaves this device</span>
+    </div>
+    <div style="height:14px"></div>
     <div class="hero-search" id="heroSearch">
       <span class="hs-ico"><svg viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4" stroke="currentColor" stroke-width="1.3"/><path d="M10 10l3.5 3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></span>
       <input type="text" id="searchInput" placeholder="Type to search or save a clip">
@@ -1188,6 +1292,13 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 
 <!-- ════ TOASTS ════ -->
 <div id="toastArea"></div>
+<div class="card-expand-overlay" id="expandOverlay"></div>
+<div class="clip-prompt" id="clipPrompt">
+  <span class="clip-prompt-label">📋 Copied:</span>
+  <span class="clip-prompt-preview" id="clipPromptPreview"></span>
+  <button class="clip-prompt-save" id="clipPromptSave">Save as clip</button>
+  <button class="clip-prompt-dismiss" id="clipPromptDismiss">×</button>
+</div>
 <datalist id="tagOptions"></datalist>
 
 <script>
@@ -1303,7 +1414,8 @@ function filtered(){
   else if(filter==='pinned') list=list.filter(c=>c.pinned);
   else if(filter.startsWith('type:')) list=list.filter(c=>c.type===filter.slice(5));
   else if(filter.startsWith('tag:')) list=list.filter(c=>(c.tags||[]).some(t=>normalizeTag(t)===filter.slice(4)));
-  return list.sort((a,b)=>b.date-a.date);
+  list.sort((a,b)=>b.date-a.date);
+  return applyCustomOrder(list);
 }
 
 /* ── Counts ── */
@@ -1340,7 +1452,8 @@ function cardBodyHTML(c){
   if(c.type==='prompt') return `<div class="card-preview prompt-preview ${c.sensitive?'sensitive-wrap blur':''}">${esc(excerpt(c.content,220))}</div>`;
   if(c.type==='image'){
     const img = c.imageData ? `<img src="${c.imageData}" alt="${esc(c.title)}" loading="lazy">` : `<div class="card-img-placeholder">⊟ image</div>`;
-    return `<div class="card-img-wrap">${img}</div>${c.content?`<div class="card-preview two-line ${c.sensitive?'sensitive-wrap blur':''}">${esc(excerpt(c.content,90))}</div>`:''}`;
+    const dlBtn = c.imageData ? `<button class="img-download-btn" data-action="download" title="Download image">↓ Save</button>` : '';
+    return `<div class="card-img-wrap">${img}${dlBtn}</div>${c.content?`<div class="card-preview two-line ${c.sensitive?'sensitive-wrap blur':''}">${esc(excerpt(c.content,90))}</div>`:''}`;
   }
   if(c.type==='link') return `<div class="card-link"><div class="link-ico">↗</div><div style="min-width:0;flex:1"><div class="card-link-url">${esc(c.url||c.content||'')}</div><div class="link-title">${esc(excerpt(c.title||c.content,90))}</div></div></div>`;
   return `<div class="card-preview ${c.sensitive?'sensitive-wrap blur':''}">${esc(excerpt(c.content,220))}</div>`;
@@ -1349,6 +1462,7 @@ function cardHTML(c){
   const tags=(c.tags||[]).map(t=>`<span class="tag" data-tag="${esc(normalizeTag(t))}">#${esc(normalizeTag(t))}</span>`).join('');
   const chains=(c.chains||[]).length ? `<span class="chain-badge">⬡ ${(c.chains||[]).length} linked</span>` : '';
   return `
+    <div class="drag-handle" title="Drag to reorder"><span></span></div>
     <div class="fav-star">★</div>
     <div class="card-type"><div class="type-dot ${c.type}"></div>${c.type.toUpperCase()}</div>
     <div class="card-title">${esc(c.title)}</div>
@@ -1409,6 +1523,8 @@ function render(){
     card.innerHTML=view==='card'?cardHTML(c):listHTML(c);
 
     card.addEventListener('click',e=>{
+      const dlBtn=e.target.closest('.img-download-btn');
+      if(dlBtn){ e.stopPropagation(); downloadImage(c.id); return }
       const tag=e.target.closest('.tag');
       if(tag){ e.stopPropagation(); setTagFilter(tag.dataset.tag); return }
       const menuBtn=e.target.closest('.menu-btn');
@@ -1429,6 +1545,7 @@ function render(){
   });
 
   updateCounts(); renderPinned(); renderBulkBar(); renderRecent(); renderFavorites();
+  setupDragReorder(); setupHoverExpand();
 }
 
 /* ── Favorites section ── */
@@ -1646,7 +1763,7 @@ function _fillEditor(c){
   document.getElementById('epTags').value=(c.tags||[]).map(normalizeTag).join(', ');
   document.getElementById('epTags').setAttribute('list','tagOptions');
   const imgBox=document.getElementById('epImagePreview');
-  if(c.type==='image'&&c.imageData){ imgBox.innerHTML=`<img src="${c.imageData}" alt="${esc(c.title)}"><div class="ep-image-meta">${esc(c.imageName||'local image')} · ${(c.imageType||'image').replace('image/','')}</div>`; imgBox.classList.add('visible'); }
+  if(c.type==='image'&&c.imageData){ imgBox.innerHTML=`<img src="${c.imageData}" alt="${esc(c.title)}"><div class="ep-image-meta">${esc(c.imageName||'local image')} · ${(c.imageType||'image').replace('image/','')} <button onclick="downloadImage('${c.id}')" style="background:none;border:none;color:var(--accent);cursor:pointer;font-family:var(--font-mono);font-size:10px;margin-left:8px">↓ Download</button></div>`; imgBox.classList.add('visible'); }
   else { imgBox.innerHTML=''; imgBox.classList.remove('visible'); }
   renderChainList(c);
 
@@ -2181,6 +2298,7 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('dragover',e=>e.preventDefault());
 document.addEventListener('drop',e=>{
   e.preventDefault();
+  if(dragSrcId) return;
   const ncOpen=document.getElementById('ncOverlay').classList.contains('open');
   const text=e.dataTransfer.getData('text');
   const file=e.dataTransfer.files?.[0];
@@ -2196,10 +2314,208 @@ document.addEventListener('paste',e=>{
   if(!typing&&!ncOpen){
     const text=e.clipboardData?.getData('text');
     const file=e.clipboardData?.files?.[0];
-    if(text){ addToClipboardHistory(text); openNC(); setTimeout(()=>{ const el=document.getElementById('ncContent'); if(el)el.value=text },60) }
+    if(text){ addToClipboardHistory(text); showClipPrompt(text); }
     else if(file&&file.type.startsWith('image/')){ openNC(); document.querySelectorAll('.nc-type-btn').forEach(b=>{ b.classList.toggle('active',b.dataset.type==='image') }); ncType='image'; renderNCBody(); setTimeout(()=>loadImageFile(file),80) }
   }
 });
+
+/* ── Drag-to-reorder ── */
+let dragSrcId=null;
+let dragOverId=null;
+let dragPos=null;
+
+function getClipOrder(){
+  try{ return JSON.parse(localStorage.getItem('trace_clip_order_v1'))||null }catch(e){ return null }
+}
+function saveClipOrder(order){
+  try{ localStorage.setItem('trace_clip_order_v1',JSON.stringify(order)) }catch(e){}
+}
+
+function applyCustomOrder(list){
+  const order=getClipOrder();
+  if(!order||!order.length) return list;
+  const orderMap=new Map(order.map((id,i)=>[id,i]));
+  const ordered=[];
+  const unordered=[];
+  list.forEach(c=>{
+    if(orderMap.has(c.id)) ordered.push(c);
+    else unordered.push(c);
+  });
+  ordered.sort((a,b)=>(orderMap.get(a.id)||0)-(orderMap.get(b.id)||0));
+  return [...ordered,...unordered];
+}
+
+function setupDragReorder(){
+  const grid=document.getElementById('grid');
+  if(!grid) return;
+  grid.querySelectorAll('.card').forEach(card=>{
+    card.setAttribute('draggable','true');
+
+    card.addEventListener('dragstart',e=>{
+      dragSrcId=card.dataset.id;
+      card.classList.add('dragging');
+      e.dataTransfer.effectAllowed='move';
+      e.dataTransfer.setData('text/plain',card.dataset.id);
+    });
+
+    card.addEventListener('dragend',()=>{
+      card.classList.remove('dragging');
+      grid.querySelectorAll('.card').forEach(c=>{c.classList.remove('drag-over-top','drag-over-bottom')});
+      dragSrcId=null; dragOverId=null; dragPos=null;
+    });
+
+    card.addEventListener('dragover',e=>{
+      e.preventDefault();
+      e.dataTransfer.dropEffect='move';
+      if(card.dataset.id===dragSrcId) return;
+      const rect=card.getBoundingClientRect();
+      const midY=rect.top+rect.height/2;
+      const pos=e.clientY<midY?'top':'bottom';
+      grid.querySelectorAll('.card').forEach(c=>{c.classList.remove('drag-over-top','drag-over-bottom')});
+      card.classList.add(pos==='top'?'drag-over-top':'drag-over-bottom');
+      dragOverId=card.dataset.id;
+      dragPos=pos;
+    });
+
+    card.addEventListener('dragleave',()=>{
+      card.classList.remove('drag-over-top','drag-over-bottom');
+    });
+
+    card.addEventListener('drop',e=>{
+      e.preventDefault();
+      e.stopPropagation();
+      if(!dragSrcId||dragSrcId===card.dataset.id) return;
+      const list=filtered();
+      const ordered=applyCustomOrder(list);
+      const ids=ordered.map(c=>c.id);
+      const srcIdx=ids.indexOf(dragSrcId);
+      if(srcIdx<0) return;
+      ids.splice(srcIdx,1);
+      let tgtIdx=ids.indexOf(card.dataset.id);
+      if(tgtIdx<0) return;
+      if(dragPos==='bottom') tgtIdx++;
+      ids.splice(tgtIdx,0,dragSrcId);
+      saveClipOrder(ids);
+      render();
+      toast('Clip moved','green');
+    });
+  });
+}
+
+/* ── Hover expand ── */
+let expandTimer=null;
+let expandActiveCard=null;
+
+function setupHoverExpand(){
+  const grid=document.getElementById('grid');
+  if(!grid) return;
+  grid.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('mouseenter',e=>{
+      expandActiveCard=card;
+      expandTimer=setTimeout(()=>{
+        if(expandActiveCard!==card) return;
+        const c=clips.find(x=>x.id===card.dataset.id);
+        if(!c) return;
+        const content=c.content||'';
+        if(content.length<200 && c.type!=='image' && c.type!=='code') return;
+        showExpandOverlay(c,card);
+      },600);
+    });
+    card.addEventListener('mouseleave',()=>{
+      clearTimeout(expandTimer);
+      expandActiveCard=null;
+      hideExpandOverlay();
+    });
+  });
+}
+
+function showExpandOverlay(c,card){
+  const ov=document.getElementById('expandOverlay');
+  const rect=card.getBoundingClientRect();
+  let contentClass='';
+  let body='';
+  if(c.type==='code'){ contentClass='code'; body=esc(c.content||''); }
+  else if(c.type==='prompt'){ contentClass='prompt'; body=esc(c.content||''); }
+  else if(c.type==='image'){ body=(c.imageData?`<img class="expand-img" src="${c.imageData}" alt="${esc(c.title)}">`:'')+`<div>${esc(c.content||'')}</div>`; }
+  else { body=esc(c.content||''); }
+
+  ov.innerHTML=`
+    <div class="expand-type"><div class="type-dot ${c.type}"></div>${c.type.toUpperCase()}</div>
+    <div class="expand-title">${esc(c.title)}</div>
+    <div class="expand-content ${contentClass}">${body}</div>
+  `;
+
+  let left=rect.right+12;
+  let top=rect.top;
+  if(left+420>window.innerWidth){ left=rect.left-432; }
+  if(left<8) left=8;
+  if(top+400>window.innerHeight) top=Math.max(8,window.innerHeight-400);
+
+  ov.style.left=left+'px';
+  ov.style.top=top+'px';
+  ov.classList.add('visible');
+}
+
+function hideExpandOverlay(){
+  document.getElementById('expandOverlay').classList.remove('visible');
+}
+
+/* ── Image download ── */
+function downloadImage(id){
+  const c=clips.find(x=>x.id===id);
+  if(!c||!c.imageData) return;
+  const a=document.createElement('a');
+  a.href=c.imageData;
+  a.download=c.imageName||c.title||'trace-image';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  toast('Image downloaded','green');
+}
+
+/* ── Clipboard prompt ── */
+let clipPromptText=null;
+let clipPromptTimeout=null;
+
+function showClipPrompt(text){
+  if(!text||text.length<2) return;
+  const ncOpen=document.getElementById('ncOverlay').classList.contains('open');
+  if(ncOpen) return;
+  const existing=clips.find(c=>c.content===text&&!c.archived);
+  if(existing) return;
+
+  clipPromptText=text;
+  const preview=document.getElementById('clipPromptPreview');
+  preview.textContent=text.length>60?text.slice(0,60)+'…':text;
+  document.getElementById('clipPrompt').classList.add('visible');
+
+  clearTimeout(clipPromptTimeout);
+  clipPromptTimeout=setTimeout(dismissClipPrompt,8000);
+}
+
+function dismissClipPrompt(){
+  document.getElementById('clipPrompt').classList.remove('visible');
+  clipPromptText=null;
+  clearTimeout(clipPromptTimeout);
+}
+
+function saveClipFromPrompt(){
+  if(!clipPromptText) return;
+  const clip={
+    id:uid(),type:'text',
+    title:clipPromptText.slice(0,48)+(clipPromptText.length>48?'…':''),
+    content:clipPromptText,tags:[],date:Date.now(),
+    pinned:false,favorited:false,sensitive:false,chains:[]
+  };
+  clips.unshift(clip);
+  save();render();
+  dismissClipPrompt();
+  toast('Clip saved from clipboard','green');
+  aiAutoTitleTags(clip);
+}
+
+document.getElementById('clipPromptSave').addEventListener('click',saveClipFromPrompt);
+document.getElementById('clipPromptDismiss').addEventListener('click',dismissClipPrompt);
 
 /* ── Init ── */
 load();
