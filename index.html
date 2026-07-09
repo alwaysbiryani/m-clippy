@@ -400,7 +400,9 @@ button,input,textarea,select{font-family:var(--font-sans)}
   padding:12px 14px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;gap:8px;flex-shrink:0;
 }
-.cb-panel-title{font-size:12px;font-weight:500;flex:1}
+.cb-panel-head-text{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.cb-panel-title{font-size:12px;font-weight:500}
+.cb-panel-sub{font-size:9px;font-family:var(--font-mono);color:var(--micro);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cb-panel-close{
   background:none;border:none;color:var(--muted);cursor:pointer;
   width:24px;height:24px;display:flex;align-items:center;justify-content:center;
@@ -573,6 +575,7 @@ button,input,textarea,select{font-family:var(--font-sans)}
   position:relative;cursor:pointer;
   transition:background .12s,color .12s,opacity .12s;
 }
+.act-btn svg{width:14px;height:14px;display:block}
 .act-btn:hover{background:var(--surface2);color:var(--accent)}
 .act-btn[data-active="true"]{color:var(--accent)}
 .act-btn .tip{
@@ -1063,7 +1066,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
       <span class="nav-text">All Clips</span><span class="nav-count" id="cntAll">0</span>
     </div>
     <div class="nav-item" data-filter="pinned" title="Pinned">
-      <div class="nav-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2v4M6 6l-1 4h6l-1-4M5 10l-1 4M11 10l1 4M6 6h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="nav-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M5.5 2.5h5M7 2.5v3.5l-1.5 2h5L9 6V2.5M8 8v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <span class="nav-text">Pinned</span><span class="nav-count" id="cntPin">0</span>
     </div>
     <div class="nav-item" data-filter="archived" title="Archived">
@@ -1177,16 +1180,19 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
   <!-- Clipboard history panel -->
   <div id="clipboardPanel">
     <div class="cb-panel-head">
-      <span class="cb-panel-title">Clipboard history (24h)</span>
+      <div class="cb-panel-head-text">
+        <span class="cb-panel-title">Recent captures</span>
+        <span class="cb-panel-sub">copied &amp; pasted in Trace · last 24h</span>
+      </div>
       <button class="cb-panel-close" id="cbPanelClose">×</button>
     </div>
     <div class="cb-panel-list" id="cbPanelList">
-      <div class="cb-panel-empty">No clipboard items yet.<br>Copy something to see it here.</div>
+      <div class="cb-panel-empty">Nothing captured yet.<br>Copy a clip or paste text into Trace to see it here.</div>
     </div>
   </div>
   <button id="clipboardToggle">
     <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="1" width="10" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M6 1v1.5a1 1 0 001 1h2a1 1 0 001-1V1" stroke="currentColor" stroke-width="1.2"/><path d="M6 6h4M6 8.5h4M6 11h2" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
-    Clipboard history
+    Recent captures
   </button>
 </main>
 
@@ -1481,6 +1487,29 @@ function cardBodyHTML(c){
   if(c.type==='link') return `<div class="card-link"><div class="link-ico">↗</div><div style="min-width:0;flex:1"><div class="card-link-url">${esc(c.url||c.content||'')}</div><div class="link-title">${esc(excerpt(c.title||c.content,90))}</div></div></div>`;
   return `<div class="card-preview ${c.sensitive?'sensitive-wrap blur':''}">${esc(excerpt(c.content,220))}</div>`;
 }
+/* Self-explanatory line icons for the card action rail (match sidebar SVG style) */
+const ACT_ICON={
+  edit:'<svg viewBox="0 0 16 16" fill="none"><path d="M11.4 2.4a1.4 1.4 0 012 2L5.3 12.5l-3 .8.8-3 8.3-7.9z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
+  pin:'<svg viewBox="0 0 16 16" fill="none"><path d="M5.5 2.5h5M7 2.5v3.5l-1.5 2h5L9 6V2.5M8 8v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  copy:'<svg viewBox="0 0 16 16" fill="none"><rect x="5.5" y="5.5" width="8" height="8" rx="1.3" stroke="currentColor" stroke-width="1.3"/><path d="M3.5 10.5H3a1 1 0 01-1-1V3a1 1 0 011-1h6.5a1 1 0 011 1v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  archive:'<svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="3" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M3 6v6a1 1 0 001 1h8a1 1 0 001-1V6" stroke="currentColor" stroke-width="1.3"/><path d="M8 8v3M6.5 9.5L8 11l1.5-1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  restore:'<svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="3" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M3 6v6a1 1 0 001 1h8a1 1 0 001-1V6" stroke="currentColor" stroke-width="1.3"/><path d="M8 11V8M6.5 9.5L8 8l1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  more:'<svg viewBox="0 0 16 16" fill="none"><circle cx="3.4" cy="8" r="1.15" fill="currentColor"/><circle cx="8" cy="8" r="1.15" fill="currentColor"/><circle cx="12.6" cy="8" r="1.15" fill="currentColor"/></svg>',
+};
+function actionsHTML(c){
+  return `<div class="card-actions">
+      <button class="act-btn" data-action="edit" aria-label="Edit">${ACT_ICON.edit}<span class="tip">Edit</span></button>
+      <button class="act-btn" data-action="pin" data-active="${c.pinned}" aria-label="${c.pinned?'Unpin':'Pin'}">${ACT_ICON.pin}<span class="tip">${c.pinned?'Unpin':'Pin'}</span></button>
+      <button class="act-btn" data-action="copy" aria-label="Copy">${ACT_ICON.copy}<span class="tip">Copy</span></button>
+      <button class="act-btn" data-action="${c.archived?'restore':'archive'}" aria-label="${c.archived?'Restore':'Archive'}">${c.archived?ACT_ICON.restore:ACT_ICON.archive}<span class="tip">${c.archived?'Restore':'Archive'}</span></button>
+      <button class="act-btn" data-action="overflow" aria-label="More">${ACT_ICON.more}<span class="tip">More</span></button>
+      <div class="action-menu">
+        <button class="menu-btn" data-action="sensitive">Sensitive <span>${c.sensitive?'✓':''}</span></button>
+        <button class="menu-btn" data-action="duplicate">Duplicate</button>
+        <button class="menu-btn danger" data-action="delete">Delete</button>
+      </div>
+    </div>`;
+}
 function cardHTML(c){
   const tags=(c.tags||[]).map(t=>`<span class="tag" data-tag="${esc(normalizeTag(t))}">#${esc(normalizeTag(t))}</span>`).join('');
   const chains=(c.chains||[]).length ? `<span class="chain-badge">⬡ ${(c.chains||[]).length} linked</span>` : '';
@@ -1492,35 +1521,13 @@ function cardHTML(c){
     ${chains}
     <div class="card-meta">${tags}<span class="card-date">${rel(c.date)}</span></div>
     <div class="ai-hint">✦ suggest tags</div>
-    <div class="card-actions">
-      <button class="act-btn" data-action="edit">E<span class="tip">Edit</span></button>
-      <button class="act-btn" data-action="pin" data-active="${c.pinned}">${c.pinned?'📌':'⊕'}<span class="tip">${c.pinned?'Unpin':'Pin'}</span></button>
-      <button class="act-btn" data-action="copy">C<span class="tip">Copy</span></button>
-      <button class="act-btn" data-action="${c.archived?'restore':'archive'}">${c.archived?'↑':'↓'}<span class="tip">${c.archived?'Restore':'Archive'}</span></button>
-      <button class="act-btn" data-action="overflow">⋯<span class="tip">More</span></button>
-      <div class="action-menu">
-        <button class="menu-btn" data-action="sensitive">Sensitive <span>${c.sensitive?'✓':''}</span></button>
-        <button class="menu-btn" data-action="duplicate">Duplicate</button>
-        <button class="menu-btn danger" data-action="delete">Delete</button>
-      </div>
-    </div>`;
+    ${actionsHTML(c)}`;
 }
 function listHTML(c){
   const tags=(c.tags||[]).map(t=>`<span class="tag" data-tag="${esc(normalizeTag(t))}">#${esc(normalizeTag(t))}</span>`).join('');
   const prev=excerpt(c.content||c.url||'',90);
   return `<span class="l-type">${c.type}</span><span class="l-title">${esc(c.title)}</span><span class="l-preview">${esc(prev)}</span><div class="l-tags">${tags}</div><span class="l-date">${rel(c.date)}</span>
-    <div class="card-actions">
-      <button class="act-btn" data-action="edit">E<span class="tip">Edit</span></button>
-      <button class="act-btn" data-action="pin" data-active="${c.pinned}">${c.pinned?'📌':'⊕'}<span class="tip">${c.pinned?'Unpin':'Pin'}</span></button>
-      <button class="act-btn" data-action="copy">C<span class="tip">Copy</span></button>
-      <button class="act-btn" data-action="${c.archived?'restore':'archive'}">${c.archived?'↑':'↓'}<span class="tip">${c.archived?'Restore':'Archive'}</span></button>
-      <button class="act-btn" data-action="overflow">⋯<span class="tip">More</span></button>
-      <div class="action-menu">
-        <button class="menu-btn" data-action="sensitive">Sensitive <span>${c.sensitive?'✓':''}</span></button>
-        <button class="menu-btn" data-action="duplicate">Duplicate</button>
-        <button class="menu-btn danger" data-action="delete">Delete</button>
-      </div>
-    </div>`;
+    ${actionsHTML(c)}`;
 }
 
 /* ── Render ── */
@@ -1645,7 +1652,7 @@ function renderClipboardPanel(){
   const cutoff=Date.now()-86400000;
   const items=cbHistory.filter(h=>h.time>cutoff);
   if(!items.length){
-    el.innerHTML='<div class="cb-panel-empty">No clipboard items yet.<br>Copy something to see it here.</div>';
+    el.innerHTML='<div class="cb-panel-empty">Nothing captured yet.<br>Copy a clip or paste text into Trace to see it here.</div>';
     return;
   }
   el.innerHTML=items.map(h=>`<div class="cb-panel-item" title="Click to create clip">
