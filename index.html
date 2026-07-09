@@ -159,7 +159,7 @@ button,input,textarea,select{font-family:var(--font-sans)}
 #sidebarBackdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:55}
 
 #main{transition:min-width .28s var(--ease-reflow);will-change:contents}
-.card.reflowing,.pin-chip.reflowing{transition:transform .28s var(--ease-reflow),opacity .18s var(--ease-reflow)!important;will-change:transform}
+.card.reflowing{transition:transform .28s var(--ease-reflow),opacity .18s var(--ease-reflow)!important;will-change:transform}
 .logo{
   padding:14px 12px 10px;
   display:flex;align-items:center;gap:8px;flex-shrink:0;
@@ -453,28 +453,6 @@ button,input,textarea,select{font-family:var(--font-sans)}
   transition:all .12s;cursor:pointer;
 }
 #cmdBtn:hover{background:var(--surface);color:var(--muted)}
-
-/* ─── PINNED STRIP ─── */
-#pinnedStrip{
-  padding:7px 18px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:7px;
-  overflow-x:auto;flex-shrink:0;min-height:40px;
-  background:var(--bg);transition:background .2s;
-}
-.pin-label{font-size:9px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--micro);white-space:nowrap;flex-shrink:0}
-.pin-chip{
-  display:flex;align-items:center;gap:5px;padding:3px 8px;
-  background:var(--surface);border:1px solid var(--border2);
-  border-left:2px solid var(--accent);border-radius:0 4px 4px 0;
-  white-space:nowrap;cursor:pointer;flex-shrink:0;
-  transition:background .12s;
-}
-.pin-chip:hover{background:var(--surface2)}
-.pin-chip-type{font-size:9px;font-family:var(--font-mono);color:var(--accent);text-transform:uppercase}
-.pin-chip-title{font-size:11.5px;color:var(--text)}
-.pin-chip-x{background:none;border:none;color:var(--micro);font-size:11px;padding:0 0 0 2px;cursor:pointer;line-height:1;transition:color .1s}
-.pin-chip-x:hover{color:var(--accent)}
-.pin-empty{font-size:11px;color:var(--micro);font-family:var(--font-mono)}
 
 /* ─── FEED ─── */
 #feed{flex:1;overflow-y:auto;padding:18px}
@@ -871,24 +849,6 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 }
 .empty-hint-chip:hover{border-color:var(--accent);color:var(--accent)}
 
-/* ════════════════════
-   FLIP ANIMATION
-════════════════════ */
-.card.flipping{
-  animation:cardFlip .3s var(--ease-panel) forwards;
-}
-@keyframes cardFlip{
-  0%{transform:translateY(0) scale(1);opacity:1}
-  40%{transform:translateY(-18px) scale(.97);opacity:.7}
-  100%{transform:translateY(-40px) scale(.92);opacity:0}
-}
-.pin-chip.chip-in{
-  animation:chipIn .28s var(--ease-panel) forwards;
-}
-@keyframes chipIn{
-  from{opacity:0;transform:scale(.9) translateX(-6px)}
-  to{opacity:1;transform:scale(1) translateX(0)}
-}
 
 /* AI loading spinner inline */
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -1171,7 +1131,6 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
         <button id="cmdBtn">⌘K</button>
       </div>
     </div>
-    <div id="pinnedStrip"><span class="pin-label">Pinned</span></div>
     <div id="feed">
       <div id="grid" class="masonry"></div>
     </div>
@@ -1454,26 +1413,6 @@ function updateCounts(){
   updateTagOptions();
 }
 
-/* ── Pinned strip ── */
-function renderPinned(){
-  const s=document.getElementById('pinnedStrip');
-  // On the Pinned view the grid already lists exactly these clips, so the
-  // strip is pure duplication — hide it there. It stays a quick-access shelf
-  // on every other view (All Clips, Types, search, etc.).
-  if(filter==='pinned'){ s.style.display='none'; return }
-  s.style.display='';
-  const pinned=clips.filter(c=>c.pinned&&!c.archived);
-  s.innerHTML='<span class="pin-label">Pinned</span>';
-  if(!pinned.length){ s.innerHTML+='<span class="pin-empty">nothing pinned — press P on a card</span>'; return }
-  pinned.forEach(c=>{
-    const ch=document.createElement('div');
-    ch.className='pin-chip';
-    ch.innerHTML=`<span class="pin-chip-type">${esc(c.type)}</span><span class="pin-chip-title">${esc(c.title)}</span><button class="pin-chip-x" data-id="${c.id}" title="Unpin">📌</button>`;
-    ch.addEventListener('click',e=>{ if(!e.target.classList.contains('pin-chip-x')) openEditor(c.id) });
-    ch.querySelector('.pin-chip-x').addEventListener('click',e=>{ e.stopPropagation(); togglePin(c.id) });
-    s.appendChild(ch);
-  });
-}
 
 /* ── Card HTML ── */
 function cardBodyHTML(c){
@@ -1538,7 +1477,7 @@ function render(){
 
   if(!list.length){
     grid.innerHTML=`<div class="empty"><div class="empty-glyph">✦</div><div class="empty-title">${clips.length?'No clips match this filter':'Start capturing ideas'}</div><div class="empty-sub">${clips.length?'Try a different filter or search term':'Paste, drop, or type — your clips live here, locally.'}</div><div class="empty-hint"><span class="empty-hint-chip">⌘N new clip</span><span class="empty-hint-chip">⌘V paste</span><span class="empty-hint-chip">drag & drop</span><span class="empty-hint-chip">⌘K commands</span></div></div>`;
-    updateCounts(); renderPinned(); renderBulkBar(); renderRecent(); return;
+    updateCounts(); renderBulkBar(); renderRecent(); return;
   }
 
   grid.innerHTML='';
@@ -1571,7 +1510,7 @@ function render(){
     grid.appendChild(card);
   });
 
-  updateCounts(); renderPinned(); renderBulkBar(); renderRecent(); renderFavorites();
+  updateCounts(); renderBulkBar(); renderRecent(); renderFavorites();
   setupDragReorder(); setupHoverExpand();
 }
 
@@ -1682,7 +1621,7 @@ document.getElementById('cbPanelClose')?.addEventListener('click',()=>{
 function handleAction(action,id,btn){
   switch(action){
     case 'edit':      openEditor(id); break;
-    case 'pin':       togglePinAnimated(id); break;
+    case 'pin':       togglePin(id); break;
     case 'copy':      copyClip(id); break;
     case 'archive':   archiveClip(id); break;
     case 'restore':   restoreClip(id); break;
@@ -1694,19 +1633,6 @@ function handleAction(action,id,btn){
 }
 function closeActionMenus(){ document.querySelectorAll('.card-actions.menu-open').forEach(a=>a.classList.remove('menu-open')) }
 function toggleActionMenu(btn){ const rail=btn?.closest('.card-actions'); if(!rail) return; const open=rail.classList.contains('menu-open'); closeActionMenus(); rail.classList.toggle('menu-open',!open) }
-
-function togglePinAnimated(id){
-  const card=document.querySelector(`.card[data-id="${id}"]`);
-  const c=clips.find(x=>x.id===id); if(!c) return;
-
-  if(!c.pinned && card){
-    // FLIP: animate card up into pinned strip
-    card.classList.add('flipping');
-    setTimeout(()=>{ c.pinned=true; save(); render(); toast('⊕ Pinned','green') }, 280);
-  } else {
-    c.pinned=false; save(); render(); toast('Unpinned');
-  }
-}
 
 function togglePin(id){
   const c=clips.find(x=>x.id===id); if(!c) return;
@@ -2305,7 +2231,7 @@ document.addEventListener('keydown',e=>{
 
   // editor shortcuts
   if(!typing&&!cmdOpen&&!ncOpen&&openId){
-    if(e.key.toLowerCase()==='p'&&!e.metaKey) togglePinAnimated(openId);
+    if(e.key.toLowerCase()==='p'&&!e.metaKey) togglePin(openId);
     if(e.key.toLowerCase()==='c'&&!e.metaKey) copyClip(openId);
   }
 });
