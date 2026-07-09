@@ -22,7 +22,9 @@ It is not a dashboard. It is not a chat app. It is not Notion.
 - **Pinned strip** — persistent working-memory shelf with FLIP animation
 - **Workflow chains** — link related clips bidirectionally
 - **AI assist** — auto-title, suggest tags, summarize, rewrite, describe (Anthropic API)
-- **Command palette** — `⌘K` global actions
+- **Ask your Trace** — ask a natural-language question and get an answer that cites the clips it used
+- **Command palette** — `⌘K` for global actions *and* jump-to-any-clip
+- **Settings** — `⌘,` to manage your AI key and export / import your data
 - **Keyboard-native** — `/` search, `⌘N` new, `P`/`C` shortcuts on the open clip
 - **Multi-select** — shift-click + bulk actions
 - **Sensitive blur** — hover to reveal private clips
@@ -37,7 +39,7 @@ It is not a dashboard. It is not a chat app. It is not Notion.
 Trace uses the Anthropic API for AI features (auto-title, tags, summarize, rewrite, describe). To enable:
 
 1. Get an API key from [console.anthropic.com](https://console.anthropic.com)
-2. In the app, open the command palette (`⌘K`) → **Set AI key**, and paste it.
+2. In the app, open **Settings** (`⌘,`) — or the command palette (`⌘K`) → **Settings** — paste your key, and click **Save key**.
 
 The key is stored only in this browser's `localStorage` (`trace_ai_key_v1`) and is sent directly to `api.anthropic.com` — nowhere else.
 
@@ -72,7 +74,8 @@ npx serve .
 | Key | Action |
 |---|---|
 | `⌘N` | New clip |
-| `⌘K` | Command palette |
+| `⌘K` | Command palette / jump to clip |
+| `⌘,` | Settings (AI key, export/import) |
 | `/` | Focus search |
 | `Esc` | Close / exit mode |
 | `P` | Pin / unpin the open clip |
@@ -85,9 +88,9 @@ npx serve .
 ## Data
 
 - Stored in `localStorage` under key `trace_clips_v1`
-- Preferences under `trace_prefs_v1`
-- To back up: DevTools → Application → Local Storage → copy the value
-- No data is sent anywhere (except optional AI API calls)
+- Preferences under `trace_prefs_v1`; optional AI key under `trace_ai_key_v1`
+- **Back up / restore:** Settings (`⌘,`) → **Export backup (.json)** and **Import backup…** (import can replace everything or merge into your current clips)
+- No data is sent anywhere (except optional AI API calls you trigger)
 
 ---
 

@@ -757,6 +757,67 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 .cmd-lbl{font-size:13px}
 .cmd-kd{font-size:10px;color:var(--micro);font-family:var(--font-mono);margin-left:auto}
 
+/* ─── Settings & Ask overlays ─── */
+#settingsOverlay,#askOverlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:310;
+  display:flex;align-items:flex-start;justify-content:center;padding-top:11vh;
+  opacity:0;pointer-events:none;transition:opacity .16s;
+}
+#settingsOverlay.open,#askOverlay.open{opacity:1;pointer-events:all}
+.settings-box,.ask-box{
+  width:560px;max-width:94vw;
+  background:var(--surface);border:1px solid var(--border2);border-radius:12px;overflow:hidden;
+  box-shadow:0 30px 80px rgba(0,0,0,.55),0 0 0 1px rgba(255,255,255,.04);
+  transform:scale(.97) translateY(-7px);transition:transform .18s var(--ease-panel);
+}
+#settingsOverlay.open .settings-box,#askOverlay.open .ask-box{transform:scale(1) translateY(0)}
+.settings-head,.ask-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid var(--border)}
+.settings-title,.ask-title{font-size:14px;font-weight:500}
+.settings-x,.ask-x{width:24px;height:24px;border:none;background:none;color:var(--micro);border-radius:4px;font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .12s}
+.settings-x:hover,.ask-x:hover{background:var(--surface2);color:var(--text)}
+.settings-body{padding:16px;max-height:72vh;overflow-y:auto}
+.settings-section{display:flex;flex-direction:column;gap:8px}
+.settings-div{height:1px;background:var(--border);margin:16px 0}
+.settings-label{font-size:11px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.settings-hint{font-size:12px;color:var(--micro);line-height:1.5}
+.settings-hint a{color:var(--accent);text-decoration:none}
+.settings-hint code{font-family:var(--font-mono);font-size:11px;color:var(--muted)}
+.settings-key-row{display:flex;gap:8px;align-items:center}
+.settings-input{
+  flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:7px;
+  padding:9px 11px;color:var(--text);font-size:13px;font-family:var(--font-mono);outline:none;
+}
+.settings-input:focus{border-color:var(--accent)}
+.settings-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:2px}
+.settings-btn{
+  background:var(--surface2);border:1px solid var(--border2);border-radius:7px;
+  padding:8px 13px;color:var(--text);font-size:12px;cursor:pointer;transition:background .12s,border-color .12s;
+}
+.settings-btn:hover{background:var(--bg);border-color:var(--accent)}
+.settings-btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.settings-btn.primary:hover{filter:brightness(1.08)}
+.settings-status{font-size:11px;font-family:var(--font-mono);color:var(--micro)}
+.settings-status.ok{color:var(--green)}
+/* Ask */
+.ask-in-row{display:flex;gap:8px;padding:14px 16px;align-items:flex-end}
+.ask-input{
+  flex:1;background:var(--bg);border:1px solid var(--border2);border-radius:8px;
+  padding:10px 12px;color:var(--text);font-size:13px;outline:none;resize:vertical;font-family:inherit;min-height:44px;
+}
+.ask-input:focus{border-color:var(--accent)}
+.ask-send{background:var(--accent);border:none;border-radius:8px;padding:10px 16px;color:#fff;font-size:13px;cursor:pointer}
+.ask-send:hover{filter:brightness(1.08)}
+.ask-result{padding:0 16px 16px;max-height:56vh;overflow-y:auto;display:none}
+.ask-result.visible{display:block}
+.ask-thinking{color:var(--micro);font-size:13px;padding:8px 0}
+.ask-answer{font-size:14px;line-height:1.6;color:var(--text)}
+.ask-cite{background:var(--accent-dim);border:1px solid var(--accent);color:var(--accent);border-radius:4px;padding:0 4px;font-size:11px;font-family:var(--font-mono);cursor:pointer;margin:0 1px}
+.ask-cite:hover{background:var(--accent);color:#fff}
+.ask-sources{margin-top:14px;border-top:1px solid var(--border);padding-top:12px;display:flex;flex-direction:column;gap:6px}
+.ask-sources-label{font-size:10px;font-family:var(--font-mono);text-transform:uppercase;letter-spacing:.07em;color:var(--micro)}
+.ask-source{text-align:left;background:var(--surface2);border:1px solid var(--border2);border-radius:6px;padding:7px 10px;color:var(--text);font-size:12px;cursor:pointer;transition:background .12s}
+.ask-source:hover{background:var(--bg);border-color:var(--accent)}
+
 /* ════════════════════
    AI LOADING
 ════════════════════ */
@@ -1235,6 +1296,58 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
       <span class="cmd-esc">esc</span>
     </div>
     <div class="cmd-results" id="cmdResults"></div>
+  </div>
+</div>
+
+<!-- ════ SETTINGS ════ -->
+<div id="settingsOverlay">
+  <div class="settings-box">
+    <div class="settings-head">
+      <div class="settings-title">Settings</div>
+      <button class="settings-x" id="settingsClose" aria-label="Close">×</button>
+    </div>
+    <div class="settings-body">
+      <div class="settings-section">
+        <div class="settings-label">Anthropic API key</div>
+        <div class="settings-hint">Enables the AI features (auto-title, tags, summarize, rewrite, describe, and Ask your Trace). Stored only in this browser (<code>localStorage</code>) and sent directly to <code>api.anthropic.com</code> — nowhere else.</div>
+        <div class="settings-key-row">
+          <input type="password" id="settingsKey" class="settings-input" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
+          <button class="settings-btn" id="settingsKeyToggle" title="Show / hide">👁</button>
+        </div>
+        <div class="settings-actions">
+          <button class="settings-btn primary" id="settingsKeySave">Save key</button>
+          <button class="settings-btn" id="settingsKeyClear">Remove key</button>
+          <span class="settings-status" id="settingsKeyStatus"></span>
+        </div>
+        <div class="settings-hint">Get a key at <a href="https://console.anthropic.com" target="_blank" rel="noopener">console.anthropic.com</a>.</div>
+      </div>
+      <div class="settings-div"></div>
+      <div class="settings-section">
+        <div class="settings-label">Your data</div>
+        <div class="settings-hint">Everything is stored locally. Export a backup, or restore one on another device.</div>
+        <div class="settings-actions">
+          <button class="settings-btn primary" id="settingsExport">Export backup (.json)</button>
+          <button class="settings-btn" id="settingsImport">Import backup…</button>
+          <input type="file" id="settingsImportFile" accept="application/json,.json" style="display:none">
+        </div>
+        <div class="settings-hint" id="settingsDataStat"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════ ASK YOUR TRACE ════ -->
+<div id="askOverlay">
+  <div class="ask-box">
+    <div class="ask-head">
+      <div class="ask-title">✦ Ask your Trace</div>
+      <button class="ask-x" id="askClose" aria-label="Close">×</button>
+    </div>
+    <div class="ask-in-row">
+      <textarea id="askInput" class="ask-input" rows="2" placeholder="Ask a question about your clips… (⌘↵ to ask)"></textarea>
+      <button class="ask-send" id="askSend">Ask</button>
+    </div>
+    <div class="ask-result" id="askResult"></div>
   </div>
 </div>
 
@@ -2027,6 +2140,7 @@ document.querySelectorAll('.ep-ai-btn').forEach(btn=>{
 
 /* ── Command palette ── */
 const CMDS=[
+  {label:'Ask your Trace',ico:'✦',fn:()=>{ closePalette();openAsk() }},
   {label:'New Clip',ico:'+',kd:'⌘N',fn:()=>{ closePalette();openNC() }},
   {label:'Card view',ico:'⊞',fn:()=>{ closePalette();switchView('card') }},
   {label:'List view',ico:'≡',fn:()=>{ closePalette();switchView('list') }},
@@ -2036,27 +2150,164 @@ const CMDS=[
   {label:'Toggle sidebar',ico:'↔',kd:'⌘B',fn:()=>{ closePalette();toggleSidebar() }},
   {label:'Toggle theme',ico:'◐',fn:()=>{ closePalette();cycleTheme() }},
   {label:'Focus search',ico:'⌕',kd:'/',fn:()=>{ closePalette();document.getElementById('searchInput').focus() }},
-  {label:'Set AI key',ico:'✦',fn:()=>{ closePalette();setAIKey() }},
+  {label:'Settings',ico:'⚙',kd:'⌘,',fn:()=>{ closePalette();openSettings() }},
 ];
 
+const CMD_TYPE_ICO={text:'T',code:'{}',prompt:'✦',link:'↗',image:'⊟',note:'◎'};
+
 function renderCMD(q){
-  const results=q?CMDS.filter(c=>c.label.toLowerCase().includes(q.toLowerCase())):CMDS;
   const el=document.getElementById('cmdResults');
-  el.innerHTML='<div class="cmd-group">Actions</div>';
-  results.forEach((cmd,i)=>{
-    const item=document.createElement('div');
-    item.className='cmd-item'+(i===0?' cmd-sel':'');
-    item.innerHTML=`<div class="cmd-ico">${cmd.ico}</div><span class="cmd-lbl">${cmd.label}</span>${cmd.kd?`<span class="cmd-kd">${cmd.kd}</span>`:''}`;
-    item.addEventListener('click',cmd.fn);
-    el.appendChild(item);
-  });
+  const ql=(q||'').trim().toLowerCase();
+  const actions=ql?CMDS.filter(c=>c.label.toLowerCase().includes(ql)):CMDS;
+  // Jump to any clip by title / tag / content
+  const clipMatches=ql?clips.filter(c=>!c.archived&&(
+    (c.title||'').toLowerCase().includes(ql)||
+    (c.tags||[]).some(t=>normalizeTag(t).includes(ql))||
+    (c.content||'').toLowerCase().includes(ql)
+  )).slice(0,8):[];
+
+  el.innerHTML='';
+  let idx=0;
+  if(actions.length){
+    el.insertAdjacentHTML('beforeend','<div class="cmd-group">Actions</div>');
+    actions.forEach(cmd=>{ el.appendChild(mkCmdItem(idx===0,cmd.ico,cmd.label,cmd.kd,cmd.fn)); idx++; });
+  }
+  if(clipMatches.length){
+    el.insertAdjacentHTML('beforeend','<div class="cmd-group">Clips</div>');
+    clipMatches.forEach(c=>{ el.appendChild(mkCmdItem(idx===0,CMD_TYPE_ICO[c.type]||'◎',c.title||'Untitled',c.type,()=>{ closePalette(); openEditor(c.id); })); idx++; });
+  }
+  if(!idx){ el.innerHTML='<div class="cmd-group">No matches</div>'; }
   cmdIdx=0;
+}
+function mkCmdItem(sel,ico,label,kd,fn){
+  const item=document.createElement('div');
+  item.className='cmd-item'+(sel?' cmd-sel':'');
+  item.innerHTML=`<div class="cmd-ico">${ico}</div><span class="cmd-lbl">${esc(label)}</span>${kd?`<span class="cmd-kd">${esc(kd)}</span>`:''}`;
+  item.addEventListener('click',fn);
+  return item;
 }
 function openPalette(){ document.getElementById('cmdOverlay').classList.add('open'); document.getElementById('cmdInput').value=''; renderCMD(''); setTimeout(()=>document.getElementById('cmdInput').focus(),30) }
 function closePalette(){ document.getElementById('cmdOverlay').classList.remove('open') }
 document.getElementById('cmdBtn').addEventListener('click',openPalette);
 document.getElementById('cmdOverlay').addEventListener('click',e=>{ if(e.target===document.getElementById('cmdOverlay')) closePalette() });
 document.getElementById('cmdInput').addEventListener('input',e=>renderCMD(e.target.value));
+
+/* ── AI error routing ── */
+function aiError(e){
+  if(e && e.message==='NO_KEY'){ toast('Add your Anthropic API key to use AI','red',{label:'Settings',fn:openSettings}); return; }
+  toast('AI request failed — check your key or connection','red');
+}
+
+/* ── Settings ── */
+function settingsOpen(){ return document.getElementById('settingsOverlay').classList.contains('open'); }
+function refreshSettings(){
+  const key=getAIKey();
+  document.getElementById('settingsKey').value=key;
+  const st=document.getElementById('settingsKeyStatus');
+  st.textContent=key?'✓ key set':'not set';
+  st.className='settings-status'+(key?' ok':'');
+  const bytes=(localStorage.getItem(SK)||'').length;
+  document.getElementById('settingsDataStat').textContent=`${clips.length} clips · ~${(bytes/1024).toFixed(1)} KB in this browser`;
+}
+function openSettings(){ refreshSettings(); document.getElementById('settingsOverlay').classList.add('open'); setTimeout(()=>document.getElementById('settingsKey').focus(),30); }
+function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); }
+document.getElementById('settingsClose').addEventListener('click',closeSettings);
+document.getElementById('settingsOverlay').addEventListener('click',e=>{ if(e.target.id==='settingsOverlay') closeSettings(); });
+document.getElementById('settingsKeyToggle').addEventListener('click',()=>{ const i=document.getElementById('settingsKey'); i.type=i.type==='password'?'text':'password'; });
+document.getElementById('settingsKeySave').addEventListener('click',()=>{
+  const v=document.getElementById('settingsKey').value.trim();
+  if(!v){ toast('Enter a key first','red'); return; }
+  try{ localStorage.setItem(AI_KEY,v) }catch(e){}
+  refreshSettings(); toast('AI key saved locally','green');
+});
+document.getElementById('settingsKeyClear').addEventListener('click',()=>{
+  try{ localStorage.removeItem(AI_KEY) }catch(e){}
+  refreshSettings(); toast('AI key removed');
+});
+
+/* ── Export / Import ── */
+document.getElementById('settingsExport').addEventListener('click',()=>{
+  const payload={app:'trace',version:1,exportedAt:new Date().toISOString(),clips,prefs};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url; a.download='trace-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  toast('Backup exported','green');
+});
+document.getElementById('settingsImport').addEventListener('click',()=>document.getElementById('settingsImportFile').click());
+document.getElementById('settingsImportFile').addEventListener('change',e=>{
+  const file=e.target.files?.[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const data=JSON.parse(reader.result);
+      const incoming=Array.isArray(data)?data:data.clips;
+      if(!Array.isArray(incoming)) throw new Error('no clips array');
+      const replace=confirm(`Import ${incoming.length} clips.\n\nOK = replace everything.\nCancel = merge with your current ${clips.length} clips.`);
+      const clean=incoming.map(c=>({
+        id:c.id||uid(), type:c.type||'text', title:c.title||'', content:c.content||'',
+        url:c.url||undefined, imageData:c.imageData||undefined, imageName:c.imageName||undefined, imageType:c.imageType||undefined,
+        tags:uniqueTags(c.tags||[]), date:c.date||Date.now(),
+        pinned:!!(c.pinned||c.favorited), sensitive:!!c.sensitive, archived:!!c.archived, chains:c.chains||[]
+      }));
+      if(replace){ clips=clean; }
+      else { const ids=new Set(clips.map(c=>c.id)); clips=clips.concat(clean.filter(c=>!ids.has(c.id))); }
+      if(data&&data.prefs&&typeof data.prefs==='object'){ prefs={...prefs,...data.prefs}; saveP(); applyTheme(prefs.theme); }
+      save(); renderRecent(); if(typeof renderFavorites==='function') renderFavorites(); render(); refreshSettings();
+      toast((replace?'Replaced with ':'Merged in ')+clean.length+' clips','green');
+    }catch(err){ console.error(err); toast('Import failed — not a valid Trace backup','red'); }
+  };
+  reader.readAsText(file);
+  e.target.value='';
+});
+
+/* ── Ask your Trace ── */
+function askOpen(){ return document.getElementById('askOverlay').classList.contains('open'); }
+function openAsk(){
+  document.getElementById('askOverlay').classList.add('open');
+  const res=document.getElementById('askResult'); res.classList.remove('visible'); res.innerHTML='';
+  setTimeout(()=>document.getElementById('askInput').focus(),30);
+}
+function closeAsk(){ document.getElementById('askOverlay').classList.remove('open'); }
+document.getElementById('askClose').addEventListener('click',closeAsk);
+document.getElementById('askOverlay').addEventListener('click',e=>{ if(e.target.id==='askOverlay') closeAsk(); });
+document.getElementById('askSend').addEventListener('click',runAsk);
+document.getElementById('askInput').addEventListener('keydown',e=>{ if((e.metaKey||e.ctrlKey)&&e.key==='Enter'){ e.preventDefault(); runAsk(); } });
+
+let askActive=[];
+async function runAsk(){
+  const q=document.getElementById('askInput').value.trim();
+  if(!q) return;
+  if(!getAIKey()){ aiError({message:'NO_KEY'}); return; }
+  const res=document.getElementById('askResult');
+  res.classList.add('visible');
+  res.innerHTML='<div class="ask-thinking">Reading your clips…</div>';
+  askActive=clips.filter(c=>!c.archived);
+  const digest=askActive.map((c,i)=>`[${i+1}] (${c.type}) ${c.title||'Untitled'}${(c.tags&&c.tags.length)?' #'+c.tags.join(' #'):''}\n${(c.content||c.url||'').slice(0,400)}`).join('\n\n');
+  const sys='You answer questions using ONLY the user\'s saved clips below. Cite the clips you used by their [number]. If the clips do not contain the answer, say so plainly. Be concise.';
+  const usr=`CLIPS:\n${digest}\n\nQUESTION: ${q}\n\nAnswer, citing clip numbers in square brackets like [3].`;
+  try{
+    const answer=await callAI(sys,usr);
+    renderAskAnswer(answer);
+  }catch(e){ res.classList.remove('visible'); aiError(e); }
+}
+function renderAskAnswer(answer){
+  const res=document.getElementById('askResult');
+  const active=askActive;
+  const cited=new Set();
+  const html=esc(answer).replace(/\[(\d+)\]/g,(m,n)=>{ const i=parseInt(n,10)-1; if(active[i]){ cited.add(i); return `<button class="ask-cite" data-idx="${i}">[${n}]</button>`; } return m; });
+  let citeList='';
+  if(cited.size){
+    citeList='<div class="ask-sources"><div class="ask-sources-label">Sources</div>'+
+      [...cited].map(i=>`<button class="ask-source" data-idx="${i}">${esc(CMD_TYPE_ICO[active[i].type]||'◎')} ${esc(active[i].title||'Untitled')}</button>`).join('')+'</div>';
+  }
+  res.innerHTML='<div class="ask-answer">'+html.replace(/\n/g,'<br>')+'</div>'+citeList;
+  res.querySelectorAll('[data-idx]').forEach(el=>{
+    el.addEventListener('click',()=>{ const c=active[parseInt(el.dataset.idx,10)]; if(c){ closeAsk(); openEditor(c.id); } });
+  });
+}
 
 /* ── View + filter ── */
 function switchView(v){ view=v; prefs.view=v; saveP(); document.getElementById('btnCards').classList.toggle('active',v==='card'); document.getElementById('btnList').classList.toggle('active',v==='list'); render() }
@@ -2207,8 +2458,11 @@ document.addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key==='k'){ e.preventDefault(); openPalette(); return }
   if((e.metaKey||e.ctrlKey)&&e.key==='n'){ e.preventDefault(); openNC(); return }
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='b'){ e.preventDefault(); toggleSidebar(); return }
+  if((e.metaKey||e.ctrlKey)&&e.key===','){ e.preventDefault(); openSettings(); return }
 
   if(e.key==='Escape'){
+    if(settingsOpen()){ closeSettings(); return }
+    if(askOpen()){ closeAsk(); return }
     if(document.getElementById('sidebar')?.classList.contains('mobile-open')){ closeMobileNav(); return }
     if(chainMode){ exitChainMode(); return }
     if(cmdOpen){ closePalette(); return }
