@@ -122,6 +122,19 @@ button,input,textarea,select{font-family:var(--font-sans)}
 #sidebar.collapsed .sb-bottom{flex-direction:column;gap:4px;padding:8px 0;width:100%;align-items:center}
 #sidebar.collapsed .sb-bottom-item{width:40px;height:36px;justify-content:center;border-radius:8px;padding:0}
 #sidebar.collapsed .sb-bottom-text{display:none}
+/* Collapsed rail: drop hidden label boxes out of flow so gap can't push icons
+   off-center. Items with a count vs. without previously mis-aligned. */
+#sidebar.collapsed .nav-item,
+#sidebar.collapsed .sb-bottom-item,
+#sidebar.collapsed #newClipBtn,
+#sidebar.collapsed .logo{gap:0}
+#sidebar.collapsed .logo-name,
+#sidebar.collapsed .logo-ver,
+#sidebar.collapsed .nav-text,
+#sidebar.collapsed .nav-count,
+#sidebar.collapsed .kbd-chip,
+#sidebar.collapsed .ncb-label,
+#sidebar.collapsed .sb-bottom-hint{display:none}
 
 #sidebarToggle{
   width:28px;height:28px;border:1px solid transparent;background:none;
@@ -134,76 +147,35 @@ button,input,textarea,select{font-family:var(--font-sans)}
 #sidebarToggle .chevron{transition:transform .25s var(--ease-reflow)}
 #sidebar.collapsed #sidebarToggle .chevron{transform:rotate(180deg)}
 
-/* Floating toggle — hidden, using icon rail instead */
-#floatingToggle{display:none}
-
-/* Floating new clip FAB + speed dial */
-#fabNewClip{
-  position:fixed;bottom:24px;right:24px;z-index:15;
-  width:52px;height:52px;border-radius:14px;border:none;
-  background:linear-gradient(135deg,var(--accent),#6D28D9);
-  color:#fff;font-size:22px;font-weight:300;
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-  box-shadow:0 4px 20px rgba(139,92,246,.35),0 0 0 1px rgba(139,92,246,.12);
-  transition:transform .2s var(--ease-panel),box-shadow .2s;
-}
-#fabNewClip:hover{transform:scale(1.06) translateY(-2px);box-shadow:0 8px 32px rgba(139,92,246,.45)}
-#fabNewClip:active{transform:scale(.95)}
-#fabNewClip .fab-kbd{
-  position:absolute;top:-8px;right:-8px;
-  font-size:9px;font-family:var(--font-mono);
-  background:var(--surface2);color:var(--muted);
-  padding:2px 5px;border-radius:4px;border:1px solid var(--border2);
-  opacity:0;transition:opacity .14s;pointer-events:none;
-}
-#fabNewClip:hover .fab-kbd{opacity:1}
-[data-theme="light"] #fabNewClip{background:linear-gradient(135deg,#18181B,#0A0A0B)}
-
-/* FAB speed dial */
-.fab-dial{
-  position:fixed;bottom:84px;right:24px;z-index:14;
-  display:flex;flex-direction:column-reverse;gap:7px;
-  opacity:0;pointer-events:none;transform:translateY(10px);
-  transition:opacity .2s var(--ease-panel),transform .22s var(--ease-panel);
-}
-.fab-dial.open{opacity:1;pointer-events:all;transform:translateY(0)}
-.fab-dial-item{
+/* Mobile hamburger (desktop: hidden; shown ≤768px) */
+#floatingToggle{
+  display:none;position:fixed;top:12px;left:12px;z-index:50;
   width:40px;height:40px;border-radius:10px;
-  background:var(--surface2);border:1px solid var(--border2);
-  color:var(--muted);font-size:12px;font-family:var(--font-mono);
-  display:flex;align-items:center;justify-content:center;cursor:pointer;
-  box-shadow:0 4px 14px rgba(0,0,0,.25);
-  transition:transform .15s var(--ease-panel),background .12s,color .12s,border-color .12s;
-  position:relative;
+  background:var(--surface);border:1px solid var(--border2);color:var(--text);
+  align-items:center;justify-content:center;cursor:pointer;
+  box-shadow:0 2px 10px rgba(0,0,0,.2);
 }
-.fab-dial-item:hover{background:var(--accent-dim);color:var(--accent);border-color:var(--accent);transform:scale(1.06)}
-.fab-dial-item .dial-label{
-  position:absolute;right:calc(100% + 8px);
-  font-size:11px;white-space:nowrap;color:var(--muted);
-  background:var(--surface2);border:1px solid var(--border2);
-  padding:3px 8px;border-radius:6px;
-  opacity:0;transition:opacity .12s;pointer-events:none;
-  box-shadow:0 2px 8px rgba(0,0,0,.18);
-}
-.fab-dial-item:hover .dial-label{opacity:1}
-.fab-dial.open .fab-dial-item{animation:dialIn .22s var(--ease-panel) both}
-.fab-dial.open .fab-dial-item:nth-child(1){animation-delay:0s}
-.fab-dial.open .fab-dial-item:nth-child(2){animation-delay:.03s}
-.fab-dial.open .fab-dial-item:nth-child(3){animation-delay:.05s}
-.fab-dial.open .fab-dial-item:nth-child(4){animation-delay:.07s}
-.fab-dial.open .fab-dial-item:nth-child(5){animation-delay:.09s}
-.fab-dial.open .fab-dial-item:nth-child(6){animation-delay:.11s}
-@keyframes dialIn{from{opacity:0;transform:scale(.8) translateY(5px)}to{opacity:1;transform:scale(1) translateY(0)}}
+#floatingToggle:active{transform:scale(.94)}
+#sidebarBackdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:55}
 
 #main{transition:min-width .28s var(--ease-reflow);will-change:contents}
-.card.reflowing,.pin-chip.reflowing{transition:transform .28s var(--ease-reflow),opacity .18s var(--ease-reflow)!important;will-change:transform}
+.card.reflowing{transition:transform .28s var(--ease-reflow),opacity .18s var(--ease-reflow)!important;will-change:transform}
 .logo{
   padding:14px 12px 10px;
   display:flex;align-items:center;gap:8px;flex-shrink:0;
 }
-.logo-mark{display:none}
+.logo-mark{display:none;width:24px;height:24px;flex-shrink:0;cursor:pointer;border-radius:6px;transition:transform .14s}
+.logo-mark svg{width:24px;height:24px;display:block}
+.logo-mark:hover{transform:scale(1.06)}
+.logo-mark:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .logo-name{font-size:15px;font-weight:600;letter-spacing:-.4px;white-space:nowrap}
 .logo-ver{font-size:9px;font-family:var(--font-mono);color:var(--micro);white-space:nowrap;margin-right:auto}
+/* Collapsed rail = curated essentials only: brand mark replaces the chevron,
+   and the Types section + its divider fold away (like ChatGPT / Claude). */
+#sidebar.collapsed .logo-mark{display:flex;align-items:center;justify-content:center}
+#sidebar.collapsed #sidebarToggle{display:none}
+#sidebar.collapsed #sbTypes,
+#sidebar.collapsed #divTypes{display:none}
 
 #newClipBtn{
   margin:4px 8px 6px;border:1px solid var(--border2);border-radius:8px;
@@ -233,14 +205,16 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .nav-text{white-space:nowrap;transition:opacity .15s,width .15s,max-width .15s}
 .nav-count{margin-left:auto;font-size:10px;font-family:var(--font-mono);color:var(--micro);white-space:nowrap;transition:opacity .15s,width .15s,max-width .15s}
 .nav-item:hover{background:var(--surface2);color:var(--text)}
-.nav-item.active{background:var(--surface2);color:var(--text)}
+.nav-item.active{background:var(--accent-dim);color:var(--text)}
+.nav-item.active::before{content:'';position:absolute;left:3px;top:50%;transform:translateY(-50%);width:2.5px;height:15px;border-radius:2px;background:var(--accent)}
+#sidebar.collapsed .nav-item.active::before{display:none}
 .nav-ico{
   width:18px;height:18px;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
   color:var(--muted);transition:color .12s;
 }
 .nav-ico svg{width:16px;height:16px}
-.nav-item.active .nav-ico{color:var(--text)}
+.nav-item.active .nav-ico{color:var(--accent)}
 .nav-item:hover .nav-ico{color:var(--text)}
 
 .sb-div{height:1px;background:var(--border);margin:4px 12px}
@@ -426,7 +400,9 @@ button,input,textarea,select{font-family:var(--font-sans)}
   padding:12px 14px;border-bottom:1px solid var(--border);
   display:flex;align-items:center;gap:8px;flex-shrink:0;
 }
-.cb-panel-title{font-size:12px;font-weight:500;flex:1}
+.cb-panel-head-text{flex:1;display:flex;flex-direction:column;gap:2px;min-width:0}
+.cb-panel-title{font-size:12px;font-weight:500}
+.cb-panel-sub{font-size:9px;font-family:var(--font-mono);color:var(--micro);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .cb-panel-close{
   background:none;border:none;color:var(--muted);cursor:pointer;
   width:24px;height:24px;display:flex;align-items:center;justify-content:center;
@@ -477,28 +453,6 @@ button,input,textarea,select{font-family:var(--font-sans)}
   transition:all .12s;cursor:pointer;
 }
 #cmdBtn:hover{background:var(--surface);color:var(--muted)}
-
-/* ─── PINNED STRIP ─── */
-#pinnedStrip{
-  padding:7px 18px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:7px;
-  overflow-x:auto;flex-shrink:0;min-height:40px;
-  background:var(--bg);transition:background .2s;
-}
-.pin-label{font-size:9px;font-weight:500;letter-spacing:.08em;text-transform:uppercase;color:var(--micro);white-space:nowrap;flex-shrink:0}
-.pin-chip{
-  display:flex;align-items:center;gap:5px;padding:3px 8px;
-  background:var(--surface);border:1px solid var(--border2);
-  border-left:2px solid var(--accent);border-radius:0 4px 4px 0;
-  white-space:nowrap;cursor:pointer;flex-shrink:0;
-  transition:background .12s;
-}
-.pin-chip:hover{background:var(--surface2)}
-.pin-chip-type{font-size:9px;font-family:var(--font-mono);color:var(--accent);text-transform:uppercase}
-.pin-chip-title{font-size:11.5px;color:var(--text)}
-.pin-chip-x{background:none;border:none;color:var(--micro);font-size:11px;padding:0 0 0 2px;cursor:pointer;line-height:1;transition:color .1s}
-.pin-chip-x:hover{color:var(--accent)}
-.pin-empty{font-size:11px;color:var(--micro);font-family:var(--font-mono)}
 
 /* ─── FEED ─── */
 #feed{flex:1;overflow-y:auto;padding:18px}
@@ -599,6 +553,7 @@ button,input,textarea,select{font-family:var(--font-sans)}
   position:relative;cursor:pointer;
   transition:background .12s,color .12s,opacity .12s;
 }
+.act-btn svg{width:14px;height:14px;display:block}
 .act-btn:hover{background:var(--surface2);color:var(--accent)}
 .act-btn[data-active="true"]{color:var(--accent)}
 .act-btn .tip{
@@ -894,24 +849,6 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 }
 .empty-hint-chip:hover{border-color:var(--accent);color:var(--accent)}
 
-/* ════════════════════
-   FLIP ANIMATION
-════════════════════ */
-.card.flipping{
-  animation:cardFlip .3s var(--ease-panel) forwards;
-}
-@keyframes cardFlip{
-  0%{transform:translateY(0) scale(1);opacity:1}
-  40%{transform:translateY(-18px) scale(.97);opacity:.7}
-  100%{transform:translateY(-40px) scale(.92);opacity:0}
-}
-.pin-chip.chip-in{
-  animation:chipIn .28s var(--ease-panel) forwards;
-}
-@keyframes chipIn{
-  from{opacity:0;transform:scale(.9) translateX(-6px)}
-  to{opacity:1;transform:scale(1) translateX(0)}
-}
 
 /* AI loading spinner inline */
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -1010,27 +947,65 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
   cursor:pointer;padding:0 2px;transition:color .12s;flex-shrink:0;
 }
 .clip-prompt-dismiss:hover{color:var(--text)}
+
+/* ════════════════════
+   MOBILE (≤768px)
+════════════════════ */
+@media(max-width:768px){
+  #floatingToggle{display:flex}
+  #sidebarBackdrop.show{display:block}
+
+  /* Sidebar → off-canvas drawer; full nav (JS keeps .collapsed off on mobile) */
+  #sidebar,#sidebar.collapsed{
+    position:fixed;top:0;left:0;height:100%;
+    width:264px;min-width:264px;z-index:60;
+    transform:translateX(-100%);
+    transition:transform .25s var(--ease-panel);
+    box-shadow:12px 0 44px rgba(0,0,0,.5);
+  }
+  #sidebar.mobile-open{transform:translateX(0)}
+  #sidebar #sidebarToggle{display:none} /* collapse control is meaningless on mobile */
+
+  /* Editor → full-screen overlay */
+  #editorPanel{position:fixed;inset:0;width:100vw;min-width:0;height:100%;z-index:70;border-left:none}
+
+  /* Single-column content */
+  #main{min-width:0}
+  #grid.masonry{columns:1}
+  .hero-area{padding:60px 16px 16px}
+  .hero-search{max-width:100%}
+  .fav-section{padding:12px 16px 0;max-width:100%}
+  #feed{padding:12px}
+  .feed-header{padding-left:56px} /* clear the fixed hamburger */
+  #clipboardPanel{width:100%}
+
+  /* Touch: the hover-revealed action rail must stay visible/tappable */
+  .card-actions{opacity:1;pointer-events:all;transform:none}
+
+  /* Keep transient bars inside the viewport */
+  #toastArea{left:12px;right:12px}
+  .toast{max-width:100%}
+  .bulk-bar,#chainBanner,.clip-prompt{max-width:calc(100vw - 24px)}
+}
 </style>
 </head>
 <body>
 <div class="ai-loading-bar" id="aiBar"></div>
-<button id="floatingToggle" style="display:none"></button>
-<div id="sidebarBackdrop" style="display:none"></div>
-<button id="fabNewClip" aria-label="New Clip" title="New Clip (⌘N)">+<span class="fab-kbd">⌘N</span></button>
-<div class="fab-dial">
-  <button class="fab-dial-item" data-type="text"><span>T</span><span class="dial-label">Text</span></button>
-  <button class="fab-dial-item" data-type="code"><span>{}</span><span class="dial-label">Code</span></button>
-  <button class="fab-dial-item" data-type="prompt"><span>✦</span><span class="dial-label">Prompt</span></button>
-  <button class="fab-dial-item" data-type="link"><span>↗</span><span class="dial-label">Link</span></button>
-  <button class="fab-dial-item" data-type="image"><span>⊟</span><span class="dial-label">Image</span></button>
-  <button class="fab-dial-item" data-type="note"><span>◎</span><span class="dial-label">Note</span></button>
-</div>
+<button id="floatingToggle" aria-label="Open navigation" title="Menu">
+  <svg viewBox="0 0 16 16" width="18" height="18" fill="none"><path d="M2.5 4h11M2.5 8h11M2.5 12h11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+</button>
+<div id="sidebarBackdrop"></div>
+<!-- Floating create button removed — one primary create affordance: sidebar "New Clip", ⌘N, and the command palette. -->
+
 
 <div id="app">
 
 <!-- ════ SIDEBAR ════ -->
 <aside id="sidebar" aria-label="Workspace navigation">
   <div class="logo">
+    <span class="logo-mark" role="button" tabindex="0" aria-label="Expand sidebar" title="Expand sidebar (⌘B)">
+      <svg viewBox="0 0 32 32" width="24" height="24"><rect width="32" height="32" rx="7" fill="var(--accent)"/><path d="M7 10h18M7 16h12M7 22h15" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/></svg>
+    </span>
     <span class="logo-name">Trace</span>
     <span class="logo-ver">local</span>
     <button id="sidebarToggle" aria-label="Toggle sidebar" title="Toggle sidebar (⌘B)">
@@ -1051,7 +1026,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
       <span class="nav-text">All Clips</span><span class="nav-count" id="cntAll">0</span>
     </div>
     <div class="nav-item" data-filter="pinned" title="Pinned">
-      <div class="nav-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M8 2v4M6 6l-1 4h6l-1-4M5 10l-1 4M11 10l1 4M6 6h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+      <div class="nav-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M5.5 2.5h5M7 2.5v3.5l-1.5 2h5L9 6V2.5M8 8v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
       <span class="nav-text">Pinned</span><span class="nav-count" id="cntPin">0</span>
     </div>
     <div class="nav-item" data-filter="archived" title="Archived">
@@ -1060,9 +1035,9 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
     </div>
   </div>
 
-  <div class="sb-div"></div>
+  <div class="sb-div" id="divTypes"></div>
 
-  <div class="sb-section">
+  <div class="sb-section" id="sbTypes">
     <div class="sb-label">Types</div>
     <div class="nav-item" data-type="text" title="Text">
       <div class="nav-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M4 3h8M8 3v10M5 13h6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
@@ -1114,14 +1089,6 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
       <div class="sb-bottom-ico"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="3" stroke="currentColor" stroke-width="1.3"/><path d="M8 2v1.5M8 12.5V14M2 8h1.5M12.5 8H14M3.75 3.75l1.06 1.06M11.19 11.19l1.06 1.06M3.75 12.25l1.06-1.06M11.19 4.81l1.06-1.06" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg></div>
       <span class="sb-bottom-text">Toggle theme</span>
     </div>
-    <div class="sb-bottom-item" id="sbLocalBadge" title="All data stored locally in your browser — nothing leaves your machine" style="pointer-events:none">
-      <div class="sb-bottom-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M8 1.5a3.5 3.5 0 00-3.5 3.5v3h-1a1 1 0 00-1 1v5a1 1 0 001 1h9a1 1 0 001-1v-5a1 1 0 00-1-1h-1V5A3.5 3.5 0 008 1.5zM6 5a2 2 0 114 0v3H6V5z" fill="currentColor"/></svg></div>
-      <span class="sb-bottom-text">Local-only · Your device</span>
-    </div>
-    <div class="sb-bottom-item" id="sbChainStatus" title="Linked clips" style="pointer-events:none">
-      <div class="sb-bottom-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M6.5 9.5l3-3M5 11a2.83 2.83 0 010-4l1-1a2.83 2.83 0 014 0M10 5a2.83 2.83 0 010 4l-1 1a2.83 2.83 0 01-4 0" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg></div>
-      <span class="sb-bottom-text" id="sbChainStatusText">0 clips linked</span>
-    </div>
   </div>
 </aside>
 
@@ -1145,7 +1112,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
   <!-- Favorites -->
   <div class="fav-section" id="favSection">
     <div class="fav-header">
-      <span class="fav-title">Favorites</span>
+      <span class="fav-title">Pinned</span>
       <button class="fav-expand" id="favExpand">View all →</button>
     </div>
     <div class="fav-list" id="favList"></div>
@@ -1164,7 +1131,6 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
         <button id="cmdBtn">⌘K</button>
       </div>
     </div>
-    <div id="pinnedStrip"><span class="pin-label">Pinned</span></div>
     <div id="feed">
       <div id="grid" class="masonry"></div>
     </div>
@@ -1173,16 +1139,19 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
   <!-- Clipboard history panel -->
   <div id="clipboardPanel">
     <div class="cb-panel-head">
-      <span class="cb-panel-title">Clipboard history (24h)</span>
+      <div class="cb-panel-head-text">
+        <span class="cb-panel-title">Recent captures</span>
+        <span class="cb-panel-sub">copied &amp; pasted in Trace · last 24h</span>
+      </div>
       <button class="cb-panel-close" id="cbPanelClose">×</button>
     </div>
     <div class="cb-panel-list" id="cbPanelList">
-      <div class="cb-panel-empty">No clipboard items yet.<br>Copy something to see it here.</div>
+      <div class="cb-panel-empty">Nothing captured yet.<br>Copy a clip or paste text into Trace to see it here.</div>
     </div>
   </div>
   <button id="clipboardToggle">
     <svg viewBox="0 0 16 16" fill="none"><rect x="3" y="1" width="10" height="13" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M6 1v1.5a1 1 0 001 1h2a1 1 0 001-1V1" stroke="currentColor" stroke-width="1.2"/><path d="M6 6h4M6 8.5h4M6 11h2" stroke="currentColor" stroke-width="1" stroke-linecap="round"/></svg>
-    Clipboard history
+    Recent captures
   </button>
 </main>
 
@@ -1251,7 +1220,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
       <input class="nc-field" id="ncTags" type="text" list="tagOptions" placeholder="Tags: research, writing...">
     </div>
     <div class="nc-foot">
-      <span class="nc-ai-note">✦ auto-title · auto-tags on save</span>
+      <span class="nc-ai-note">✦ optional AI assist — set a key via ⌘K</span>
       <button class="nc-save" id="ncSave"><span>Save clip</span><span class="nc-kbd">⌘↵</span></button>
     </div>
   </div>
@@ -1282,7 +1251,6 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 <div class="bulk-bar" id="bulkBar">
   <span class="bulk-count" id="bulkCount">0 selected</span>
   <div class="bulk-sep"></div>
-  <button class="bulk-btn" id="bulkFav">★ Favorite</button>
   <button class="bulk-btn" id="bulkPin">⊕ Pin</button>
   <button class="bulk-btn" id="bulkArchive">↓ Archive</button>
   <button class="bulk-btn" id="bulkDel" style="color:var(--red)">✕ Delete</button>
@@ -1310,6 +1278,16 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 /* ── Constants ── */
 const SK = 'trace_clips_v1';
 const PK = 'trace_prefs_v1';
+const AI_KEY = 'trace_ai_key_v1';
+
+/* ── AI key (stored locally in this browser only) ── */
+function getAIKey(){ try{ return localStorage.getItem(AI_KEY)||'' }catch(e){ return '' } }
+function setAIKey(){
+  const k = prompt('Anthropic API key — stored locally in this browser only, never sent anywhere except api.anthropic.com:', getAIKey());
+  if(k===null) return;
+  try{ if(k.trim()) localStorage.setItem(AI_KEY, k.trim()); else localStorage.removeItem(AI_KEY); }catch(e){}
+  toast(k.trim()?'AI key saved locally':'AI key removed', k.trim()?'green':'');
+}
 
 /* ── State ── */
 let clips = [];
@@ -1328,7 +1306,13 @@ let cmdIdx = 0;
 let searchQ = '';
 
 /* ── Persistence ── */
-function save(){ try{ localStorage.setItem(SK, JSON.stringify(clips)) }catch(e){} }
+let quotaWarned=false;
+function save(){
+  try{ localStorage.setItem(SK, JSON.stringify(clips)); quotaWarned=false; }
+  catch(e){
+    if(!quotaWarned){ quotaWarned=true; toast('Storage full — recent changes may not be saved. Delete large clips or images.','red'); }
+  }
+}
 function saveP(){ try{ localStorage.setItem(PK, JSON.stringify(prefs)) }catch(e){} }
 function load(){
   try{ const d=localStorage.getItem(SK); if(d) clips=JSON.parse(d) }catch(e){ clips=[] }
@@ -1392,9 +1376,7 @@ function applyTheme(t){
   const r=document.documentElement;
   const eff = t==='auto' ? (window.matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light') : t;
   r.setAttribute('data-theme',eff);
-  document.querySelectorAll('.theme-btn').forEach(b=>b.classList.toggle('active',b.dataset.theme===prefs.theme));
 }
-document.querySelectorAll('.theme-btn').forEach(b=>b.addEventListener('click',()=>{ prefs.theme=b.dataset.theme; saveP(); applyTheme(prefs.theme) }));
 window.matchMedia('(prefers-color-scheme:dark)').addEventListener('change',()=>{ if(prefs.theme==='auto') applyTheme('auto') });
 
 /* ── Filter / search ── */
@@ -1410,12 +1392,13 @@ function filtered(){
       (c.tags||[]).some(t=>normalizeTag(t).includes(q))
     );
   }
-  if(filter==='favorites') list=list.filter(c=>c.favorited);
-  else if(filter==='pinned') list=list.filter(c=>c.pinned);
+  if(filter==='pinned') list=list.filter(c=>c.pinned);
   else if(filter.startsWith('type:')) list=list.filter(c=>c.type===filter.slice(5));
   else if(filter.startsWith('tag:')) list=list.filter(c=>(c.tags||[]).some(t=>normalizeTag(t)===filter.slice(4)));
   list.sort((a,b)=>b.date-a.date);
-  return applyCustomOrder(list);
+  // Custom drag order only applies in the unfiltered "All Clips" view, so a
+  // reorder inside one filter can't scramble the rest of the library.
+  return (filter==='all' && !searchQ) ? applyCustomOrder(list) : list;
 }
 
 /* ── Counts ── */
@@ -1430,21 +1413,6 @@ function updateCounts(){
   updateTagOptions();
 }
 
-/* ── Pinned strip ── */
-function renderPinned(){
-  const s=document.getElementById('pinnedStrip');
-  const pinned=clips.filter(c=>c.pinned&&!c.archived);
-  s.innerHTML='<span class="pin-label">Pinned</span>';
-  if(!pinned.length){ s.innerHTML+='<span class="pin-empty">nothing pinned — press P on a card</span>'; return }
-  pinned.forEach(c=>{
-    const ch=document.createElement('div');
-    ch.className='pin-chip';
-    ch.innerHTML=`<span class="pin-chip-type">${esc(c.type)}</span><span class="pin-chip-title">${esc(c.title)}</span><button class="pin-chip-x" data-id="${c.id}" title="Unpin">📌</button>`;
-    ch.addEventListener('click',e=>{ if(!e.target.classList.contains('pin-chip-x')) openEditor(c.id) });
-    ch.querySelector('.pin-chip-x').addEventListener('click',e=>{ e.stopPropagation(); togglePin(c.id) });
-    s.appendChild(ch);
-  });
-}
 
 /* ── Card HTML ── */
 function cardBodyHTML(c){
@@ -1458,25 +1426,22 @@ function cardBodyHTML(c){
   if(c.type==='link') return `<div class="card-link"><div class="link-ico">↗</div><div style="min-width:0;flex:1"><div class="card-link-url">${esc(c.url||c.content||'')}</div><div class="link-title">${esc(excerpt(c.title||c.content,90))}</div></div></div>`;
   return `<div class="card-preview ${c.sensitive?'sensitive-wrap blur':''}">${esc(excerpt(c.content,220))}</div>`;
 }
-function cardHTML(c){
-  const tags=(c.tags||[]).map(t=>`<span class="tag" data-tag="${esc(normalizeTag(t))}">#${esc(normalizeTag(t))}</span>`).join('');
-  const chains=(c.chains||[]).length ? `<span class="chain-badge">⬡ ${(c.chains||[]).length} linked</span>` : '';
-  return `
-    <div class="drag-handle" title="Drag to reorder"><span></span></div>
-    <div class="fav-star">★</div>
-    <div class="card-type"><div class="type-dot ${c.type}"></div>${c.type.toUpperCase()}</div>
-    <div class="card-title">${esc(c.title)}</div>
-    ${cardBodyHTML(c)}
-    ${chains}
-    <div class="card-meta">${tags}<span class="card-date">${rel(c.date)}</span></div>
-    <div class="ai-hint">✦ suggest tags</div>
-    <div class="card-actions">
-      <button class="act-btn" data-action="edit">E<span class="tip">Edit</span></button>
-      <button class="act-btn" data-action="favorite" data-active="${c.favorited}">★<span class="tip">Favorite</span></button>
-      <button class="act-btn" data-action="pin" data-active="${c.pinned}">${c.pinned?'📌':'⊕'}<span class="tip">${c.pinned?'Unpin':'Pin'}</span></button>
-      <button class="act-btn" data-action="copy">C<span class="tip">Copy</span></button>
-      <button class="act-btn" data-action="${c.archived?'restore':'archive'}">${c.archived?'↑':'↓'}<span class="tip">${c.archived?'Restore':'Archive'}</span></button>
-      <button class="act-btn" data-action="overflow">⋯<span class="tip">More</span></button>
+/* Self-explanatory line icons for the card action rail (match sidebar SVG style) */
+const ACT_ICON={
+  edit:'<svg viewBox="0 0 16 16" fill="none"><path d="M11.4 2.4a1.4 1.4 0 012 2L5.3 12.5l-3 .8.8-3 8.3-7.9z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/></svg>',
+  pin:'<svg viewBox="0 0 16 16" fill="none"><path d="M5.5 2.5h5M7 2.5v3.5l-1.5 2h5L9 6V2.5M8 8v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  copy:'<svg viewBox="0 0 16 16" fill="none"><rect x="5.5" y="5.5" width="8" height="8" rx="1.3" stroke="currentColor" stroke-width="1.3"/><path d="M3.5 10.5H3a1 1 0 01-1-1V3a1 1 0 011-1h6.5a1 1 0 011 1v.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  archive:'<svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="3" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M3 6v6a1 1 0 001 1h8a1 1 0 001-1V6" stroke="currentColor" stroke-width="1.3"/><path d="M8 8v3M6.5 9.5L8 11l1.5-1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  restore:'<svg viewBox="0 0 16 16" fill="none"><rect x="2" y="3" width="12" height="3" rx="1" stroke="currentColor" stroke-width="1.3"/><path d="M3 6v6a1 1 0 001 1h8a1 1 0 001-1V6" stroke="currentColor" stroke-width="1.3"/><path d="M8 11V8M6.5 9.5L8 8l1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  more:'<svg viewBox="0 0 16 16" fill="none"><circle cx="3.4" cy="8" r="1.15" fill="currentColor"/><circle cx="8" cy="8" r="1.15" fill="currentColor"/><circle cx="12.6" cy="8" r="1.15" fill="currentColor"/></svg>',
+};
+function actionsHTML(c){
+  return `<div class="card-actions">
+      <button class="act-btn" data-action="edit" aria-label="Edit">${ACT_ICON.edit}<span class="tip">Edit</span></button>
+      <button class="act-btn" data-action="pin" data-active="${c.pinned}" aria-label="${c.pinned?'Unpin':'Pin'}">${ACT_ICON.pin}<span class="tip">${c.pinned?'Unpin':'Pin'}</span></button>
+      <button class="act-btn" data-action="copy" aria-label="Copy">${ACT_ICON.copy}<span class="tip">Copy</span></button>
+      <button class="act-btn" data-action="${c.archived?'restore':'archive'}" aria-label="${c.archived?'Restore':'Archive'}">${c.archived?ACT_ICON.restore:ACT_ICON.archive}<span class="tip">${c.archived?'Restore':'Archive'}</span></button>
+      <button class="act-btn" data-action="overflow" aria-label="More">${ACT_ICON.more}<span class="tip">More</span></button>
       <div class="action-menu">
         <button class="menu-btn" data-action="sensitive">Sensitive <span>${c.sensitive?'✓':''}</span></button>
         <button class="menu-btn" data-action="duplicate">Duplicate</button>
@@ -1484,23 +1449,24 @@ function cardHTML(c){
       </div>
     </div>`;
 }
+function cardHTML(c){
+  const tags=(c.tags||[]).map(t=>`<span class="tag" data-tag="${esc(normalizeTag(t))}">#${esc(normalizeTag(t))}</span>`).join('');
+  const chains=(c.chains||[]).length ? `<span class="chain-badge">⬡ ${(c.chains||[]).length} linked</span>` : '';
+  return `
+    <div class="drag-handle" title="Drag to reorder"><span></span></div>
+    <div class="card-type"><div class="type-dot ${c.type}"></div>${c.type.toUpperCase()}</div>
+    <div class="card-title">${esc(c.title)}</div>
+    ${cardBodyHTML(c)}
+    ${chains}
+    <div class="card-meta">${tags}<span class="card-date">${rel(c.date)}</span></div>
+    <div class="ai-hint">✦ suggest tags</div>
+    ${actionsHTML(c)}`;
+}
 function listHTML(c){
   const tags=(c.tags||[]).map(t=>`<span class="tag" data-tag="${esc(normalizeTag(t))}">#${esc(normalizeTag(t))}</span>`).join('');
   const prev=excerpt(c.content||c.url||'',90);
   return `<span class="l-type">${c.type}</span><span class="l-title">${esc(c.title)}</span><span class="l-preview">${esc(prev)}</span><div class="l-tags">${tags}</div><span class="l-date">${rel(c.date)}</span>
-    <div class="card-actions">
-      <button class="act-btn" data-action="edit">E<span class="tip">Edit</span></button>
-      <button class="act-btn" data-action="favorite" data-active="${c.favorited}">★<span class="tip">Favorite</span></button>
-      <button class="act-btn" data-action="pin" data-active="${c.pinned}">${c.pinned?'📌':'⊕'}<span class="tip">${c.pinned?'Unpin':'Pin'}</span></button>
-      <button class="act-btn" data-action="copy">C<span class="tip">Copy</span></button>
-      <button class="act-btn" data-action="${c.archived?'restore':'archive'}">${c.archived?'↑':'↓'}<span class="tip">${c.archived?'Restore':'Archive'}</span></button>
-      <button class="act-btn" data-action="overflow">⋯<span class="tip">More</span></button>
-      <div class="action-menu">
-        <button class="menu-btn" data-action="sensitive">Sensitive <span>${c.sensitive?'✓':''}</span></button>
-        <button class="menu-btn" data-action="duplicate">Duplicate</button>
-        <button class="menu-btn danger" data-action="delete">Delete</button>
-      </div>
-    </div>`;
+    ${actionsHTML(c)}`;
 }
 
 /* ── Render ── */
@@ -1511,13 +1477,13 @@ function render(){
 
   if(!list.length){
     grid.innerHTML=`<div class="empty"><div class="empty-glyph">✦</div><div class="empty-title">${clips.length?'No clips match this filter':'Start capturing ideas'}</div><div class="empty-sub">${clips.length?'Try a different filter or search term':'Paste, drop, or type — your clips live here, locally.'}</div><div class="empty-hint"><span class="empty-hint-chip">⌘N new clip</span><span class="empty-hint-chip">⌘V paste</span><span class="empty-hint-chip">drag & drop</span><span class="empty-hint-chip">⌘K commands</span></div></div>`;
-    updateCounts(); renderPinned(); renderBulkBar(); renderRecent(); return;
+    updateCounts(); renderBulkBar(); renderRecent(); return;
   }
 
   grid.innerHTML='';
   list.forEach(c=>{
     const card=document.createElement('div');
-    card.className='card'+(c.favorited?' favorited':'')+(selected.has(c.id)?' selected':'')+(chainMode&&c.id!==chainSourceId?' chain-selectable':'');
+    card.className='card'+(selected.has(c.id)?' selected':'')+(chainMode&&c.id!==chainSourceId?' chain-selectable':'');
     if((c.chains||[]).length && !chainMode) card.classList.add('chain-linked');
     card.dataset.id=c.id;
     card.innerHTML=view==='card'?cardHTML(c):listHTML(c);
@@ -1544,27 +1510,26 @@ function render(){
     grid.appendChild(card);
   });
 
-  updateCounts(); renderPinned(); renderBulkBar(); renderRecent(); renderFavorites();
+  updateCounts(); renderBulkBar(); renderRecent(); renderFavorites();
   setupDragReorder(); setupHoverExpand();
 }
 
-/* ── Favorites section ── */
-let favShowAll=false;
+/* ── Pinned shelf (home) ── */
 function renderFavorites(){
   const el=document.getElementById('favList');
   if(!el) return;
-  const favs=clips.filter(c=>c.favorited && !c.archived).sort((a,b)=>b.date-a.date);
-  const show=favShowAll?favs:favs.slice(0,5);
+  const pins=clips.filter(c=>c.pinned && !c.archived).sort((a,b)=>b.date-a.date);
+  const show=pins.slice(0,5);
   const btn=document.getElementById('favExpand');
 
-  if(!favs.length){
-    el.innerHTML='<div class="fav-empty">Star clips to see them here</div>';
+  if(!pins.length){
+    el.innerHTML='<div class="fav-empty">Pin clips to keep them handy — press P on a card</div>';
     if(btn) btn.style.display='none';
     return;
   }
   if(btn){
-    btn.style.display=favs.length>5?'':'none';
-    btn.textContent=favShowAll?'Show less ↑':`View all ${favs.length} →`;
+    btn.style.display=pins.length>5?'':'none';
+    btn.textContent=`View all ${pins.length} →`;
   }
 
   el.innerHTML=show.map(c=>{
@@ -1582,10 +1547,8 @@ function renderFavorites(){
     item.addEventListener('click',()=>openEditor(item.dataset.id));
   });
 }
-document.getElementById('favExpand')?.addEventListener('click',()=>{
-  favShowAll=!favShowAll;
-  renderFavorites();
-});
+// "View all" opens the full pinned grid rather than expanding inline.
+document.getElementById('favExpand')?.addEventListener('click',()=>setFilter('pinned'));
 
 /* ── Feed show/hide ── */
 let feedLocked=false;
@@ -1628,7 +1591,7 @@ function renderClipboardPanel(){
   const cutoff=Date.now()-86400000;
   const items=cbHistory.filter(h=>h.time>cutoff);
   if(!items.length){
-    el.innerHTML='<div class="cb-panel-empty">No clipboard items yet.<br>Copy something to see it here.</div>';
+    el.innerHTML='<div class="cb-panel-empty">Nothing captured yet.<br>Copy a clip or paste text into Trace to see it here.</div>';
     return;
   }
   el.innerHTML=items.map(h=>`<div class="cb-panel-item" title="Click to create clip">
@@ -1658,8 +1621,7 @@ document.getElementById('cbPanelClose')?.addEventListener('click',()=>{
 function handleAction(action,id,btn){
   switch(action){
     case 'edit':      openEditor(id); break;
-    case 'favorite':  toggleFavorite(id); break;
-    case 'pin':       togglePinAnimated(id); break;
+    case 'pin':       togglePin(id); break;
     case 'copy':      copyClip(id); break;
     case 'archive':   archiveClip(id); break;
     case 'restore':   restoreClip(id); break;
@@ -1672,25 +1634,6 @@ function handleAction(action,id,btn){
 function closeActionMenus(){ document.querySelectorAll('.card-actions.menu-open').forEach(a=>a.classList.remove('menu-open')) }
 function toggleActionMenu(btn){ const rail=btn?.closest('.card-actions'); if(!rail) return; const open=rail.classList.contains('menu-open'); closeActionMenus(); rail.classList.toggle('menu-open',!open) }
 
-function toggleFavorite(id){
-  const c=clips.find(x=>x.id===id); if(!c) return;
-  c.favorited=!c.favorited; save(); render();
-  toast(c.favorited?'★ Added to favorites':'Removed from favorites', c.favorited?'accent':'');
-}
-
-function togglePinAnimated(id){
-  const card=document.querySelector(`.card[data-id="${id}"]`);
-  const c=clips.find(x=>x.id===id); if(!c) return;
-
-  if(!c.pinned && card){
-    // FLIP: animate card up into pinned strip
-    card.classList.add('flipping');
-    setTimeout(()=>{ c.pinned=true; save(); render(); toast('⊕ Pinned','green') }, 280);
-  } else {
-    c.pinned=false; save(); render(); toast('Unpinned');
-  }
-}
-
 function togglePin(id){
   const c=clips.find(x=>x.id===id); if(!c) return;
   c.pinned=!c.pinned; save(); render();
@@ -1699,7 +1642,10 @@ function togglePin(id){
 
 function copyClip(id){
   const c=clips.find(x=>x.id===id); if(!c) return;
-  navigator.clipboard.writeText(c.content||c.url||'').then(()=>toast('Copied to clipboard','green'));
+  const text=c.content||c.url||'';
+  navigator.clipboard.writeText(text)
+    .then(()=>{ addToClipboardHistory(text); toast('Copied to clipboard','green'); })
+    .catch(()=>toast('Copy failed — clipboard needs a secure (https) context','red'));
 }
 
 function archiveClip(id){
@@ -1732,7 +1678,6 @@ function renderBulkBar(){
   b.classList.toggle('visible',selected.size>0);
 }
 
-document.getElementById('bulkFav').addEventListener('click',()=>{ selected.forEach(id=>{ const c=clips.find(x=>x.id===id); if(c)c.favorited=true }); clearSel(); save(); render(); toast('★ Favorited selection') });
 document.getElementById('bulkPin').addEventListener('click',()=>{ selected.forEach(id=>{ const c=clips.find(x=>x.id===id); if(c)c.pinned=true }); clearSel(); save(); render(); toast('Pinned selection','green') });
 document.getElementById('bulkArchive').addEventListener('click',()=>{ const ids=[...selected]; clips.forEach(c=>{ if(selected.has(c.id)){ c.archived=true; c.pinned=false } }); clearSel(); save(); render(); toast('Archived selection','green',{label:'Undo',fn:()=>{ clips.forEach(c=>{ if(ids.includes(c.id)) c.archived=false }); save(); render() }}) });
 document.getElementById('bulkDel').addEventListener('click',()=>{ if(!confirm(`Delete ${selected.size} clips?`)) return; clips=clips.filter(c=>!selected.has(c.id)); clearSel(); save(); render(); toast('Deleted selection','red') });
@@ -1769,7 +1714,7 @@ function _fillEditor(c){
 
   // bind autosave
   const ta=document.getElementById('epTextarea');
-  ta.oninput=()=>{ c.content=ta.value; c.date=Date.now(); save() };
+  ta.oninput=()=>{ c.content=ta.value; c.updated=Date.now(); save() };
   document.getElementById('epTitle').oninput=()=>{ c.title=document.getElementById('epTitle').value; document.getElementById('epName').textContent=c.title; save() };
   document.getElementById('epTags').oninput=()=>{ c.tags=uniqueTags(document.getElementById('epTags').value.split(',')); save(); updateTagOptions() };
 }
@@ -1947,13 +1892,20 @@ function aiBar(on){
 }
 
 async function callAI(systemPrompt, userContent){
+  const key=getAIKey();
+  if(!key) throw new Error('NO_KEY');
   aiBar(true);
   try{
     const res=await fetch('https://api.anthropic.com/v1/messages',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':key,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
       body:JSON.stringify({
-        model:'claude-sonnet-4-20250514',
+        model:'claude-sonnet-5',
         max_tokens:1000,
         system: systemPrompt,
         messages:[{role:'user',content:userContent}]
@@ -2019,7 +1971,8 @@ async function runAIAction(action){
     aiLastAction=action;
     showAIResult(action,result.trim());
   } catch(e){
-    toast('AI unavailable — add your Anthropic API key','red');
+    if(e && e.message==='NO_KEY') toast('Add your Anthropic API key first — ⌘K → Set AI key','red');
+    else toast('AI request failed — check your key or connection','red');
   } finally{
     if(btn) btn.classList.remove('loading');
   }
@@ -2083,6 +2036,7 @@ const CMDS=[
   {label:'Toggle sidebar',ico:'↔',kd:'⌘B',fn:()=>{ closePalette();toggleSidebar() }},
   {label:'Toggle theme',ico:'◐',fn:()=>{ closePalette();cycleTheme() }},
   {label:'Focus search',ico:'⌕',kd:'/',fn:()=>{ closePalette();document.getElementById('searchInput').focus() }},
+  {label:'Set AI key',ico:'✦',fn:()=>{ closePalette();setAIKey() }},
 ];
 
 function renderCMD(q){
@@ -2109,10 +2063,9 @@ function switchView(v){ view=v; prefs.view=v; saveP(); document.getElementById('
 function setFilter(f){
   filter=f;
   document.querySelectorAll('.nav-item').forEach(n=>n.classList.toggle('active',(n.dataset.filter||'')===f));
-  if(f==='all'){ hideFeed(); } else {
-    const labels={pinned:'Pinned',archived:'Archived',favorites:'Favorites'};
-    showFeed(labels[f]||f);
-  }
+  // Every library filter — including "All Clips" — opens the grid feed.
+  const labels={all:'All Clips',pinned:'Pinned',archived:'Archived'};
+  showFeed(labels[f]||f);
   render();
 }
 function setTagFilter(tag){
@@ -2152,6 +2105,7 @@ document.querySelectorAll('.nav-item').forEach(item=>{
       showFeed(label);
       render();
     }
+    if(window.innerWidth<=768) closeMobileNav();
   });
 });
 
@@ -2164,7 +2118,9 @@ document.getElementById('ncOverlay').addEventListener('click',e=>{ if(e.target==
 /* ── Sidebar toggle (icon rail collapse) ── */
 function applySidebar(){
   const sb=document.getElementById('sidebar');
-  const collapsed=!!prefs.sidebarCollapsed;
+  // On mobile the sidebar is a full-width drawer, so never render the collapsed
+  // rail there — but keep prefs.sidebarCollapsed intact for the desktop layout.
+  const collapsed=!!prefs.sidebarCollapsed && window.innerWidth>768;
   sb.classList.toggle('collapsed',collapsed);
 }
 function toggleSidebar(){
@@ -2174,6 +2130,28 @@ function toggleSidebar(){
   if(!prefs.sidebarCollapsed) renderRecent();
 }
 document.getElementById('sidebarToggle').addEventListener('click',toggleSidebar);
+// Brand mark (visible only when collapsed) expands the rail.
+const _logoMark=document.querySelector('.logo-mark');
+_logoMark?.addEventListener('click',()=>{ if(prefs.sidebarCollapsed) toggleSidebar(); });
+_logoMark?.addEventListener('keydown',e=>{ if((e.key==='Enter'||e.key===' ')&&prefs.sidebarCollapsed){ e.preventDefault(); toggleSidebar(); } });
+
+/* ── Mobile nav drawer (≤768px; transient, never persisted) ── */
+function openMobileNav(){
+  document.getElementById('sidebar')?.classList.add('mobile-open');
+  document.getElementById('sidebarBackdrop')?.classList.add('show');
+}
+function closeMobileNav(){
+  document.getElementById('sidebar')?.classList.remove('mobile-open');
+  document.getElementById('sidebarBackdrop')?.classList.remove('show');
+}
+document.getElementById('floatingToggle')?.addEventListener('click',openMobileNav);
+document.getElementById('sidebarBackdrop')?.addEventListener('click',closeMobileNav);
+// Crossing the mobile/desktop boundary: drop the transient drawer and re-sync
+// the collapsed rail (which is desktop-only).
+window.addEventListener('resize',()=>{
+  if(window.innerWidth>768) closeMobileNav();
+  applySidebar();
+});
 
 /* ── Sidebar bottom actions ── */
 document.getElementById('sbSearch').addEventListener('click',()=>{
@@ -2218,41 +2196,6 @@ function renderRecent(){
   });
 }
 
-/* ── FAB speed dial ── */
-let fabDialOpen=false;
-function toggleFabDial(){
-  fabDialOpen=!fabDialOpen;
-  document.querySelector('.fab-dial').classList.toggle('open',fabDialOpen);
-  const fab=document.getElementById('fabNewClip');
-  fab.style.transform=fabDialOpen?'rotate(45deg)':'';
-}
-function closeFabDial(){
-  fabDialOpen=false;
-  document.querySelector('.fab-dial').classList.remove('open');
-  document.getElementById('fabNewClip').style.transform='';
-}
-document.getElementById('fabNewClip').addEventListener('click',e=>{
-  if(fabDialOpen){ closeFabDial(); openNC(); }
-  else toggleFabDial();
-});
-document.querySelectorAll('.fab-dial-item').forEach(btn=>{
-  btn.addEventListener('click',()=>{
-    closeFabDial();
-    openNC();
-    setTimeout(()=>{
-      const type=btn.dataset.type;
-      if(type){
-        document.querySelectorAll('.nc-type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===type));
-        ncType=type;
-        renderNCBody();
-      }
-    },60);
-  });
-});
-document.addEventListener('click',e=>{
-  if(fabDialOpen && !e.target.closest('#fabNewClip') && !e.target.closest('.fab-dial')) closeFabDial();
-});
-
 /* ── Global keyboard ── */
 document.addEventListener('click',e=>{ if(!e.target.closest('.card-actions')) closeActionMenus() });
 document.addEventListener('keydown',e=>{
@@ -2266,6 +2209,7 @@ document.addEventListener('keydown',e=>{
   if((e.metaKey||e.ctrlKey)&&e.key.toLowerCase()==='b'){ e.preventDefault(); toggleSidebar(); return }
 
   if(e.key==='Escape'){
+    if(document.getElementById('sidebar')?.classList.contains('mobile-open')){ closeMobileNav(); return }
     if(chainMode){ exitChainMode(); return }
     if(cmdOpen){ closePalette(); return }
     if(ncOpen){ closeNC(); return }
@@ -2287,9 +2231,7 @@ document.addEventListener('keydown',e=>{
 
   // editor shortcuts
   if(!typing&&!cmdOpen&&!ncOpen&&openId){
-    const c=clips.find(x=>x.id===openId);
-    if(e.key.toLowerCase()==='f'&&!e.metaKey) toggleFavorite(openId);
-    if(e.key.toLowerCase()==='p'&&!e.metaKey) togglePinAnimated(openId);
+    if(e.key.toLowerCase()==='p'&&!e.metaKey) togglePin(openId);
     if(e.key.toLowerCase()==='c'&&!e.metaKey) copyClip(openId);
   }
 });
@@ -2348,7 +2290,10 @@ function applyCustomOrder(list){
 function setupDragReorder(){
   const grid=document.getElementById('grid');
   if(!grid) return;
+  // Reordering is only meaningful (and only saved) in the unfiltered All Clips view.
+  const canReorder = filter==='all' && !searchQ;
   grid.querySelectorAll('.card').forEach(card=>{
+    if(!canReorder){ card.removeAttribute('draggable'); return; }
     card.setAttribute('draggable','true');
 
     card.addEventListener('dragstart',e=>{
@@ -2416,6 +2361,7 @@ function setupHoverExpand(){
         if(expandActiveCard!==card) return;
         const c=clips.find(x=>x.id===card.dataset.id);
         if(!c) return;
+        if(c.sensitive) return; // never reveal sensitive content in the hover preview
         const content=c.content||'';
         if(content.length<200 && c.type!=='image' && c.type!=='code') return;
         showExpandOverlay(c,card);
@@ -2520,7 +2466,7 @@ document.getElementById('clipPromptDismiss').addEventListener('click',dismissCli
 /* ── Init ── */
 load();
 if(!clips.length){ clips=SEED.map(c=>({...c,chains:c.chains||[]})); save() }
-else { clips=clips.map(c=>({...c,chains:c.chains||[],archived:!!c.archived,tags:uniqueTags(c.tags||[])})) } // migrate old data
+else { clips=clips.map(c=>({...c,chains:c.chains||[],archived:!!c.archived,pinned:!!(c.pinned||c.favorited),tags:uniqueTags(c.tags||[])})) } // migrate old data; fold former favorites into pins
 applyTheme(prefs.theme);
 applySidebar();
 renderRecent();
