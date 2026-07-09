@@ -1451,6 +1451,11 @@ function updateCounts(){
 /* ── Pinned strip ── */
 function renderPinned(){
   const s=document.getElementById('pinnedStrip');
+  // On the Pinned view the grid already lists exactly these clips, so the
+  // strip is pure duplication — hide it there. It stays a quick-access shelf
+  // on every other view (All Clips, Types, search, etc.).
+  if(filter==='pinned'){ s.style.display='none'; return }
+  s.style.display='';
   const pinned=clips.filter(c=>c.pinned&&!c.archived);
   s.innerHTML='<span class="pin-label">Pinned</span>';
   if(!pinned.length){ s.innerHTML+='<span class="pin-empty">nothing pinned — press P on a card</span>'; return }
