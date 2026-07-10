@@ -1655,6 +1655,14 @@ function hideFeed(){
   feedLocked=false;
   renderFavorites();
 }
+// Search keeps the hero (and its search box) visible, showing live results below.
+function showSearchFeed(){
+  document.getElementById('feedSection').classList.add('visible');
+  document.getElementById('heroArea').style.display='';   // keep the search box visible + focused
+  document.getElementById('favSection').style.display='none';
+  document.getElementById('feedTitleText').textContent='Search: "'+searchQ.trim()+'"';
+  feedLocked=true;
+}
 document.getElementById('feedBack')?.addEventListener('click',()=>{
   searchQ='';document.getElementById('searchInput').value='';
   filter='all';
@@ -2309,12 +2317,12 @@ document.getElementById('btnList').addEventListener('click',()=>switchView('list
 /* ── Search ── */
 document.getElementById('searchInput').addEventListener('focus',()=>{
   document.getElementById('heroSearch').classList.add('focused');
-  if(searchQ) showFeed();
+  if(searchQ.trim()) showSearchFeed();
 });
 document.getElementById('searchInput').addEventListener('blur',()=>document.getElementById('heroSearch').classList.remove('focused'));
 document.getElementById('searchInput').addEventListener('input',e=>{
   searchQ=e.target.value;
-  if(searchQ){ showFeed(); } else if(!feedLocked){ hideFeed(); }
+  if(searchQ.trim()){ showSearchFeed(); } else { hideFeed(); }
   render();
 });
 
