@@ -932,26 +932,6 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 }
 .drag-handle span{display:block;width:8px;height:1.5px;background:currentColor;border-radius:1px}
 
-/* ─── HOVER EXPAND ─── */
-.card-expand-overlay{
-  display:none;position:fixed;z-index:500;
-  background:var(--surface);border:1px solid var(--accent);
-  border-radius:8px;padding:14px;
-  box-shadow:0 16px 48px rgba(0,0,0,.45),0 0 0 1px var(--accent-glow);
-  max-width:420px;max-height:60vh;overflow-y:auto;
-  pointer-events:none;
-  animation:expandIn .16s var(--ease-panel);
-}
-.card-expand-overlay.visible{display:block}
-@keyframes expandIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:scale(1)}}
-.card-expand-overlay .expand-type{font-size:9px;font-family:var(--font-mono);text-transform:uppercase;color:var(--micro);margin-bottom:5px;display:flex;align-items:center;gap:5px}
-.card-expand-overlay .expand-title{font-size:13px;font-weight:500;margin-bottom:8px}
-.card-expand-overlay .expand-content{font-size:12px;color:var(--muted);line-height:1.65;white-space:pre-wrap;word-break:break-word}
-.card-expand-overlay .expand-content.code{font-family:var(--font-mono);font-size:11px;color:#A3E635;background:rgba(163,230,53,.05);border:1px solid rgba(163,230,53,.1);border-radius:4px;padding:9px}
-[data-theme="light"] .card-expand-overlay .expand-content.code{color:#166534;background:rgba(22,101,52,.04);border-color:rgba(22,101,52,.12)}
-.card-expand-overlay .expand-content.prompt{font-family:var(--font-serif);font-size:14px;font-style:italic;border-left:2px solid var(--accent);padding-left:11px}
-.card-expand-overlay .expand-img{width:100%;border-radius:5px;margin-bottom:7px}
-
 /* ─── IMAGE DOWNLOAD BUTTON ─── */
 .img-download-btn{
   position:absolute;bottom:8px;right:8px;
@@ -1372,9 +1352,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 </div>
 
 <!-- ════ TOASTS ════ -->
-<div id="toastArea"></div>
-<div class="card-expand-overlay" id="expandOverlay"></div>
-<div class="clip-prompt" id="clipPrompt">
+<div id="toastArea"></div><div class="clip-prompt" id="clipPrompt">
   <span class="clip-prompt-label">📋 Copied:</span>
   <span class="clip-prompt-preview" id="clipPromptPreview"></span>
   <button class="clip-prompt-save" id="clipPromptSave">Save as clip</button>
@@ -1624,7 +1602,7 @@ function render(){
   });
 
   updateCounts(); renderBulkBar(); renderRecent(); renderFavorites();
-  setupDragReorder(); setupHoverExpand();
+  setupDragReorder();
 }
 
 /* ── Pinned shelf (home) ── */
@@ -2599,65 +2577,6 @@ function setupDragReorder(){
       toast('Clip moved','green');
     });
   });
-}
-
-/* ── Hover expand ── */
-let expandTimer=null;
-let expandActiveCard=null;
-
-function setupHoverExpand(){
-  const grid=document.getElementById('grid');
-  if(!grid) return;
-  grid.querySelectorAll('.card').forEach(card=>{
-    card.addEventListener('mouseenter',e=>{
-      expandActiveCard=card;
-      expandTimer=setTimeout(()=>{
-        if(expandActiveCard!==card) return;
-        const c=clips.find(x=>x.id===card.dataset.id);
-        if(!c) return;
-        if(c.sensitive) return; // never reveal sensitive content in the hover preview
-        const content=c.content||'';
-        if(content.length<200 && c.type!=='image' && c.type!=='code') return;
-        showExpandOverlay(c,card);
-      },600);
-    });
-    card.addEventListener('mouseleave',()=>{
-      clearTimeout(expandTimer);
-      expandActiveCard=null;
-      hideExpandOverlay();
-    });
-  });
-}
-
-function showExpandOverlay(c,card){
-  const ov=document.getElementById('expandOverlay');
-  const rect=card.getBoundingClientRect();
-  let contentClass='';
-  let body='';
-  if(c.type==='code'){ contentClass='code'; body=esc(c.content||''); }
-  else if(c.type==='prompt'){ contentClass='prompt'; body=esc(c.content||''); }
-  else if(c.type==='image'){ body=(c.imageData?`<img class="expand-img" src="${c.imageData}" alt="${esc(c.title)}">`:'')+`<div>${esc(c.content||'')}</div>`; }
-  else { body=esc(c.content||''); }
-
-  ov.innerHTML=`
-    <div class="expand-type"><div class="type-dot ${c.type}"></div>${c.type.toUpperCase()}</div>
-    <div class="expand-title">${esc(c.title)}</div>
-    <div class="expand-content ${contentClass}">${body}</div>
-  `;
-
-  let left=rect.right+12;
-  let top=rect.top;
-  if(left+420>window.innerWidth){ left=rect.left-432; }
-  if(left<8) left=8;
-  if(top+400>window.innerHeight) top=Math.max(8,window.innerHeight-400);
-
-  ov.style.left=left+'px';
-  ov.style.top=top+'px';
-  ov.classList.add('visible');
-}
-
-function hideExpandOverlay(){
-  document.getElementById('expandOverlay').classList.remove('visible');
 }
 
 /* ── Image download ── */
