@@ -530,8 +530,6 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .card.favorited .fav-star{display:block}
 
 /* AI hint */
-.ai-hint{display:none;align-items:center;gap:4px;font-size:10px;color:var(--accent);font-family:var(--font-mono);opacity:.7;margin-top:5px;cursor:pointer;width:fit-content}
-.card:hover .ai-hint{display:flex}
 
 /* actions rail */
 .card-actions{
@@ -587,7 +585,7 @@ button,input,textarea,select{font-family:var(--font-sans)}
 #grid.list-view .card-actions{top:50%;transform:translateY(-50%)}
 #grid.list-view .card-type,#grid.list-view .card-title,#grid.list-view .card-preview,
 #grid.list-view .card-code,#grid.list-view .prompt-body,#grid.list-view .card-link,
-#grid.list-view .card-img-wrap,#grid.list-view .card-meta,#grid.list-view .ai-hint,
+#grid.list-view .card-img-wrap,#grid.list-view .card-meta,
 #grid.list-view .fav-star,#grid.list-view .chain-badge{display:none}
 
 /* ════════════════════
@@ -1550,7 +1548,6 @@ function cardHTML(c){
     ${cardBodyHTML(c)}
     ${chains}
     <div class="card-meta">${tags}<span class="card-date">${rel(c.date)}</span></div>
-    <div class="ai-hint">✦ suggest tags</div>
     ${actionsHTML(c)}`;
 }
 function listHTML(c){
