@@ -1414,18 +1414,82 @@ let ncImageData = null;
 let cmdIdx = 0;
 let searchQ = '';
 
-/* ── Persistence ── */
+/* ── Persistence ──
+   Clips live in IndexedDB so image data isn't capped by the ~5MB localStorage
+   ceiling (a couple of screenshots used to wedge the whole archive). If IDB is
+   unavailable (some private-mode contexts) we fall back to localStorage. Prefs
+   are tiny and always live in localStorage. An existing localStorage archive is
+   migrated into IDB once, automatically. */
 let quotaWarned=false;
-function save(){
-  try{ localStorage.setItem(SK, JSON.stringify(clips)); quotaWarned=false; }
-  catch(e){
-    if(!quotaWarned){ quotaWarned=true; toast('Storage full — recent changes may not be saved. Delete large clips or images.','red'); }
+let storageBackend='localStorage';
+let idb=null;
+const IDB_NAME='trace', IDB_STORE='clips';
+
+function openIDB(){
+  return new Promise(resolve=>{
+    let req;
+    try{ if(!('indexedDB' in window)) return resolve(null); req=indexedDB.open(IDB_NAME,1); }
+    catch(e){ return resolve(null); }
+    req.onupgradeneeded=()=>{ const db=req.result; if(!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE,{keyPath:'id'}); };
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>resolve(null);
+    req.onblocked=()=>resolve(null);
+  });
+}
+function idbGetAll(){
+  return new Promise(resolve=>{
+    if(!idb) return resolve(null);
+    try{ const rq=idb.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).getAll();
+      rq.onsuccess=()=>resolve(rq.result||[]); rq.onerror=()=>resolve(null);
+    }catch(e){ resolve(null); }
+  });
+}
+function idbReplaceAll(list){
+  return new Promise(resolve=>{
+    if(!idb) return resolve(false);
+    try{ const tx=idb.transaction(IDB_STORE,'readwrite'), st=tx.objectStore(IDB_STORE);
+      st.clear(); list.forEach(c=>st.put(c));
+      tx.oncomplete=()=>resolve(true); tx.onerror=()=>resolve(false); tx.onabort=()=>resolve(false);
+    }catch(e){ resolve(false); }
+  });
+}
+function idbPut(clip){
+  return new Promise(resolve=>{
+    if(!idb) return resolve(false);
+    try{ const tx=idb.transaction(IDB_STORE,'readwrite'); tx.objectStore(IDB_STORE).put(clip);
+      tx.oncomplete=()=>resolve(true); tx.onerror=()=>resolve(false); tx.onabort=()=>resolve(false);
+    }catch(e){ resolve(false); }
+  });
+}
+function persistLocal(){
+  try{ localStorage.setItem(SK, JSON.stringify(clips)); quotaWarned=false; return true; }
+  catch(e){ if(!quotaWarned){ quotaWarned=true; toast('Storage full — recent changes may not be saved. Delete large clips or images.','red'); } return false; }
+}
+/* save(changed): pass the single clip that changed for an efficient one-record
+   IDB write (editor autosave); call with no arg after structural changes
+   (add / delete / import / bulk) to rewrite the whole set. */
+function save(changed){
+  if(storageBackend==='idb'){
+    ((changed && changed.id) ? idbPut(changed) : idbReplaceAll(clips)).then(ok=>{ if(!ok) persistLocal(); });
+  } else {
+    persistLocal();
   }
 }
 function saveP(){ try{ localStorage.setItem(PK, JSON.stringify(prefs)) }catch(e){} }
-function load(){
-  try{ const d=localStorage.getItem(SK); if(d) clips=JSON.parse(d) }catch(e){ clips=[] }
+async function load(){
   try{ const p=localStorage.getItem(PK); if(p) prefs={...prefs,...JSON.parse(p)} }catch(e){}
+  idb=await openIDB();
+  if(idb){
+    storageBackend='idb';
+    const rows=await idbGetAll();
+    if(rows && rows.length){ clips=rows; return; }
+    // one-time migration of an existing localStorage archive into IDB
+    let legacy=[]; try{ const d=localStorage.getItem(SK); if(d) legacy=JSON.parse(d)||[]; }catch(e){}
+    if(legacy.length){ clips=legacy; await idbReplaceAll(clips); }
+    return;
+  }
+  storageBackend='localStorage';
+  try{ const d=localStorage.getItem(SK); if(d) clips=JSON.parse(d) }catch(e){ clips=[] }
 }
 
 /* ── Seed ── */
@@ -1830,9 +1894,9 @@ function _fillEditor(c){
 
   // bind autosave
   const ta=document.getElementById('epTextarea');
-  ta.oninput=()=>{ c.content=ta.value; c.updated=Date.now(); save() };
-  document.getElementById('epTitle').oninput=()=>{ c.title=document.getElementById('epTitle').value; document.getElementById('epName').textContent=c.title; save() };
-  document.getElementById('epTags').oninput=()=>{ c.tags=uniqueTags(document.getElementById('epTags').value.split(',')); save(); updateTagOptions() };
+  ta.oninput=()=>{ c.content=ta.value; c.updated=Date.now(); save(c) };
+  document.getElementById('epTitle').oninput=()=>{ c.title=document.getElementById('epTitle').value; document.getElementById('epName').textContent=c.title; c.updated=Date.now(); save(c) };
+  document.getElementById('epTags').oninput=()=>{ c.tags=uniqueTags(document.getElementById('epTags').value.split(',')); c.updated=Date.now(); save(c); updateTagOptions() };
 }
 
 function closeEditor(){ document.getElementById('editorPanel').classList.add('closed'); openId=null; chainMode=false; render() }
@@ -2343,8 +2407,9 @@ function refreshSettings(){
   const st=document.getElementById('settingsKeyStatus');
   st.textContent=key?'✓ key set':'not set';
   st.className='settings-status'+(key?' ok':'');
-  const bytes=(localStorage.getItem(SK)||'').length;
-  document.getElementById('settingsDataStat').textContent=`${clips.length} clips · ~${(bytes/1024).toFixed(1)} KB in this browser`;
+  const bytes=JSON.stringify(clips).length;
+  const where=storageBackend==='idb'?'IndexedDB':'localStorage';
+  document.getElementById('settingsDataStat').textContent=`${clips.length} clips · ~${(bytes/1024).toFixed(1)} KB in ${where}`;
 }
 function openSettings(){ refreshSettings(); document.getElementById('settingsOverlay').classList.add('open'); setTimeout(()=>document.getElementById('settingsKey').focus(),30); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); }
@@ -2796,16 +2861,23 @@ document.getElementById('clipPromptSave').addEventListener('click',saveClipFromP
 document.getElementById('clipPromptDismiss').addEventListener('click',dismissClipPrompt);
 
 /* ── Init ── */
-load();
-if(!clips.length){ clips=SEED.map(c=>({...c,chains:c.chains||[]})); save() }
-else { clips=clips.map(c=>({...c,chains:c.chains||[],archived:!!c.archived,pinned:!!(c.pinned||c.favorited),tags:uniqueTags(c.tags||[])})) } // migrate old data; fold former favorites into pins
-applyTheme(prefs.theme);
-applySidebar();
-renderRecent();
-renderFavorites();
-renderClipboardPanel();
-updateTagOptions();
-switchView(prefs.view||'card');
+// load() is async (opens IndexedDB) — await it before the first render.
+(async function init(){
+  // Apply saved theme/layout synchronously first so there's no flash while IDB opens.
+  try{ const p=localStorage.getItem(PK); if(p) prefs={...prefs,...JSON.parse(p)} }catch(e){}
+  applyTheme(prefs.theme);
+  applySidebar();
+  await load();
+  if(!clips.length){ clips=SEED.map(c=>({...c,chains:c.chains||[]})); save() }
+  else { clips=clips.map(c=>({...c,chains:c.chains||[],archived:!!c.archived,pinned:!!(c.pinned||c.favorited),tags:uniqueTags(c.tags||[])})) } // migrate old data; fold former favorites into pins
+  applyTheme(prefs.theme);
+  applySidebar();
+  renderRecent();
+  renderFavorites();
+  renderClipboardPanel();
+  updateTagOptions();
+  switchView(prefs.view||'card');
+})();
 
 /* ── Offline: register the service worker (caches the app shell + fonts so
    Trace loads with no network after the first visit). Only runs over http(s),
