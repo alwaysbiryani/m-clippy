@@ -20,8 +20,7 @@ It is not a dashboard. It is not a chat app. It is not Notion.
 - **6 clip types** — text, code, prompt, link, image, note (type auto-detected on paste)
 - **Masonry + list views** — content-driven hierarchy
 - **Pinned strip** — persistent working-memory shelf with FLIP animation
-- **Workflow chains** — link related clips bidirectionally
-- **AI assist** — auto-title, suggest tags, summarize, rewrite, describe (Anthropic API)
+- **AI assist** — auto-title, suggest tags, summarize (Anthropic API)
 - **Ask your Trace** — ask a natural-language question and get an answer that cites the clips it used
 - **Command palette** — `⌘K` fuzzy-searches your whole archive *and* runs commands: highlighted matches, filter tokens (`type:code`, `tag:react`, `is:pinned`), `↵` to open, `⌘↵` to copy a clip without opening it
 - **Offline** — installable PWA; loads with no network after first visit (service worker caches the shell + fonts)
@@ -37,7 +36,7 @@ It is not a dashboard. It is not a chat app. It is not Notion.
 
 ## AI Setup (optional)
 
-Trace uses the Anthropic API for AI features (auto-title, tags, summarize, rewrite, describe). To enable:
+Trace uses the Anthropic API for AI features (auto-title, tags, summarize). To enable:
 
 1. Get an API key from [console.anthropic.com](https://console.anthropic.com)
 2. In the app, open **Settings** (`⌘,`) — or the command palette (`⌘K`) → **Settings** — paste your key, and click **Save key**.

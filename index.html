@@ -108,8 +108,7 @@ button,input,textarea,select{font-family:var(--font-sans)}
 #sidebar.collapsed .kbd-chip,
 #sidebar.collapsed .ncb-label,
 #sidebar.collapsed .sb-status-txt,
-#sidebar.collapsed .sb-recent,
-#sidebar.collapsed .chain-indicator{
+#sidebar.collapsed .sb-recent{
   opacity:0;width:0;max-width:0;overflow:hidden;pointer-events:none;white-space:nowrap;
   transition:opacity .15s,width .15s,max-width .15s;
 }
@@ -258,21 +257,6 @@ button,input,textarea,select{font-family:var(--font-sans)}
   flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
   font-size:12px;
 }
-
-/* Chain mode indicator */
-.chain-indicator{
-  margin:0 10px 8px;
-  padding:7px 10px;
-  border:1px solid var(--accent);
-  border-radius:var(--r);
-  background:var(--accent-dim);
-  display:none;
-  flex-direction:column;gap:3px;
-}
-.chain-indicator.active{display:flex}
-.ci-label{font-size:10px;font-family:var(--font-mono);color:var(--accent);text-transform:uppercase;letter-spacing:.06em}
-.ci-count{font-size:12px;color:var(--text)}
-.ci-esc{font-size:10px;color:var(--muted);font-family:var(--font-mono)}
 
 .sb-bottom{
   margin-top:auto;padding:6px 8px;
@@ -483,8 +467,6 @@ button,input,textarea,select{font-family:var(--font-sans)}
   box-shadow:0 0 0 1px var(--accent-glow),0 12px 36px rgba(0,0,0,.28),0 0 60px rgba(139,92,246,.06),inset 0 0 40px rgba(139,92,246,.03);
 }
 .card.selected{border-color:var(--accent);background:var(--accent-dim)}
-.card.chain-selectable:hover{border-color:var(--teal);box-shadow:0 0 0 1px rgba(20,184,166,.2)}
-.card.chain-linked{border-color:var(--teal);background:rgba(20,184,166,.05)}
 
 /* card anatomy */
 .card-type{font-size:9px;font-family:var(--font-mono);font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--micro);margin-bottom:7px;display:flex;align-items:center;gap:5px}
@@ -525,17 +507,12 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .card-img-wrap img{width:100%;height:auto;display:block;border-radius:4px}
 .card-img-placeholder{font-size:11px;color:var(--micro);font-family:var(--font-mono);text-align:center;padding:20px}
 
-/* chain badge */
-.chain-badge{display:inline-flex;align-items:center;gap:4px;font-size:9px;font-family:var(--font-mono);color:var(--teal);background:rgba(20,184,166,.08);border:1px solid rgba(20,184,166,.2);border-radius:3px;padding:2px 6px;margin-top:5px}
-
 /* meta */
 .card-meta{margin-top:9px;padding-top:7px;border-top:1px solid var(--border);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
 .tag{font-size:10px;font-family:var(--font-mono);color:var(--micro);background:rgba(255,255,255,.03);padding:2px 6px;border-radius:3px;border:1px solid var(--border2);cursor:pointer;transition:border-color .12s,color .12s}
 .tag:hover{border-color:var(--accent);color:var(--accent)}
 [data-theme="light"] .tag{background:rgba(0,0,0,.03)}
 .card-date{margin-left:auto;font-size:10px;font-family:var(--font-mono);color:var(--micro)}
-.fav-star{position:absolute;top:10px;left:10px;font-size:11px;color:var(--amber);display:none}
-.card.favorited .fav-star{display:block}
 
 /* AI hint */
 
@@ -594,8 +571,6 @@ button,input,textarea,select{font-family:var(--font-sans)}
 #grid.list-view .card-type,#grid.list-view .card-title,#grid.list-view .card-preview,
 #grid.list-view .card-code,#grid.list-view .prompt-body,#grid.list-view .card-link,
 #grid.list-view .card-img-wrap,#grid.list-view .card-meta,
-#grid.list-view .fav-star,#grid.list-view .chain-badge{display:none}
-
 /* ════════════════════
    EDITOR PANEL
 ════════════════════ */
@@ -627,23 +602,6 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .ep-save-row{display:flex;align-items:center;justify-content:space-between}
 .ep-autosave{display:flex;align-items:center;gap:5px;font-size:10px;font-family:var(--font-mono);color:var(--micro)}
 .ep-as-dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
-
-/* Chain section in editor */
-.ep-chain{border-top:1px solid var(--border);padding:11px 14px;flex-shrink:0}
-.ep-chain-label{font-size:9px;font-family:var(--font-mono);color:var(--micro);text-transform:uppercase;letter-spacing:.07em;margin-bottom:6px;display:flex;align-items:center;justify-content:space-between}
-.chain-clips-list{display:flex;flex-direction:column;gap:4px;margin-bottom:7px}
-.chain-clip-item{display:flex;align-items:center;gap:6px;padding:4px 7px;background:var(--surface2);border-radius:4px;border:1px solid var(--border2);cursor:pointer;transition:border-color .12s}
-.chain-clip-item:hover{border-color:var(--teal)}
-.cci-type{font-size:9px;font-family:var(--font-mono);color:var(--teal);text-transform:uppercase}
-.cci-title{font-size:12px;flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.cci-rm{background:none;border:none;color:var(--micro);cursor:pointer;font-size:11px;padding:0;transition:color .1s}
-.cci-rm:hover{color:var(--red)}
-.chain-add-btn{
-  width:100%;padding:5px;border:1px dashed var(--border2);border-radius:4px;
-  background:none;color:var(--micro);font-size:11px;font-family:var(--font-mono);
-  cursor:pointer;transition:all .12s;display:flex;align-items:center;justify-content:center;gap:5px;
-}
-.chain-add-btn:hover{border-color:var(--teal);color:var(--teal);background:rgba(20,184,166,.05)}
 
 /* AI section */
 .ep-ai{border-top:1px solid var(--border);padding:11px 14px;flex-shrink:0}
@@ -843,25 +801,6 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 @keyframes aibar{0%{transform:scaleX(0) translateX(0)}50%{transform:scaleX(.6) translateX(60%)}100%{transform:scaleX(0) translateX(200%)}}
 
 /* ════════════════════
-   CHAIN MODE OVERLAY
-════════════════════ */
-#chainBanner{
-  position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(10px);
-  background:var(--surface2);border:1px solid var(--teal);border-radius:8px;
-  padding:10px 18px;display:flex;align-items:center;gap:12px;
-  box-shadow:0 16px 48px rgba(0,0,0,.4);z-index:100;
-  opacity:0;pointer-events:none;transition:all .2s;
-}
-#chainBanner.visible{opacity:1;pointer-events:all;transform:translateX(-50%) translateY(0)}
-.cb-label{font-size:12px;font-weight:500;color:var(--teal)}
-.cb-count{font-size:12px;color:var(--muted)}
-.cb-sep{width:1px;height:18px;background:var(--border2)}
-.cb-done{padding:5px 12px;border:1px solid var(--teal);border-radius:4px;background:rgba(20,184,166,.1);color:var(--teal);font-size:12px;cursor:pointer;transition:all .12s}
-.cb-done:hover{background:var(--teal);color:#000}
-.cb-cancel{background:none;border:none;color:var(--micro);font-size:11px;font-family:var(--font-mono);cursor:pointer}
-.cb-cancel:hover{color:var(--muted)}
-
-/* ════════════════════
    BULK BAR
 ════════════════════ */
 .bulk-bar{
@@ -1038,7 +977,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
   /* Keep transient bars inside the viewport */
   #toastArea{left:12px;right:12px}
   .toast{max-width:100%}
-  .bulk-bar,#chainBanner,.clip-prompt{max-width:calc(100vw - 24px)}
+  .bulk-bar,.clip-prompt{max-width:calc(100vw - 24px)}
 }
 </style>
 </head>
@@ -1123,13 +1062,6 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
   <!-- Recent clips -->
   <div class="sb-recent" id="sbRecent">
     <div class="sb-recent-label">Recent</div>
-  </div>
-
-  <!-- Chain mode indicator -->
-  <div class="chain-indicator" id="sbChainIndicator">
-    <span class="ci-label">⬡ Chain mode</span>
-    <span class="ci-count" id="sbChainCount">0 clips linked</span>
-    <span class="ci-esc">Esc to cancel</span>
   </div>
 
   <div class="sb-bottom">
@@ -1226,15 +1158,6 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
     </div>
   </div>
 
-  <!-- Chain -->
-  <div class="ep-chain">
-    <div class="ep-chain-label">
-      <span>⬡ Workflow chain</span>
-      <button class="chain-add-btn" id="startChainBtn" style="width:auto;padding:2px 8px;font-size:10px">+ Link clip</button>
-    </div>
-    <div class="chain-clips-list" id="chainClipsList"></div>
-  </div>
-
   <!-- AI -->
   <div class="ep-ai">
     <div class="ep-ai-label">✦ AI assist</div>
@@ -1242,8 +1165,6 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
       <button class="ep-ai-btn" data-ai="title"><span class="ai-star">✦</span>Auto-title</button>
       <button class="ep-ai-btn" data-ai="tags"><span class="ai-star">✦</span>Suggest tags</button>
       <button class="ep-ai-btn" data-ai="summarize"><span class="ai-star">✦</span>Summarize</button>
-      <button class="ep-ai-btn" data-ai="rewrite"><span class="ai-star">✦</span>Rewrite</button>
-      <button class="ep-ai-btn" data-ai="describe"><span class="ai-star">✦</span>Describe</button>
     </div>
     <div class="ep-ai-result" id="aiResult"></div>
     <button class="ep-ai-apply" id="aiApply" style="display:none">Apply suggestion</button>
@@ -1306,7 +1227,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
     <div class="settings-body">
       <div class="settings-section">
         <div class="settings-label">Anthropic API key</div>
-        <div class="settings-hint">Enables the AI features (auto-title, tags, summarize, rewrite, describe, and Ask your Trace). Stored only in this browser (<code>localStorage</code>) and sent directly to <code>api.anthropic.com</code> — nowhere else.</div>
+        <div class="settings-hint">Enables the AI features (auto-title, tags, summarize, and Ask your Trace). Stored only in this browser (<code>localStorage</code>) and sent directly to <code>api.anthropic.com</code> — nowhere else.</div>
         <div class="settings-key-row">
           <input type="password" id="settingsKey" class="settings-input" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
           <button class="settings-btn" id="settingsKeyToggle" title="Show / hide">👁</button>
@@ -1346,15 +1267,6 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
     </div>
     <div class="ask-result" id="askResult"></div>
   </div>
-</div>
-
-<!-- ════ CHAIN BANNER ════ -->
-<div id="chainBanner">
-  <span class="cb-label">⬡ Chain mode</span>
-  <span class="cb-count" id="cbCount">Select clips to link</span>
-  <div class="cb-sep"></div>
-  <button class="cb-done" id="cbDone">Done</button>
-  <button class="cb-cancel" id="cbCancel">cancel</button>
 </div>
 
 <!-- ════ BULK BAR ════ -->
@@ -1404,8 +1316,6 @@ let filter = 'all';
 let view = 'card';
 let openId = null;
 let selected = new Set();
-let chainMode = false;
-let chainSourceId = null;   // which clip we're adding chains TO
 let aiLastResult = null;
 let aiLastAction = null;
 let ncType = 'text';
@@ -1494,18 +1404,18 @@ async function load(){
 
 /* ── Seed ── */
 const SEED = [
-  {id:'s1',type:'prompt',title:'System prompt v3',content:'You are a precise research assistant. Your task is to synthesize information from multiple sources while maintaining epistemic humility about uncertainty. Never overstate confidence. When you are unsure, say so.',tags:['ai','research'],date:Date.now()-7200000,pinned:true,favorited:false,sensitive:false,chains:[]},
-  {id:'s2',type:'code',title:'Auth middleware (Next.js)',content:`export function middleware(req) {\n  const token = req.cookies.get('auth')\n  if (!token) {\n    return NextResponse.redirect(\n      new URL('/login', req.url)\n    )\n  }\n  return NextResponse.next()\n}`,tags:['nextjs','auth'],date:Date.now()-14400000,pinned:true,favorited:false,sensitive:false,chains:[]},
-  {id:'s3',type:'text',title:'Fragment on attention',content:'The quality of attention determines the quality of thought. Not the quantity of information processed, but the depth of engagement with each fragment. Slowness is not a deficiency — it is a method.',tags:['philosophy','writing'],date:Date.now()-86400000,pinned:false,favorited:true,sensitive:false,chains:['s5']},
-  {id:'s4',type:'link',title:'Linear\'s design system',content:'Comprehensive guide to Linear\'s approach to motion, color, and typography in product design.',url:'linear.app/design-system',tags:['design','reference'],date:Date.now()-172800000,pinned:false,favorited:false,sensitive:false,chains:[]},
-  {id:'s5',type:'text',title:'Research hypothesis',content:'Local-first architectures may fundamentally change how we think about knowledge work — not just as a performance optimization, but as a philosophical stance about data ownership and longevity.',tags:['research'],date:Date.now()-259200000,pinned:true,favorited:true,sensitive:false,chains:['s3']},
-  {id:'s6',type:'prompt',title:'Socratic debugger',content:'Do not immediately fix the bug. Instead, ask three clarifying questions that would help the programmer understand the root cause themselves. Guide, never solve directly.',tags:['prompts','debugging'],date:Date.now()-345600000,pinned:false,favorited:false,sensitive:false,chains:[]},
-  {id:'s7',type:'code',title:'useLocalStorage hook',content:`function useLocalStorage(key, init) {\n  const [val, setVal] = useState(\n    () => JSON.parse(localStorage.getItem(key) ?? 'null') ?? init\n  )\n  useEffect(() => {\n    localStorage.setItem(key, JSON.stringify(val))\n  }, [key, val])\n  return [val, setVal]\n}`,tags:['react','hooks'],date:Date.now()-432000000,pinned:false,favorited:false,sensitive:false,chains:[]},
-  {id:'s8',type:'note',title:'API keys — prod',content:'OPENAI_KEY=sk-proj-••••••••••••••••\nANTHROPIC_KEY=sk-ant-••••••••••••••',tags:['keys'],date:Date.now()-518400000,pinned:false,favorited:false,sensitive:true,chains:[]},
-  {id:'s9',type:'text',title:'On invisible tools',content:'The best tools disappear. You stop seeing the hammer and start seeing the nail. The interface becomes invisible; only the intention remains.',tags:['philosophy','tools'],date:Date.now()-604800000,pinned:false,favorited:true,sensitive:false,chains:[]},
-  {id:'s10',type:'link',title:'Obsidian PKM philosophy',content:'Local files, plain text, longevity. The bet that your notes will outlive any app.',url:'obsidian.md/about',tags:['pkm','tools'],date:Date.now()-691200000,pinned:false,favorited:false,sensitive:false,chains:[]},
-  {id:'s11',type:'code',title:'Masonry CSS',content:`.masonry {\n  columns: 4;\n  column-gap: 12px;\n}\n.card {\n  break-inside: avoid;\n  margin-bottom: 12px;\n}`,tags:['css','layout'],date:Date.now()-777600000,pinned:false,favorited:false,sensitive:false,chains:[]},
-  {id:'s12',type:'note',title:'Design tokens — Trace',content:'bg: #0A0A0B\ntext: #F4F4F5\nmuted: #71717A\nborder: #1C1C1F\naccent: #8B5CF6',tags:['design','trace'],date:Date.now()-864000000,pinned:true,favorited:false,sensitive:false,chains:[]}
+  {id:'s1',type:'prompt',title:'System prompt v3',content:'You are a precise research assistant. Your task is to synthesize information from multiple sources while maintaining epistemic humility about uncertainty. Never overstate confidence. When you are unsure, say so.',tags:['ai','research'],date:Date.now()-7200000,pinned:true,sensitive:false},
+  {id:'s2',type:'code',title:'Auth middleware (Next.js)',content:`export function middleware(req) {\n  const token = req.cookies.get('auth')\n  if (!token) {\n    return NextResponse.redirect(\n      new URL('/login', req.url)\n    )\n  }\n  return NextResponse.next()\n}`,tags:['nextjs','auth'],date:Date.now()-14400000,pinned:true,sensitive:false},
+  {id:'s3',type:'text',title:'Fragment on attention',content:'The quality of attention determines the quality of thought. Not the quantity of information processed, but the depth of engagement with each fragment. Slowness is not a deficiency — it is a method.',tags:['philosophy','writing'],date:Date.now()-86400000,pinned:false,sensitive:false},
+  {id:'s4',type:'link',title:'Linear\'s design system',content:'Comprehensive guide to Linear\'s approach to motion, color, and typography in product design.',url:'linear.app/design-system',tags:['design','reference'],date:Date.now()-172800000,pinned:false,sensitive:false},
+  {id:'s5',type:'text',title:'Research hypothesis',content:'Local-first architectures may fundamentally change how we think about knowledge work — not just as a performance optimization, but as a philosophical stance about data ownership and longevity.',tags:['research'],date:Date.now()-259200000,pinned:true,sensitive:false},
+  {id:'s6',type:'prompt',title:'Socratic debugger',content:'Do not immediately fix the bug. Instead, ask three clarifying questions that would help the programmer understand the root cause themselves. Guide, never solve directly.',tags:['prompts','debugging'],date:Date.now()-345600000,pinned:false,sensitive:false},
+  {id:'s7',type:'code',title:'useLocalStorage hook',content:`function useLocalStorage(key, init) {\n  const [val, setVal] = useState(\n    () => JSON.parse(localStorage.getItem(key) ?? 'null') ?? init\n  )\n  useEffect(() => {\n    localStorage.setItem(key, JSON.stringify(val))\n  }, [key, val])\n  return [val, setVal]\n}`,tags:['react','hooks'],date:Date.now()-432000000,pinned:false,sensitive:false},
+  {id:'s8',type:'note',title:'API keys — prod',content:'OPENAI_KEY=sk-proj-••••••••••••••••\nANTHROPIC_KEY=sk-ant-••••••••••••••',tags:['keys'],date:Date.now()-518400000,pinned:false,sensitive:true},
+  {id:'s9',type:'text',title:'On invisible tools',content:'The best tools disappear. You stop seeing the hammer and start seeing the nail. The interface becomes invisible; only the intention remains.',tags:['philosophy','tools'],date:Date.now()-604800000,pinned:false,sensitive:false},
+  {id:'s10',type:'link',title:'Obsidian PKM philosophy',content:'Local files, plain text, longevity. The bet that your notes will outlive any app.',url:'obsidian.md/about',tags:['pkm','tools'],date:Date.now()-691200000,pinned:false,sensitive:false},
+  {id:'s11',type:'code',title:'Masonry CSS',content:`.masonry {\n  columns: 4;\n  column-gap: 12px;\n}\n.card {\n  break-inside: avoid;\n  margin-bottom: 12px;\n}`,tags:['css','layout'],date:Date.now()-777600000,pinned:false,sensitive:false},
+  {id:'s12',type:'note',title:'Design tokens — Trace',content:'bg: #0A0A0B\ntext: #F4F4F5\nmuted: #71717A\nborder: #1C1C1F\naccent: #8B5CF6',tags:['design','trace'],date:Date.now()-864000000,pinned:true,sensitive:false}
 ];
 
 /* ── Helpers ── */
@@ -1580,9 +1490,6 @@ function updateCounts(){
   document.getElementById('cntAll').textContent=active.length;
   document.getElementById('cntPin').textContent=active.filter(c=>c.pinned).length;
   document.getElementById('cntArch').textContent=clips.filter(c=>c.archived).length;
-  const chainCount=clips.reduce((sum,c)=>(sum+(c.chains||[]).length),0);
-  const el=document.getElementById('sbChainStatusText');
-  if(el) el.textContent=chainCount+' clips linked';
   updateTagOptions();
 }
 
@@ -1624,13 +1531,11 @@ function actionsHTML(c){
 }
 function cardHTML(c){
   const tags=(c.tags||[]).map(t=>`<span class="tag" data-tag="${esc(normalizeTag(t))}">#${esc(normalizeTag(t))}</span>`).join('');
-  const chains=(c.chains||[]).length ? `<span class="chain-badge">⬡ ${(c.chains||[]).length} linked</span>` : '';
   return `
     <div class="drag-handle" title="Drag to reorder"><span></span></div>
     <div class="card-type"><div class="type-dot ${c.type}"></div>${c.type.toUpperCase()}</div>
     <div class="card-title">${esc(c.title)}</div>
     ${cardBodyHTML(c)}
-    ${chains}
     <div class="card-meta">${tags}<span class="card-date">${rel(c.date)}</span></div>
     ${actionsHTML(c)}`;
 }
@@ -1655,8 +1560,7 @@ function render(){
   grid.innerHTML='';
   list.forEach(c=>{
     const card=document.createElement('div');
-    card.className='card'+(selected.has(c.id)?' selected':'')+(chainMode&&c.id!==chainSourceId?' chain-selectable':'');
-    if((c.chains||[]).length && !chainMode) card.classList.add('chain-linked');
+    card.className='card'+(selected.has(c.id)?' selected':'');
     card.dataset.id=c.id;
     card.innerHTML=view==='card'?cardHTML(c):listHTML(c);
 
@@ -1669,12 +1573,6 @@ function render(){
       if(menuBtn){ e.stopPropagation(); closeActionMenus(); handleAction(menuBtn.dataset.action,c.id); return }
       const btn=e.target.closest('.act-btn');
       if(btn){ e.stopPropagation(); handleAction(btn.dataset.action,c.id,btn); return }
-
-      // chain mode: clicking a card links it
-      if(chainMode && c.id!==chainSourceId){
-        toggleChainLink(c.id);
-        return;
-      }
 
       if(e.shiftKey){ toggleSelect(c.id); return }
       openEditor(c.id);
@@ -1782,7 +1680,7 @@ function renderClipboardPanel(){
     item.addEventListener('click',()=>{
       const h=items[i];
       const id='c'+Date.now();
-      clips.unshift({id,type:'text',title:'',content:h.text,tags:[],date:Date.now(),pinned:false,favorited:false,sensitive:false,chains:[]});
+      clips.unshift({id,type:'text',title:'',content:h.text,tags:[],date:Date.now(),pinned:false,sensitive:false});
       save();render();
       openEditor(id);
       toast('Clip created from clipboard','accent');
@@ -1838,13 +1736,11 @@ function archiveClip(id){
 function restoreClip(id){ const c=clips.find(x=>x.id===id); if(!c) return; c.archived=false; save(); render(); toast('Clip restored','green') }
 
 function toggleSensitive(id){ const c=clips.find(x=>x.id===id); if(!c) return; c.sensitive=!c.sensitive; save(); render(); toast(c.sensitive?'Marked sensitive':'Sensitive removed') }
-function duplicateClip(id){ const c=clips.find(x=>x.id===id); if(!c) return; const copy={...c,id:uid(),title:c.title+' copy',date:Date.now(),pinned:false,chains:[...(c.chains||[])]}; clips.unshift(copy); save(); render(); toast('Clip duplicated','green') }
+function duplicateClip(id){ const c=clips.find(x=>x.id===id); if(!c) return; const copy={...c,id:uid(),title:c.title+' copy',date:Date.now(),pinned:false}; clips.unshift(copy); save(); render(); toast('Clip duplicated','green') }
 
 function deleteClip(id){
   if(!confirm('Delete this clip?')) return;
   clips=clips.filter(x=>x.id!==id);
-  // remove from any chains
-  clips.forEach(c=>{ c.chains=(c.chains||[]).filter(x=>x!==id) });
   if(openId===id) closeEditor();
   save(); render(); toast('Clip deleted','red');
 }
@@ -1890,7 +1786,6 @@ function _fillEditor(c){
   const imgBox=document.getElementById('epImagePreview');
   if(c.type==='image'&&c.imageData){ imgBox.innerHTML=`<img src="${c.imageData}" alt="${esc(c.title)}"><div class="ep-image-meta">${esc(c.imageName||'local image')} · ${(c.imageType||'image').replace('image/','')} <button onclick="downloadImage('${c.id}')" style="background:none;border:none;color:var(--accent);cursor:pointer;font-family:var(--font-mono);font-size:10px;margin-left:8px">↓ Download</button></div>`; imgBox.classList.add('visible'); }
   else { imgBox.innerHTML=''; imgBox.classList.remove('visible'); }
-  renderChainList(c);
 
   // bind autosave
   const ta=document.getElementById('epTextarea');
@@ -1899,72 +1794,8 @@ function _fillEditor(c){
   document.getElementById('epTags').oninput=()=>{ c.tags=uniqueTags(document.getElementById('epTags').value.split(',')); c.updated=Date.now(); save(c); updateTagOptions() };
 }
 
-function closeEditor(){ document.getElementById('editorPanel').classList.add('closed'); openId=null; chainMode=false; render() }
+function closeEditor(){ document.getElementById('editorPanel').classList.add('closed'); openId=null; render() }
 document.getElementById('epClose').addEventListener('click',closeEditor);
-
-/* ── Chain system ── */
-function renderChainList(c){
-  const list=document.getElementById('chainClipsList');
-  const linked=(c.chains||[]).map(id=>clips.find(x=>x.id===id)).filter(Boolean);
-  list.innerHTML='';
-  if(!linked.length){ list.innerHTML='<div style="font-size:11px;color:var(--micro);font-family:var(--font-mono)">No linked clips</div>'; return }
-  linked.forEach(lc=>{
-    const item=document.createElement('div');
-    item.className='chain-clip-item';
-    item.innerHTML=`<span class="cci-type">${esc(lc.type)}</span><span class="cci-title">${esc(lc.title)}</span><button class="cci-rm" data-id="${lc.id}">×</button>`;
-    item.addEventListener('click',e=>{ if(!e.target.classList.contains('cci-rm')) openEditor(lc.id) });
-    item.querySelector('.cci-rm').addEventListener('click',e=>{ e.stopPropagation(); removeChainLink(c.id,lc.id) });
-    list.appendChild(item);
-  });
-}
-
-document.getElementById('startChainBtn').addEventListener('click',()=>{
-  if(!openId) return;
-  chainMode=true; chainSourceId=openId;
-  document.getElementById('chainBanner').classList.add('visible');
-  document.getElementById('sbChainIndicator').classList.add('active');
-  const src=clips.find(x=>x.id===openId);
-  updateChainBanner(src);
-  render();
-  toast('Click clips to link them');
-});
-
-function toggleChainLink(id){
-  const src=clips.find(x=>x.id===chainSourceId); if(!src) return;
-  src.chains=src.chains||[];
-  const idx=src.chains.indexOf(id);
-  if(idx>-1) src.chains.splice(idx,1);
-  else src.chains.push(id);
-  // bidirectional
-  const tgt=clips.find(x=>x.id===id); if(tgt){ tgt.chains=tgt.chains||[]; const ti=tgt.chains.indexOf(chainSourceId); if(ti<0) tgt.chains.push(chainSourceId); }
-  save(); render(); updateChainBanner(src);
-}
-
-function removeChainLink(srcId,tgtId){
-  const src=clips.find(x=>x.id===srcId); const tgt=clips.find(x=>x.id===tgtId);
-  if(src) src.chains=(src.chains||[]).filter(x=>x!==tgtId);
-  if(tgt) tgt.chains=(tgt.chains||[]).filter(x=>x!==srcId);
-  save();
-  const c=clips.find(x=>x.id===openId); if(c) renderChainList(c);
-  render();
-}
-
-function updateChainBanner(src){
-  const n=(src.chains||[]).length;
-  document.getElementById('cbCount').textContent=n===0?'Select clips to link':`${n} clip${n>1?'s':''} linked`;
-  document.getElementById('sbChainCount').textContent=`${n} clip${n>1?'s':''} linked`;
-}
-
-function exitChainMode(){
-  chainMode=false; chainSourceId=null;
-  document.getElementById('chainBanner').classList.remove('visible');
-  document.getElementById('sbChainIndicator').classList.remove('active');
-  render();
-  if(openId){ const c=clips.find(x=>x.id===openId); if(c) renderChainList(c) }
-}
-
-document.getElementById('cbDone').addEventListener('click',exitChainMode);
-document.getElementById('cbCancel').addEventListener('click',exitChainMode);
 
 /* ── New clip ── */
 function openNC(){
@@ -2073,7 +1904,7 @@ function saveNC(){
     id:uid(), type:ncType,
     title: title || content.slice(0,48)+(content.length>48?'…':'') || 'Untitled',
     content, tags, date:Date.now(),
-    pinned:false, favorited:false, sensitive:false, chains:[],
+    pinned:false, sensitive:false,
     imageData: ncImageData?.data||ncImageData||null,
     imageName: ncImageData?.name||null, imageType: ncImageData?.type||null, imageSize: ncImageData?.size||null,
     url: ncType==='link'?content:undefined
@@ -2157,14 +1988,6 @@ async function runAIAction(action){
     summarize: {
       sys:'You are a precise assistant. Write a 1-2 sentence summary. Be specific, not generic.',
       usr:`Summarize this ${c.type} clip concisely:\n\n${c.content.slice(0,1000)}`
-    },
-    rewrite: {
-      sys:'You are a precise assistant. Rewrite the content more clearly and concisely. Return only the rewritten text.',
-      usr:`Rewrite this for clarity:\n\n${c.content.slice(0,1000)}`
-    },
-    describe: {
-      sys:'You are a precise assistant. Write 1-2 sentences describing what this clip is and why it matters.',
-      usr:`Describe this ${c.type} clip:\n\n${c.content.slice(0,800)}`
     }
   };
 
@@ -2193,7 +2016,7 @@ function showAIResult(action,text){
   el.classList.add('visible');
   apply.style.display='block';
 
-  const labels={title:'Apply title',tags:'Apply tags',summarize:'Insert summary',rewrite:'Apply rewrite',describe:'Insert description'};
+  const labels={title:'Apply title',tags:'Apply tags',summarize:'Insert summary'};
   apply.textContent=labels[action]||'Apply';
 }
 
@@ -2214,9 +2037,6 @@ document.getElementById('aiApply').addEventListener('click',()=>{
       c.tags=uniqueTags([...(c.tags||[]),...tags]);
       document.getElementById('epTags').value=c.tags.join(', ');
     } catch(e){ toast('Could not parse tags') }
-  } else if(aiLastAction==='rewrite'){
-    c.content=aiLastResult;
-    document.getElementById('epTextarea').value=aiLastResult;
   } else {
     c.content=c.content+'\n\n---\n'+aiLastResult;
     document.getElementById('epTextarea').value=c.content;
@@ -2452,7 +2272,7 @@ document.getElementById('settingsImportFile').addEventListener('change',e=>{
         id:c.id||uid(), type:c.type||'text', title:c.title||'', content:c.content||'',
         url:c.url||undefined, imageData:c.imageData||undefined, imageName:c.imageName||undefined, imageType:c.imageType||undefined,
         tags:uniqueTags(c.tags||[]), date:c.date||Date.now(),
-        pinned:!!(c.pinned||c.favorited), sensitive:!!c.sensitive, archived:!!c.archived, chains:c.chains||[]
+        pinned:!!c.pinned, sensitive:!!c.sensitive, archived:!!c.archived
       }));
       if(replace){ clips=clean; }
       else { const ids=new Set(clips.map(c=>c.id)); clips=clips.concat(clean.filter(c=>!ids.has(c.id))); }
@@ -2666,7 +2486,6 @@ document.addEventListener('keydown',e=>{
     if(settingsOpen()){ closeSettings(); return }
     if(askOpen()){ closeAsk(); return }
     if(document.getElementById('sidebar')?.classList.contains('mobile-open')){ closeMobileNav(); return }
-    if(chainMode){ exitChainMode(); return }
     if(cmdOpen){ closePalette(); return }
     if(ncOpen){ closeNC(); return }
     if(selected.size){ clearSel(); return }
@@ -2848,7 +2667,7 @@ function saveClipFromPrompt(){
     id:uid(),type:'text',
     title:clipPromptText.slice(0,48)+(clipPromptText.length>48?'…':''),
     content:clipPromptText,tags:[],date:Date.now(),
-    pinned:false,favorited:false,sensitive:false,chains:[]
+    pinned:false,sensitive:false
   };
   clips.unshift(clip);
   save();render();
@@ -2868,8 +2687,8 @@ document.getElementById('clipPromptDismiss').addEventListener('click',dismissCli
   applyTheme(prefs.theme);
   applySidebar();
   await load();
-  if(!clips.length){ clips=SEED.map(c=>({...c,chains:c.chains||[]})); save() }
-  else { clips=clips.map(c=>({...c,chains:c.chains||[],archived:!!c.archived,pinned:!!(c.pinned||c.favorited),tags:uniqueTags(c.tags||[])})) } // migrate old data; fold former favorites into pins
+  if(!clips.length){ clips=SEED.map(c=>({...c})); save() }
+  else { clips=clips.map(c=>({...c,archived:!!c.archived,pinned:!!(c.pinned||c.favorited),tags:uniqueTags(c.tags||[])})) } // migrate old data; fold any legacy favorites into pins
   applyTheme(prefs.theme);
   applySidebar();
   renderRecent();
