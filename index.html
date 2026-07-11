@@ -4,7 +4,15 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Trace</title>
+<meta name="description" content="A local-first archive for thinking in fragments. Offline-capable, keyboard-native, private by default.">
+<meta name="theme-color" content="#0A0A0B">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="favicon.svg">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Trace">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Instrument+Serif:ital@0;1&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500&display=swap" rel="stylesheet">
 <style>
 /* ═══════════════════════════════════════
@@ -752,8 +760,14 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 .cmd-item{display:flex;align-items:center;gap:9px;padding:8px 14px;cursor:pointer;transition:background .1s}
 .cmd-item:hover,.cmd-item.cmd-sel{background:var(--surface2)}
 .cmd-ico{width:28px;height:28px;border-radius:6px;background:var(--surface2);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;color:var(--muted)}
-.cmd-lbl{font-size:13px}
-.cmd-kd{font-size:10px;color:var(--micro);font-family:var(--font-mono);margin-left:auto}
+.cmd-main{display:flex;flex-direction:column;gap:1px;min-width:0;flex:1;overflow:hidden}
+.cmd-lbl{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmd-sub{font-size:11px;color:var(--micro);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cmd-item mark{background:var(--accent-glow);color:var(--text);border-radius:2px;padding:0 1px}
+.cmd-kd{font-size:10px;color:var(--micro);font-family:var(--font-mono);margin-left:auto;flex-shrink:0}
+.cmd-empty{padding:24px 14px;text-align:center;color:var(--micro);font-size:12px;line-height:1.6}
+.cmd-foot{display:flex;align-items:center;gap:14px;padding:8px 14px;border-top:1px solid var(--border);font-size:10px;font-family:var(--font-mono);color:var(--micro)}
+.cmd-foot kbd{font-family:var(--font-mono);background:var(--surface2);border:1px solid var(--border2);border-radius:3px;padding:1px 4px;color:var(--muted);margin-right:4px}
 
 /* ─── Settings & Ask overlays ─── */
 #settingsOverlay,#askOverlay{
@@ -1270,10 +1284,15 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
   <div class="cmd-box">
     <div class="cmd-in-row">
       <span style="color:var(--micro);font-size:14px">⌕</span>
-      <input id="cmdInput" type="text" placeholder="Type a command or search...">
+      <input id="cmdInput" type="text" placeholder="Search clips or run a command…  try type:code · tag:react · is:pinned">
       <span class="cmd-esc">esc</span>
     </div>
     <div class="cmd-results" id="cmdResults"></div>
+    <div class="cmd-foot">
+      <span><kbd>↵</kbd>open</span>
+      <span><kbd>⌘↵</kbd>copy</span>
+      <span><kbd>↑↓</kbd>navigate</span>
+    </div>
   </div>
 </div>
 
@@ -1390,22 +1409,87 @@ let chainSourceId = null;   // which clip we're adding chains TO
 let aiLastResult = null;
 let aiLastAction = null;
 let ncType = 'text';
+let ncTypeUserSet = false; // true once the user picks a type by hand, so auto-detect stops overriding them
 let ncImageData = null;
 let cmdIdx = 0;
 let searchQ = '';
 
-/* ── Persistence ── */
+/* ── Persistence ──
+   Clips live in IndexedDB so image data isn't capped by the ~5MB localStorage
+   ceiling (a couple of screenshots used to wedge the whole archive). If IDB is
+   unavailable (some private-mode contexts) we fall back to localStorage. Prefs
+   are tiny and always live in localStorage. An existing localStorage archive is
+   migrated into IDB once, automatically. */
 let quotaWarned=false;
-function save(){
-  try{ localStorage.setItem(SK, JSON.stringify(clips)); quotaWarned=false; }
-  catch(e){
-    if(!quotaWarned){ quotaWarned=true; toast('Storage full — recent changes may not be saved. Delete large clips or images.','red'); }
+let storageBackend='localStorage';
+let idb=null;
+const IDB_NAME='trace', IDB_STORE='clips';
+
+function openIDB(){
+  return new Promise(resolve=>{
+    let req;
+    try{ if(!('indexedDB' in window)) return resolve(null); req=indexedDB.open(IDB_NAME,1); }
+    catch(e){ return resolve(null); }
+    req.onupgradeneeded=()=>{ const db=req.result; if(!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE,{keyPath:'id'}); };
+    req.onsuccess=()=>resolve(req.result);
+    req.onerror=()=>resolve(null);
+    req.onblocked=()=>resolve(null);
+  });
+}
+function idbGetAll(){
+  return new Promise(resolve=>{
+    if(!idb) return resolve(null);
+    try{ const rq=idb.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).getAll();
+      rq.onsuccess=()=>resolve(rq.result||[]); rq.onerror=()=>resolve(null);
+    }catch(e){ resolve(null); }
+  });
+}
+function idbReplaceAll(list){
+  return new Promise(resolve=>{
+    if(!idb) return resolve(false);
+    try{ const tx=idb.transaction(IDB_STORE,'readwrite'), st=tx.objectStore(IDB_STORE);
+      st.clear(); list.forEach(c=>st.put(c));
+      tx.oncomplete=()=>resolve(true); tx.onerror=()=>resolve(false); tx.onabort=()=>resolve(false);
+    }catch(e){ resolve(false); }
+  });
+}
+function idbPut(clip){
+  return new Promise(resolve=>{
+    if(!idb) return resolve(false);
+    try{ const tx=idb.transaction(IDB_STORE,'readwrite'); tx.objectStore(IDB_STORE).put(clip);
+      tx.oncomplete=()=>resolve(true); tx.onerror=()=>resolve(false); tx.onabort=()=>resolve(false);
+    }catch(e){ resolve(false); }
+  });
+}
+function persistLocal(){
+  try{ localStorage.setItem(SK, JSON.stringify(clips)); quotaWarned=false; return true; }
+  catch(e){ if(!quotaWarned){ quotaWarned=true; toast('Storage full — recent changes may not be saved. Delete large clips or images.','red'); } return false; }
+}
+/* save(changed): pass the single clip that changed for an efficient one-record
+   IDB write (editor autosave); call with no arg after structural changes
+   (add / delete / import / bulk) to rewrite the whole set. */
+function save(changed){
+  if(storageBackend==='idb'){
+    ((changed && changed.id) ? idbPut(changed) : idbReplaceAll(clips)).then(ok=>{ if(!ok) persistLocal(); });
+  } else {
+    persistLocal();
   }
 }
 function saveP(){ try{ localStorage.setItem(PK, JSON.stringify(prefs)) }catch(e){} }
-function load(){
-  try{ const d=localStorage.getItem(SK); if(d) clips=JSON.parse(d) }catch(e){ clips=[] }
+async function load(){
   try{ const p=localStorage.getItem(PK); if(p) prefs={...prefs,...JSON.parse(p)} }catch(e){}
+  idb=await openIDB();
+  if(idb){
+    storageBackend='idb';
+    const rows=await idbGetAll();
+    if(rows && rows.length){ clips=rows; return; }
+    // one-time migration of an existing localStorage archive into IDB
+    let legacy=[]; try{ const d=localStorage.getItem(SK); if(d) legacy=JSON.parse(d)||[]; }catch(e){}
+    if(legacy.length){ clips=legacy; await idbReplaceAll(clips); }
+    return;
+  }
+  storageBackend='localStorage';
+  try{ const d=localStorage.getItem(SK); if(d) clips=JSON.parse(d) }catch(e){ clips=[] }
 }
 
 /* ── Seed ── */
@@ -1810,9 +1894,9 @@ function _fillEditor(c){
 
   // bind autosave
   const ta=document.getElementById('epTextarea');
-  ta.oninput=()=>{ c.content=ta.value; c.updated=Date.now(); save() };
-  document.getElementById('epTitle').oninput=()=>{ c.title=document.getElementById('epTitle').value; document.getElementById('epName').textContent=c.title; save() };
-  document.getElementById('epTags').oninput=()=>{ c.tags=uniqueTags(document.getElementById('epTags').value.split(',')); save(); updateTagOptions() };
+  ta.oninput=()=>{ c.content=ta.value; c.updated=Date.now(); save(c) };
+  document.getElementById('epTitle').oninput=()=>{ c.title=document.getElementById('epTitle').value; document.getElementById('epName').textContent=c.title; c.updated=Date.now(); save(c) };
+  document.getElementById('epTags').oninput=()=>{ c.tags=uniqueTags(document.getElementById('epTags').value.split(',')); c.updated=Date.now(); save(c); updateTagOptions() };
 }
 
 function closeEditor(){ document.getElementById('editorPanel').classList.add('closed'); openId=null; chainMode=false; render() }
@@ -1885,12 +1969,29 @@ document.getElementById('cbCancel').addEventListener('click',exitChainMode);
 /* ── New clip ── */
 function openNC(){
   document.getElementById('ncOverlay').classList.add('open');
-  ncType='text'; ncImageData=null;
+  ncType='text'; ncImageData=null; ncTypeUserSet=false;
   document.querySelectorAll('.nc-type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type==='text'));
   renderNCBody();
   setTimeout(()=>document.getElementById('ncContent')?.focus(),50);
 }
 function closeNC(){ document.getElementById('ncOverlay').classList.remove('open') }
+
+/* Guess a clip type from pasted/typed content so capture needs zero decisions.
+   Only runs while the user is still on the default type — an explicit pick sets
+   ncTypeUserSet and we never override it. */
+function autoDetectType(text){
+  const t=(text||'').trim();
+  if(!t) return 'text';
+  if(/^https?:\/\/\S+$/i.test(t) || /^www\.\S+\.\S+$/i.test(t) || (/^[a-z0-9.-]+\.[a-z]{2,}(\/\S*)?$/i.test(t.split(/\s/)[0]) && !t.includes(' '))) return 'link';
+  const codeSignals=[/[{};]\s*$/m, /=>/, /\b(function|const|let|var|import|export|class|def|return|public|private)\b/, /^\s{2,}\S/m, /<\/?[a-z][\s\S]*>/i, /\b\w+\([^)]*\)\s*[{;]/];
+  if(codeSignals.filter(re=>re.test(t)).length>=2) return 'code';
+  return 'text';
+}
+function setNCType(type, preserve){
+  ncType=type;
+  document.querySelectorAll('.nc-type-btn').forEach(b=>b.classList.toggle('active',b.dataset.type===type));
+  if(!preserve) renderNCBody();
+}
 
 function renderNCBody(){
   const body=document.getElementById('ncBody');
@@ -1946,9 +2047,16 @@ function loadImageFile(file){
 }
 
 document.querySelectorAll('.nc-type-btn').forEach(b=>b.addEventListener('click',()=>{
-  document.querySelectorAll('.nc-type-btn').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active'); ncType=b.dataset.type; renderNCBody();
+  ncTypeUserSet=true;
+  setNCType(b.dataset.type, false);
 }));
+
+// Auto-detect type from content while the user is still on the default type.
+document.getElementById('ncBody').addEventListener('input',e=>{
+  if(e.target.id!=='ncContent' || ncTypeUserSet || ncType==='image' || ncType==='note' || ncType==='prompt') return;
+  const guess=autoDetectType(e.target.value);
+  if(guess!==ncType) setNCType(guess, true); // preserve content — don't wipe the textarea
+});
 
 function saveNC(){
   const titleEl=document.getElementById('ncTitle');
@@ -2137,37 +2245,147 @@ const CMDS=[
 ];
 
 const CMD_TYPE_ICO={text:'T',code:'{}',prompt:'✦',link:'↗',image:'⊟',note:'◎'};
+let cmdItemsData=[]; // parallel to rendered .cmd-item nodes: {run, copy}
 
-function renderCMD(q){
-  const el=document.getElementById('cmdResults');
-  const ql=(q||'').trim().toLowerCase();
-  const actions=ql?CMDS.filter(c=>c.label.toLowerCase().includes(ql)):CMDS;
-  // Jump to any clip by title / tag / content
-  const clipMatches=ql?clips.filter(c=>!c.archived&&(
-    (c.title||'').toLowerCase().includes(ql)||
-    (c.tags||[]).some(t=>normalizeTag(t).includes(ql))||
-    (c.content||'').toLowerCase().includes(ql)
-  )).slice(0,8):[];
-
-  el.innerHTML='';
-  let idx=0;
-  if(actions.length){
-    el.insertAdjacentHTML('beforeend','<div class="cmd-group">Actions</div>');
-    actions.forEach(cmd=>{ el.appendChild(mkCmdItem(idx===0,cmd.ico,cmd.label,cmd.kd,cmd.fn)); idx++; });
+/* Subsequence fuzzy match — returns {score, pos} (pos = matched indices into
+   `text`, for highlighting) or null when the query isn't a subsequence. */
+function fuzzyScore(q, text){
+  if(!q) return {score:0, pos:[]};
+  const t=String(text).toLowerCase(), query=q.toLowerCase();
+  let ti=0, score=0, pos=[], streak=0, prev=-2;
+  for(let qi=0; qi<query.length; qi++){
+    let found=-1;
+    for(let k=ti;k<t.length;k++){ if(t[k]===query[qi]){ found=k; break } }
+    if(found<0) return null;
+    pos.push(found);
+    if(found===prev+1){ streak++; score+=8+streak*2 } else streak=0;
+    if(found===0 || /[\s\-_./#]/.test(t[found-1])) score+=10; // word boundary
+    score+=Math.max(0,8-found*0.1)+1;                          // earliness
+    prev=found; ti=found+1;
   }
-  if(clipMatches.length){
-    el.insertAdjacentHTML('beforeend','<div class="cmd-group">Clips</div>');
-    clipMatches.forEach(c=>{ el.appendChild(mkCmdItem(idx===0,CMD_TYPE_ICO[c.type]||'◎',c.title||'Untitled',c.type,()=>{ closePalette(); openEditor(c.id); })); idx++; });
-  }
-  if(!idx){ el.innerHTML='<div class="cmd-group">No matches</div>'; }
-  cmdIdx=0;
+  return {score, pos};
 }
-function mkCmdItem(sel,ico,label,kd,fn){
+function cmdHighlight(text, pos){
+  const set=new Set(pos||[]);
+  let out='';
+  for(let i=0;i<text.length;i++){ const ch=esc(text[i]); out+= set.has(i)?'<mark>'+ch+'</mark>':ch }
+  return out;
+}
+function parsePaletteQuery(raw){
+  const tokens={types:[],tags:[],is:[]}, words=[];
+  (raw||'').trim().split(/\s+/).forEach(w=>{
+    if(!w) return;
+    const m=w.match(/^(type|tag|is):(.+)$/i);
+    if(!m){ words.push(w); return }
+    const k=m[1].toLowerCase(), v=m[2].toLowerCase();
+    if(k==='type') tokens.types.push(v);
+    else if(k==='tag') tokens.tags.push(normalizeTag(v));
+    else tokens.is.push(v);
+  });
+  return {tokens, text:words.join(' ')};
+}
+function matchesTokens(c, tk){
+  if(tk.types.length && !tk.types.includes(c.type)) return false;
+  if(tk.tags.length){ const ct=(c.tags||[]).map(normalizeTag); if(!tk.tags.every(t=>ct.includes(t))) return false }
+  if(tk.is.includes('pinned') && !c.pinned) return false;
+  if(tk.is.includes('sensitive') && !c.sensitive) return false;
+  if(tk.is.includes('archived')){ if(!c.archived) return false } else if(c.archived) return false;
+  return true;
+}
+function clipSub(c){
+  if(c.sensitive) return esc(c.type+' · ••• sensitive');
+  const body=(c.type==='link'?(c.url||c.content):c.content)||'';
+  return esc(c.type+' · '+excerpt(body,80));
+}
+function snippetAround(content, pos, sensitive){
+  if(sensitive) return '••• sensitive content';
+  const first=pos[0]||0, start=Math.max(0,first-24), slice=content.slice(start,start+90);
+  const set=new Set(pos.map(p=>p-start).filter(p=>p>=0&&p<slice.length));
+  let out=start>0?'…':'';
+  for(let i=0;i<slice.length;i++){ const ch=esc(slice[i]); out+= set.has(i)?'<mark>'+ch+'</mark>':ch }
+  return out+(start+90<content.length?'…':'');
+}
+function scoreClip(c, text){
+  const title=c.title||'Untitled';
+  const tr=fuzzyScore(text,title);
+  if(tr){
+    let s=tr.score*3;
+    if(title.toLowerCase().includes(text.toLowerCase())) s+=40;
+    return {clip:c, score:s, field:'title', pos:tr.pos, display:title, sub:clipSub(c)};
+  }
+  const content=(c.content||'').replace(/\s+/g,' ').trim();
+  const cr=content && fuzzyScore(text,content);
+  if(cr) return {clip:c, score:cr.score, field:'content', pos:[], display:title, sub:snippetAround(content,cr.pos,c.sensitive)};
+  const tags=(c.tags||[]).map(normalizeTag).join(' ');
+  const gr=tags && fuzzyScore(text,tags);
+  if(gr) return {clip:c, score:gr.score*0.6, field:'tags', pos:[], display:title, sub:esc(c.type+' · #'+(c.tags||[]).map(normalizeTag).join(' #'))};
+  return null;
+}
+function copyPaletteClip(c){
+  const text=c.content||c.url||'';
+  navigator.clipboard.writeText(text)
+    .then(()=>{ closePalette(); toast('Copied to clipboard','green') })
+    .catch(()=>toast('Copy failed — needs a secure (https) context','red'));
+}
+function addCmdGroup(text){ const g=document.createElement('div'); g.className='cmd-group'; g.textContent=text; document.getElementById('cmdResults').appendChild(g) }
+function addCmdItem(o){
   const item=document.createElement('div');
-  item.className='cmd-item'+(sel?' cmd-sel':'');
-  item.innerHTML=`<div class="cmd-ico">${ico}</div><span class="cmd-lbl">${esc(label)}</span>${kd?`<span class="cmd-kd">${esc(kd)}</span>`:''}`;
-  item.addEventListener('click',fn);
-  return item;
+  item.className='cmd-item';
+  const kd=o.kd==='copy'?'<span class="cmd-kd">⌘↵</span>':(o.kd?`<span class="cmd-kd">${esc(o.kd)}</span>`:'');
+  item.innerHTML=`<div class="cmd-ico">${o.ico}</div><div class="cmd-main"><span class="cmd-lbl">${o.label}</span>${o.sub?`<span class="cmd-sub">${o.sub}</span>`:''}</div>${kd}`;
+  item.addEventListener('click',ev=>{ if((ev.metaKey||ev.ctrlKey)&&o.copy) o.copy(); else o.run() });
+  document.getElementById('cmdResults').appendChild(item);
+  cmdItemsData.push({run:o.run, copy:o.copy});
+}
+function renderCMD(raw){
+  const {tokens, text}=parsePaletteQuery(raw);
+  const el=document.getElementById('cmdResults');
+  el.innerHTML=''; cmdItemsData=[];
+  const hasTokens=tokens.types.length||tokens.tags.length||tokens.is.length;
+
+  // Commands (hidden once clip-scoping tokens are present)
+  let cmds=[];
+  if(!hasTokens){
+    cmds = text
+      ? CMDS.map(c=>{ const r=fuzzyScore(text,c.label); return r?{cmd:c,pos:r.pos,score:r.score}:null }).filter(Boolean).sort((a,b)=>b.score-a.score)
+      : CMDS.map(c=>({cmd:c,pos:[],score:0}));
+  }
+
+  // Clips
+  let hits=clips.filter(c=>matchesTokens(c,tokens)).map(c=>{
+    if(!text) return {clip:c, field:'title', pos:[], display:c.title||'Untitled', sub:clipSub(c)};
+    return scoreClip(c,text);
+  }).filter(Boolean);
+  hits.sort((a,b)=> text ? (b.score-a.score) : (b.clip.date-a.clip.date));
+  hits=hits.slice(0,40);
+
+  if(cmds.length){
+    addCmdGroup('Actions');
+    cmds.forEach(({cmd,pos})=>addCmdItem({ ico:cmd.ico, label:text?cmdHighlight(cmd.label,pos):esc(cmd.label), kd:cmd.kd||'', run:cmd.fn, copy:null }));
+  }
+  if(hits.length){
+    addCmdGroup((text||hasTokens?'Clips · '+hits.length:'Recent clips'));
+    hits.forEach(h=>{
+      const c=h.clip;
+      addCmdItem({
+        ico: CMD_TYPE_ICO[c.type]||'◎',
+        label: (h.field==='title'&&text) ? cmdHighlight(h.display,h.pos) : esc(h.display),
+        sub: h.sub,
+        kd:'copy',
+        run:()=>{ closePalette(); openEditor(c.id) },
+        copy:()=>copyPaletteClip(c)
+      });
+    });
+  }
+  if(!cmds.length && !hits.length){
+    el.innerHTML='<div class="cmd-empty">No clips or commands match.<br>Try another term, or press <kbd>⌘N</kbd> to create a clip.</div>';
+  }
+  cmdIdx=0;
+  el.querySelector('.cmd-item')?.classList.add('cmd-sel');
+}
+function runPaletteItem(i, wantCopy){
+  const d=cmdItemsData[i]; if(!d) return;
+  if(wantCopy && d.copy) d.copy(); else d.run();
 }
 function openPalette(){ document.getElementById('cmdOverlay').classList.add('open'); document.getElementById('cmdInput').value=''; renderCMD(''); setTimeout(()=>document.getElementById('cmdInput').focus(),30) }
 function closePalette(){ document.getElementById('cmdOverlay').classList.remove('open') }
@@ -2189,8 +2407,9 @@ function refreshSettings(){
   const st=document.getElementById('settingsKeyStatus');
   st.textContent=key?'✓ key set':'not set';
   st.className='settings-status'+(key?' ok':'');
-  const bytes=(localStorage.getItem(SK)||'').length;
-  document.getElementById('settingsDataStat').textContent=`${clips.length} clips · ~${(bytes/1024).toFixed(1)} KB in this browser`;
+  const bytes=JSON.stringify(clips).length;
+  const where=storageBackend==='idb'?'IndexedDB':'localStorage';
+  document.getElementById('settingsDataStat').textContent=`${clips.length} clips · ~${(bytes/1024).toFixed(1)} KB in ${where}`;
 }
 function openSettings(){ refreshSettings(); document.getElementById('settingsOverlay').classList.add('open'); setTimeout(()=>document.getElementById('settingsKey').focus(),30); }
 function closeSettings(){ document.getElementById('settingsOverlay').classList.remove('open'); }
@@ -2460,9 +2679,9 @@ document.addEventListener('keydown',e=>{
   // palette navigation
   if(cmdOpen){
     const items=document.querySelectorAll('.cmd-item');
-    if(e.key==='ArrowDown'){ e.preventDefault(); items[cmdIdx]?.classList.remove('cmd-sel'); cmdIdx=Math.min(cmdIdx+1,items.length-1); items[cmdIdx]?.classList.add('cmd-sel') }
-    else if(e.key==='ArrowUp'){ e.preventDefault(); items[cmdIdx]?.classList.remove('cmd-sel'); cmdIdx=Math.max(cmdIdx-1,0); items[cmdIdx]?.classList.add('cmd-sel') }
-    else if(e.key==='Enter'){ e.preventDefault(); items[cmdIdx]?.click() }
+    if(e.key==='ArrowDown'){ e.preventDefault(); items[cmdIdx]?.classList.remove('cmd-sel'); cmdIdx=Math.min(cmdIdx+1,items.length-1); items[cmdIdx]?.classList.add('cmd-sel'); items[cmdIdx]?.scrollIntoView({block:'nearest'}) }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); items[cmdIdx]?.classList.remove('cmd-sel'); cmdIdx=Math.max(cmdIdx-1,0); items[cmdIdx]?.classList.add('cmd-sel'); items[cmdIdx]?.scrollIntoView({block:'nearest'}) }
+    else if(e.key==='Enter'){ e.preventDefault(); runPaletteItem(cmdIdx, e.metaKey||e.ctrlKey) }
     return;
   }
 
@@ -2481,8 +2700,8 @@ document.addEventListener('drop',e=>{
   const ncOpen=document.getElementById('ncOverlay').classList.contains('open');
   const text=e.dataTransfer.getData('text');
   const file=e.dataTransfer.files?.[0];
-  if(text&&!ncOpen){ openNC(); setTimeout(()=>{ const el=document.getElementById('ncContent'); if(el)el.value=text },60) }
-  else if(file&&file.type.startsWith('image/')&&!ncOpen){ openNC(); document.querySelectorAll('.nc-type-btn').forEach(b=>{ b.classList.toggle('active',b.dataset.type==='image') }); ncType='image'; renderNCBody(); setTimeout(()=>loadImageFile(file),80) }
+  if(text&&!ncOpen){ openNC(); setTimeout(()=>{ const el=document.getElementById('ncContent'); if(el){ el.value=text; setNCType(autoDetectType(text),true); } },60) }
+  else if(file&&file.type.startsWith('image/')&&!ncOpen){ openNC(); ncTypeUserSet=true; setNCType('image',false); setTimeout(()=>loadImageFile(file),80) }
 });
 
 /* ── Paste anywhere ── */
@@ -2494,7 +2713,7 @@ document.addEventListener('paste',e=>{
     const text=e.clipboardData?.getData('text');
     const file=e.clipboardData?.files?.[0];
     if(text){ addToClipboardHistory(text); showClipPrompt(text); }
-    else if(file&&file.type.startsWith('image/')){ openNC(); document.querySelectorAll('.nc-type-btn').forEach(b=>{ b.classList.toggle('active',b.dataset.type==='image') }); ncType='image'; renderNCBody(); setTimeout(()=>loadImageFile(file),80) }
+    else if(file&&file.type.startsWith('image/')){ openNC(); ncTypeUserSet=true; setNCType('image',false); setTimeout(()=>loadImageFile(file),80) }
   }
 });
 
@@ -2642,16 +2861,30 @@ document.getElementById('clipPromptSave').addEventListener('click',saveClipFromP
 document.getElementById('clipPromptDismiss').addEventListener('click',dismissClipPrompt);
 
 /* ── Init ── */
-load();
-if(!clips.length){ clips=SEED.map(c=>({...c,chains:c.chains||[]})); save() }
-else { clips=clips.map(c=>({...c,chains:c.chains||[],archived:!!c.archived,pinned:!!(c.pinned||c.favorited),tags:uniqueTags(c.tags||[])})) } // migrate old data; fold former favorites into pins
-applyTheme(prefs.theme);
-applySidebar();
-renderRecent();
-renderFavorites();
-renderClipboardPanel();
-updateTagOptions();
-switchView(prefs.view||'card');
+// load() is async (opens IndexedDB) — await it before the first render.
+(async function init(){
+  // Apply saved theme/layout synchronously first so there's no flash while IDB opens.
+  try{ const p=localStorage.getItem(PK); if(p) prefs={...prefs,...JSON.parse(p)} }catch(e){}
+  applyTheme(prefs.theme);
+  applySidebar();
+  await load();
+  if(!clips.length){ clips=SEED.map(c=>({...c,chains:c.chains||[]})); save() }
+  else { clips=clips.map(c=>({...c,chains:c.chains||[],archived:!!c.archived,pinned:!!(c.pinned||c.favorited),tags:uniqueTags(c.tags||[])})) } // migrate old data; fold former favorites into pins
+  applyTheme(prefs.theme);
+  applySidebar();
+  renderRecent();
+  renderFavorites();
+  renderClipboardPanel();
+  updateTagOptions();
+  switchView(prefs.view||'card');
+})();
+
+/* ── Offline: register the service worker (caches the app shell + fonts so
+   Trace loads with no network after the first visit). Only runs over http(s),
+   so opening index.html via file:// still works, just without the SW. */
+if('serviceWorker' in navigator && location.protocol.startsWith('http')){
+  window.addEventListener('load',()=>{ navigator.serviceWorker.register('sw.js').catch(()=>{}) });
+}
 </script>
 </body>
 </html>

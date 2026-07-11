@@ -17,13 +17,14 @@ It is not a dashboard. It is not a chat app. It is not Notion.
 
 ## Features
 
-- **6 clip types** — text, code, prompt, link, image, note
+- **6 clip types** — text, code, prompt, link, image, note (type auto-detected on paste)
 - **Masonry + list views** — content-driven hierarchy
 - **Pinned strip** — persistent working-memory shelf with FLIP animation
 - **Workflow chains** — link related clips bidirectionally
 - **AI assist** — auto-title, suggest tags, summarize, rewrite, describe (Anthropic API)
 - **Ask your Trace** — ask a natural-language question and get an answer that cites the clips it used
-- **Command palette** — `⌘K` for global actions *and* jump-to-any-clip
+- **Command palette** — `⌘K` fuzzy-searches your whole archive *and* runs commands: highlighted matches, filter tokens (`type:code`, `tag:react`, `is:pinned`), `↵` to open, `⌘↵` to copy a clip without opening it
+- **Offline** — installable PWA; loads with no network after first visit (service worker caches the shell + fonts)
 - **Settings** — `⌘,` to manage your AI key and export / import your data
 - **Keyboard-native** — `/` search, `⌘N` new, `P`/`C` shortcuts on the open clip
 - **Multi-select** — shift-click + bulk actions
@@ -74,7 +75,8 @@ npx serve .
 | Key | Action |
 |---|---|
 | `⌘N` | New clip |
-| `⌘K` | Command palette / jump to clip |
+| `⌘K` | Command palette / search everything |
+| `⌘↵` | (in palette) copy the selected clip |
 | `⌘,` | Settings (AI key, export/import) |
 | `/` | Focus search |
 | `Esc` | Close / exit mode |

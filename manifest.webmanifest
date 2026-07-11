@@ -1,0 +1,14 @@
+{
+  "name": "Trace — local-first archive",
+  "short_name": "Trace",
+  "description": "A local-first archive for thinking in fragments. Offline-capable, keyboard-native, private by default.",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#0A0A0B",
+  "theme_color": "#0A0A0B",
+  "icons": [
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}
