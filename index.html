@@ -417,8 +417,18 @@ button,input,textarea,select{font-family:var(--font-sans)}
   transition:background .12s,color .12s;
 }
 .feed-back:hover{background:var(--surface2);color:var(--text)}
-.feed-title-text{font-size:13px;font-weight:500;color:var(--text)}
+.feed-title-text{font-size:15px;font-weight:600;color:var(--text);letter-spacing:-.01em}
+.feed-count{font-size:10.5px;font-family:var(--font-mono);color:var(--micro);background:var(--surface2);border:1px solid var(--border);padding:2px 9px;border-radius:20px;white-space:nowrap}
 .feed-actions{margin-left:auto;display:flex;align-items:center;gap:7px}
+
+/* Time-grouped section headers inside the feed (masonry spans all columns) */
+.grid-group{column-span:all;-webkit-column-span:all;display:flex;align-items:center;gap:12px;margin:2px 2px 12px}
+.grid-group:not(:first-child){margin-top:20px}
+.gg-label{font-size:9.5px;font-family:var(--font-mono);font-weight:500;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);white-space:nowrap}
+.gg-count{font-size:9.5px;font-family:var(--font-mono);color:var(--micro)}
+.gg-rule{height:1px;flex:1;background:linear-gradient(90deg,var(--border2),transparent);opacity:.7}
+#grid.list-view .grid-group{margin:14px 2px 6px}
+#grid.list-view .grid-group:first-child{margin-top:2px}
 
 /* ─── Clipboard history panel ─── */
 #clipboardPanel{
@@ -500,7 +510,7 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .card{
   break-inside:avoid;margin-bottom:11px;
   background:var(--surface);border:1px solid var(--border2);
-  border-radius:8px;padding:13px;cursor:pointer;
+  border-radius:10px;padding:15px 16px;cursor:pointer;
   position:relative;overflow:visible;
   transition:border-color .16s,transform .16s,box-shadow .16s;
 }
@@ -521,11 +531,11 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .type-dot.image{background:var(--amber)}.type-dot.link{background:var(--blue)}
 .type-dot.prompt{background:var(--accent)}.type-dot.note{background:var(--pink)}
 
-.card-title{font-size:13px;font-weight:500;line-height:1.4;margin-bottom:6px;padding-right:126px}
-.card-preview{font-size:12px;color:var(--muted);line-height:1.6;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.card-title{font-size:14.5px;font-weight:600;line-height:1.35;margin-bottom:7px;padding-right:126px;letter-spacing:-.01em}
+.card-preview{font-size:12.5px;color:var(--muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .card-preview.one-line{-webkit-line-clamp:1}
 .card-preview.two-line{-webkit-line-clamp:2}
-.card-preview.prompt-preview{font-family:var(--font-serif);font-size:14px;line-height:1.6;font-style:italic;border-left:2px solid var(--accent);padding-left:11px;margin:2px 0;-webkit-line-clamp:4}
+.card-preview.prompt-preview{font-family:var(--font-serif);font-size:14px;line-height:1.6;font-style:italic;border-left:2px solid var(--accent);padding-left:11px;margin:2px 0;-webkit-line-clamp:3}
 
 /* sensitive */
 .sensitive-wrap{transition:filter .28s ease}
@@ -1163,6 +1173,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
     <div class="feed-header">
       <button class="feed-back" id="feedBack">← Back</button>
       <span class="feed-title-text" id="feedTitleText">All Clips</span>
+      <span class="feed-count" id="feedCount"></span>
       <div class="feed-actions">
         <div class="view-toggle">
           <button class="vt-btn active" id="btnCards">⊞ Cards</button>
@@ -1614,19 +1625,51 @@ function listHTML(c){
     ${actionsHTML(c)}`;
 }
 
+/* Bucket a clip's age into a human section label for time-grouped feeds. */
+function ageBucket(date){
+  const now=new Date();
+  const startToday=new Date(now.getFullYear(),now.getMonth(),now.getDate()).getTime();
+  const day=86400000;
+  if(date>=startToday) return 'Today';
+  if(date>=startToday-day) return 'Yesterday';
+  if(date>=startToday-7*day) return 'This week';
+  if(date>=startToday-30*day) return 'This month';
+  if(date>=startToday-365*day) return 'This year';
+  return 'Older';
+}
+
 /* ── Render ── */
 function render(){
   const grid=document.getElementById('grid');
   const list=filtered();
   grid.className=view==='card'?'masonry':'list-view';
 
+  const fc=document.getElementById('feedCount');
+  if(fc) fc.textContent=list.length?`${list.length} clip${list.length===1?'':'s'}`:'';
+
   if(!list.length){
     grid.innerHTML=`<div class="empty"><div class="empty-glyph">✦</div><div class="empty-title">${clips.length?'No clips match this filter':'Start capturing ideas'}</div><div class="empty-sub">${clips.length?'Try a different filter or search term':'Paste, drop, or type — your clips live here, locally.'}</div><div class="empty-hint"><span class="empty-hint-chip">⌘N new clip</span><span class="empty-hint-chip">⌘V paste</span><span class="empty-hint-chip">drag & drop</span><span class="empty-hint-chip">⌘K commands</span></div></div>`;
     updateCounts(); renderBulkBar(); renderRecent(); return;
   }
 
+  // Time-group everything except the custom-ordered "All Clips" default,
+  // whose manual drag order must stay intact.
+  const grouped = !(filter==='all' && !searchQ);
+
   grid.innerHTML='';
+  let lastBucket=null;
   list.forEach(c=>{
+    if(grouped){
+      const bk=ageBucket(c.date);
+      if(bk!==lastBucket){
+        lastBucket=bk;
+        const n=list.filter(x=>ageBucket(x.date)===bk).length;
+        const h=document.createElement('div');
+        h.className='grid-group';
+        h.innerHTML=`<span class="gg-label">${bk}</span><span class="gg-count">${n}</span><span class="gg-rule"></span>`;
+        grid.appendChild(h);
+      }
+    }
     const card=document.createElement('div');
     card.className='card'+(selected.has(c.id)?' selected':'');
     card.dataset.id=c.id;
@@ -1657,7 +1700,7 @@ function render(){
   animateFeed=false;
 
   updateCounts(); renderBulkBar(); renderRecent(); renderFavorites();
-  setupDragReorder();
+  if(!grouped) setupDragReorder();
 }
 
 /* ── Pinned shelf (home) ── */
