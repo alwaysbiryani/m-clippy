@@ -317,6 +317,22 @@ button,input,textarea,select{font-family:var(--font-sans)}
 }
 .hero-greeting .hg-line{color:var(--text)}
 .hero-greeting .hg-sub{color:var(--muted);font-style:italic}
+.hero-stats{
+  margin-top:14px;font-family:var(--font-mono);font-size:10.5px;
+  letter-spacing:.02em;color:var(--micro);
+  display:flex;align-items:center;gap:7px;min-height:14px;
+}
+.hero-stats .hs-dot{opacity:.5}
+/* Staggered entrance for the home hero — plays once, calm not flashy */
+@keyframes heroRise{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+.hero-area .local-badge{animation:heroRise .5s var(--ease-panel) both}
+.hero-greeting{animation:heroRise .5s var(--ease-panel) .06s both}
+.hero-search{animation:heroRise .5s var(--ease-panel) .12s both}
+.hero-stats{animation:heroRise .5s var(--ease-panel) .18s both}
+.fav-section{animation:heroRise .5s var(--ease-panel) .24s both}
+@media(prefers-reduced-motion:reduce){
+  .hero-area .local-badge,.hero-greeting,.hero-search,.hero-stats,.fav-section{animation:none}
+}
 .hero-search{
   width:100%;max-width:560px;height:52px;
   background:var(--surface);border:1px solid var(--border2);
@@ -866,7 +882,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 /* ════════════════════
    EMPTY STATE
 ════════════════════ */
-.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px;text-align:center}
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 24px;text-align:center;column-span:all}
 .empty-glyph{
   font-size:48px;margin-bottom:20px;
   background:linear-gradient(135deg,var(--accent),var(--teal));
@@ -874,7 +890,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
   animation:emptyPulse 3s ease-in-out infinite;
 }
 @keyframes emptyPulse{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.05)}}
-.empty-title{font-size:17px;font-weight:500;margin-bottom:6px;letter-spacing:-.2px}
+.empty-title{font-family:var(--font-serif);font-size:23px;font-weight:400;margin-bottom:8px;letter-spacing:-.01em}
 .empty-sub{font-size:13px;color:var(--muted);line-height:1.6}
 .empty-hint{
   margin-top:20px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;
@@ -1119,6 +1135,7 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
       <input type="text" id="searchInput" placeholder="Type to search or save a clip">
       <span class="hs-hint">/</span>
     </div>
+    <div class="hero-stats" id="heroStats"></div>
   </div>
 
   <!-- Favorites -->
@@ -1518,6 +1535,19 @@ function updateCounts(){
   document.getElementById('cntPin').textContent=active.filter(c=>c.pinned).length;
   document.getElementById('cntArch').textContent=clips.filter(c=>c.archived).length;
   updateTagOptions();
+  updateHeroStats();
+}
+/* Quiet stat line under the hero search — anchors the landing without clutter. */
+function updateHeroStats(){
+  const el=document.getElementById('heroStats'); if(!el) return;
+  const active=clips.filter(c=>!c.archived);
+  if(!active.length){ el.textContent=''; return; }
+  const pinned=active.filter(c=>c.pinned).length;
+  const tags=new Set(active.flatMap(c=>c.tags||[])).size;
+  const parts=[`${active.length} clip${active.length===1?'':'s'}`];
+  if(pinned) parts.push(`${pinned} pinned`);
+  if(tags) parts.push(`${tags} tag${tags===1?'':'s'}`);
+  el.innerHTML=parts.map(p=>`<span>${p}</span>`).join('<span class="hs-dot">·</span>');
 }
 
 
@@ -2724,6 +2754,7 @@ document.getElementById('clipPromptDismiss').addEventListener('click',dismissCli
   renderClipboardPanel();
   updateTagOptions();
   setGreeting();
+  updateHeroStats();
   switchView(prefs.view||'card');
 })();
 
