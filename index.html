@@ -180,7 +180,7 @@ button,input,textarea,select{font-family:var(--font-sans)}
   box-shadow:0 2px 10px rgba(0,0,0,.2);
 }
 #floatingToggle:active{transform:scale(.94)}
-#sidebarBackdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:55}
+#sidebarBackdrop{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);z-index:55}
 
 #main{transition:min-width .28s var(--ease-reflow);will-change:contents}
 .card.reflowing{transition:transform .28s var(--ease-reflow),opacity .18s var(--ease-reflow)!important;will-change:transform}
@@ -620,9 +620,13 @@ button,input,textarea,select{font-family:var(--font-sans)}
   width:var(--editor);min-width:var(--editor);
   height:100vh;border-left:1px solid var(--border);
   display:flex;flex-direction:column;
-  background:var(--bg);flex-shrink:0;
+  background:var(--bg);flex-shrink:0;position:relative;
   transition:transform .24s var(--ease-panel),width .24s var(--ease-panel),min-width .24s var(--ease-panel),opacity .2s;
   overflow:hidden;
+}
+#editorPanel::before{
+  content:'';position:absolute;top:0;left:0;width:1px;height:100%;
+  background:linear-gradient(180deg,transparent,var(--border2),transparent);opacity:.4;pointer-events:none;
 }
 #editorPanel.closed{transform:translateX(100%);width:0;min-width:0;border-left:none;opacity:0}
 .ep-head{padding:14px 14px 10px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
@@ -679,7 +683,8 @@ button,input,textarea,select{font-family:var(--font-sans)}
    NEW CLIP OVERLAY
 ════════════════════ */
 #ncOverlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.72);z-index:200;
+  position:fixed;inset:0;background:rgba(0,0,0,.62);z-index:200;
+  backdrop-filter:blur(4px) saturate(1.05);-webkit-backdrop-filter:blur(4px) saturate(1.05);
   display:flex;align-items:center;justify-content:center;
   opacity:0;pointer-events:none;transition:opacity .18s;
 }
@@ -739,7 +744,8 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
    COMMAND PALETTE
 ════════════════════ */
 #cmdOverlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;
+  position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:300;
+  backdrop-filter:blur(4px) saturate(1.05);-webkit-backdrop-filter:blur(4px) saturate(1.05);
   display:flex;align-items:flex-start;justify-content:center;padding-top:13vh;
   opacity:0;pointer-events:none;transition:opacity .16s;
 }
@@ -771,7 +777,8 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 
 /* ─── Settings & Ask overlays ─── */
 #settingsOverlay,#askOverlay{
-  position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:310;
+  position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:310;
+  backdrop-filter:blur(4px) saturate(1.05);-webkit-backdrop-filter:blur(4px) saturate(1.05);
   display:flex;align-items:flex-start;justify-content:center;padding-top:11vh;
   opacity:0;pointer-events:none;transition:opacity .16s;
 }
