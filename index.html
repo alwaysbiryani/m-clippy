@@ -45,7 +45,11 @@
   --sidebar:220px;
   --sidebar-collapsed:56px;
   --editor:364px;
+  /* radius scale — sm for chips, r for controls, lg for cards/surfaces */
+  --r-sm:4px;
   --r:6px;
+  --r-lg:10px;
+  --r-xl:14px;
   --ease-panel:cubic-bezier(0.16,1,0.3,1);
   --ease-reflow:cubic-bezier(0.2,0,0,1);
   /* ambient depth — layered radial glow behind the whole app */
@@ -55,6 +59,15 @@
   --shadow-sm:0 1px 2px rgba(0,0,0,.4);
   --shadow-card:0 6px 20px -10px rgba(0,0,0,.55);
   --shadow-lift:0 10px 34px -14px rgba(0,0,0,.7),0 0 0 1px var(--accent-glow);
+  /* Type-color system — each clip type owns one hue. Purple retreats to being
+     the interaction color (focus, selection, primary CTA) only, so the app is
+     colorful-by-content without becoming an all-violet "AI startup" wash. */
+  --t-text:#A1A1AA;
+  --t-code:#34D399;
+  --t-link:#60A5FA;
+  --t-image:#F59E0B;
+  --t-prompt:#A78BFA;
+  --t-note:#F472B6;
 }
 
 [data-theme="light"]{
@@ -72,6 +85,13 @@
   --shadow-sm:0 1px 2px rgba(24,24,27,.05);
   --shadow-card:0 6px 20px -12px rgba(24,24,27,.16);
   --shadow-lift:0 12px 32px -14px rgba(24,24,27,.22),0 0 0 1px var(--accent-glow);
+  /* Type hues, deepened for AA contrast on light surfaces */
+  --t-text:#71717A;
+  --t-code:#059669;
+  --t-link:#2563EB;
+  --t-image:#D97706;
+  --t-prompt:#7C3AED;
+  --t-note:#DB2777;
 }
 
 html,body{height:100%;overflow:hidden}
@@ -350,9 +370,11 @@ button,input,textarea,select{font-family:var(--font-sans)}
   padding:0 0 8px;
 }
 .fav-title{
-  font-size:10px;font-weight:500;letter-spacing:.08em;
-  text-transform:uppercase;color:var(--micro);
+  display:inline-flex;align-items:center;gap:6px;
+  font-size:10px;font-weight:600;letter-spacing:.09em;
+  text-transform:uppercase;color:var(--muted);
 }
+.fav-title-ico{width:12px;height:12px;color:var(--t-prompt);opacity:.9}
 .fav-expand{
   font-size:11px;color:var(--muted);background:none;border:none;
   cursor:pointer;font-family:var(--font-mono);
@@ -360,26 +382,29 @@ button,input,textarea,select{font-family:var(--font-sans)}
   transition:background .12s,color .12s;
 }
 .fav-expand:hover{background:var(--surface2);color:var(--text)}
-.fav-list{display:flex;flex-direction:column;gap:1px}
+.fav-list{display:flex;flex-direction:column;gap:2px}
 .fav-item{
-  display:flex;align-items:center;gap:10px;
-  padding:10px 12px;border-radius:8px;cursor:pointer;
-  border:1px solid transparent;
-  transition:background .14s,border-color .14s,box-shadow .18s,transform .18s;
+  --type-accent:var(--t-text);
+  display:flex;align-items:center;gap:11px;
+  padding:9px 12px 9px 11px;border-radius:var(--r-lg);cursor:pointer;
+  border:1px solid transparent;position:relative;
+  transition:background .14s,border-color .14s,transform .16s var(--ease-reflow);
 }
-.fav-item:hover{background:var(--surface);border-color:var(--border2);box-shadow:var(--shadow-card);transform:translateY(-1px)}
-.fav-item .type-dot{margin-right:-4px}
-.fav-item-type{
-  font-family:var(--font-mono);font-size:9px;text-transform:uppercase;
-  color:var(--micro);width:32px;flex-shrink:0;
+.fav-item::before{
+  content:'';position:absolute;left:0;top:8px;bottom:8px;width:2px;
+  background:var(--type-accent);opacity:0;border-radius:2px;
+  transition:opacity .16s,top .16s,bottom .16s;
 }
+.fav-item:hover{background:var(--surface);border-color:var(--border2);transform:translateX(2px)}
+.fav-item:hover::before{opacity:.9;top:6px;bottom:6px}
+.fav-item .type-dot{width:6px;height:6px;flex-shrink:0}
 .fav-item-title{
-  font-size:13px;font-weight:500;flex:1;
+  font-size:13px;font-weight:500;flex-shrink:0;max-width:38%;
   overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
 }
 .fav-item-preview{
-  font-size:12px;color:var(--muted);
-  max-width:200px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
+  font-size:12px;color:var(--muted);flex:1;min-width:0;
+  overflow:hidden;white-space:nowrap;text-overflow:ellipsis;
 }
 .fav-item-time{
   font-size:10px;font-family:var(--font-mono);color:var(--micro);flex-shrink:0;
@@ -392,17 +417,57 @@ button,input,textarea,select{font-family:var(--font-sans)}
 #feedSection{display:none}
 #feedSection.visible{display:flex;flex-direction:column;flex:1;overflow:hidden}
 .feed-header{
-  padding:8px 18px;border-bottom:1px solid var(--border);
-  display:flex;align-items:center;gap:10px;flex-shrink:0;
+  padding:12px 20px;border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;flex-shrink:0;
+  background:color-mix(in srgb,var(--bg) 82%,transparent);
+  backdrop-filter:saturate(1.2);
+  position:relative;z-index:30; /* keep the Sort popover above feed cards */
 }
 .feed-back{
-  background:none;border:none;color:var(--muted);cursor:pointer;
-  font-size:13px;padding:4px 8px;border-radius:5px;
+  background:none;border:1px solid transparent;color:var(--muted);cursor:pointer;
+  width:28px;height:28px;display:flex;align-items:center;justify-content:center;
+  border-radius:var(--r);flex-shrink:0;
+  transition:background .14s,color .14s,border-color .14s,transform .14s;
+}
+.feed-back svg{width:16px;height:16px}
+.feed-back:hover{background:var(--surface2);color:var(--text);border-color:var(--border2)}
+.feed-back:active{transform:translateX(-1px)}
+.feed-title-wrap{display:flex;align-items:baseline;gap:8px;min-width:0}
+.feed-title-text{font-size:15px;font-weight:600;letter-spacing:-.01em;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.feed-count{font-size:11px;font-family:var(--font-mono);color:var(--micro);flex-shrink:0}
+.feed-actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+
+/* Sort control — a quiet popover, not a native select */
+.sort-control{position:relative}
+.sort-btn{
+  display:flex;align-items:center;gap:6px;padding:5px 9px;
+  border:1px solid var(--border2);border-radius:var(--r);
+  background:none;color:var(--muted);font-size:12px;cursor:pointer;
+  transition:background .14s,color .14s,border-color .14s;
+}
+.sort-btn:hover{background:var(--surface);color:var(--text);border-color:color-mix(in srgb,var(--border2) 60%,var(--accent))}
+.sort-btn svg{width:14px;height:14px;flex-shrink:0}
+.sort-btn .sort-caret{width:12px;height:12px;color:var(--micro);transition:transform .18s var(--ease-reflow)}
+.sort-control.open .sort-caret{transform:rotate(180deg)}
+.sort-menu{
+  position:absolute;top:calc(100% + 6px);right:0;min-width:150px;z-index:60;
+  background:var(--surface2);border:1px solid var(--border2);
+  border-radius:var(--r-lg);padding:4px;box-shadow:var(--shadow-lift);
+  opacity:0;transform:translateY(-4px) scale(.98);pointer-events:none;
+  transform-origin:top right;
+  transition:opacity .14s var(--ease-panel),transform .16s var(--ease-panel);
+}
+.sort-control.open .sort-menu{opacity:1;transform:none;pointer-events:auto}
+.sort-opt{
+  width:100%;display:flex;align-items:center;justify-content:space-between;
+  padding:7px 9px;border:none;background:none;color:var(--muted);
+  border-radius:var(--r);font-size:12.5px;text-align:left;cursor:pointer;
   transition:background .12s,color .12s;
 }
-.feed-back:hover{background:var(--surface2);color:var(--text)}
-.feed-title-text{font-size:13px;font-weight:500;color:var(--text)}
-.feed-actions{margin-left:auto;display:flex;align-items:center;gap:7px}
+.sort-opt:hover{background:var(--surface3);color:var(--text)}
+.sort-opt .sort-check{opacity:0;color:var(--accent);font-size:11px}
+.sort-opt.active{color:var(--text)}
+.sort-opt.active .sort-check{opacity:1}
 
 /* ─── Clipboard history panel ─── */
 #clipboardPanel{
@@ -457,10 +522,11 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .topbar-r{display:none}
 .view-toggle{display:flex;border:1px solid var(--border2);border-radius:var(--r);overflow:hidden}
 .vt-btn{
-  padding:5px 9px;background:none;border:none;color:var(--micro);font-size:12px;
-  display:flex;align-items:center;gap:4px;border-right:1px solid var(--border2);
-  transition:all .12s;cursor:pointer;
+  width:30px;height:28px;padding:0;background:none;border:none;color:var(--micro);
+  display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border2);
+  transition:background .12s,color .12s;cursor:pointer;
 }
+.vt-btn svg{width:15px;height:15px}
 .vt-btn:last-child{border-right:none}
 .vt-btn.active{background:var(--surface2);color:var(--text)}
 .vt-btn:hover:not(.active){background:var(--surface);color:var(--muted)}
@@ -482,30 +548,49 @@ button,input,textarea,select{font-family:var(--font-sans)}
 
 /* ─── CARDS ─── */
 .card{
+  --type-accent:var(--t-text);
   break-inside:avoid;margin-bottom:11px;
   background:var(--surface);border:1px solid var(--border2);
-  border-radius:8px;padding:13px;cursor:pointer;
-  position:relative;overflow:visible;
-  transition:border-color .16s,transform .16s,box-shadow .16s;
+  border-radius:var(--r-lg);padding:13px 13px 13px 15px;cursor:pointer;
+  position:relative;overflow:hidden;
+  transition:border-color .18s,transform .16s var(--ease-reflow),box-shadow .2s;
 }
+/* Type-accent stripe — a hairline of the clip's own hue down the left edge.
+   Calm at rest (35% alpha), it saturates on hover. This carries the color the
+   old design pushed onto the accent border, so hover no longer floods purple. */
+.card::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:2.5px;
+  background:var(--type-accent);opacity:.35;border-radius:var(--r-lg) 0 0 var(--r-lg);
+  transition:opacity .18s,width .18s;
+}
+.type-text{--type-accent:var(--t-text)}
+.type-code{--type-accent:var(--t-code)}
+.type-link{--type-accent:var(--t-link)}
+.type-image{--type-accent:var(--t-image)}
+.type-prompt{--type-accent:var(--t-prompt)}
+.type-note{--type-accent:var(--t-note)}
 .card:hover{
-  border-color:var(--accent);transform:translateY(-3px);
-  box-shadow:0 0 0 1px var(--accent-glow),0 12px 36px rgba(0,0,0,.28),0 0 60px rgba(139,92,246,.06),inset 0 0 40px rgba(139,92,246,.03);
+  border-color:color-mix(in srgb,var(--type-accent) 40%,var(--border2));
+  transform:translateY(-2px);
+  box-shadow:var(--shadow-card);
 }
+.card:hover::before{opacity:1;width:3px}
 .card.selected{border-color:var(--accent);background:var(--accent-dim)}
+.card.selected::before{background:var(--accent);opacity:1}
 
 /* card anatomy */
 .card-type{font-size:9px;font-family:var(--font-mono);font-weight:500;text-transform:uppercase;letter-spacing:.08em;color:var(--micro);margin-bottom:7px;display:flex;align-items:center;gap:5px}
-.type-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
-.type-dot.text{background:#A1A1AA}.type-dot.code{background:var(--green)}
-.type-dot.image{background:var(--amber)}.type-dot.link{background:var(--blue)}
-.type-dot.prompt{background:var(--accent)}.type-dot.note{background:var(--pink)}
+.card-type .ct-name{color:color-mix(in srgb,var(--type-accent) 72%,var(--muted))}
+.type-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;background:var(--type-accent)}
+.type-dot.text{background:var(--t-text)}.type-dot.code{background:var(--t-code)}
+.type-dot.image{background:var(--t-image)}.type-dot.link{background:var(--t-link)}
+.type-dot.prompt{background:var(--t-prompt)}.type-dot.note{background:var(--t-note)}
 
 .card-title{font-size:13px;font-weight:500;line-height:1.4;margin-bottom:6px;padding-right:126px}
 .card-preview{font-size:12px;color:var(--muted);line-height:1.6;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
 .card-preview.one-line{-webkit-line-clamp:1}
 .card-preview.two-line{-webkit-line-clamp:2}
-.card-preview.prompt-preview{font-family:var(--font-serif);font-size:14px;line-height:1.6;font-style:italic;border-left:2px solid var(--accent);padding-left:11px;margin:2px 0;-webkit-line-clamp:4}
+.card-preview.prompt-preview{font-family:var(--font-serif);font-size:14.5px;line-height:1.6;font-style:italic;color:color-mix(in srgb,var(--text) 62%,var(--muted));border-left:2px solid color-mix(in srgb,var(--t-prompt) 55%,transparent);padding-left:11px;margin:2px 0;-webkit-line-clamp:4}
 
 /* sensitive */
 .sensitive-wrap{transition:filter .28s ease}
@@ -522,11 +607,22 @@ button,input,textarea,select{font-family:var(--font-sans)}
 /* prompt */
 .prompt-body{font-family:var(--font-serif);font-size:14px;line-height:1.65;font-style:italic;border-left:2px solid var(--accent);padding-left:11px;margin:2px 0}
 
-/* link */
-.card-link{display:flex;align-items:center;gap:7px;padding:7px 8px;background:var(--surface2);border-radius:4px;border:1px solid var(--border);margin-top:6px;min-width:0}
-.card-link-url{font-size:11px;color:var(--micro);font-family:var(--font-mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
-.link-title{font-size:12px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px}
-.link-ico{width:16px;height:16px;border-radius:3px;background:var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;color:var(--micro)}
+/* link — favicon-free: a deterministic monogram tile keyed to the domain hue,
+   so links stay recognizable, private, and identical online or offline. */
+.card-link{display:flex;align-items:center;gap:9px;padding:8px 9px;background:var(--surface2);border-radius:var(--r);border:1px solid var(--border);margin-top:6px;min-width:0}
+.link-fav{
+  width:22px;height:22px;flex-shrink:0;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-sans);font-size:11px;font-weight:600;
+  color:hsl(var(--fav-h) 65% 72%);
+  background:hsl(var(--fav-h) 55% 55% / .14);
+  border:1px solid hsl(var(--fav-h) 55% 55% / .22);
+}
+[data-theme="light"] .link-fav{color:hsl(var(--fav-h) 60% 40%);background:hsl(var(--fav-h) 60% 50% / .10)}
+.card-link-domain{font-size:11.5px;color:var(--text);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.link-title{font-size:11px;color:var(--micro);font-family:var(--font-mono);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:1px}
+.link-arrow{flex-shrink:0;color:var(--micro);font-size:12px;transition:transform .16s,color .16s}
+.card:hover .link-arrow{color:var(--t-link);transform:translate(1px,-1px)}
 
 /* image */
 .card-img-wrap{width:100%;border-radius:5px;overflow:hidden;margin-bottom:7px;background:var(--surface2);border:1px solid var(--border);min-height:80px;display:flex;align-items:center;justify-content:center}
@@ -534,11 +630,17 @@ button,input,textarea,select{font-family:var(--font-sans)}
 .card-img-placeholder{font-size:11px;color:var(--micro);font-family:var(--font-mono);text-align:center;padding:20px}
 
 /* meta */
-.card-meta{margin-top:9px;padding-top:7px;border-top:1px solid var(--border);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
-.tag{font-size:10px;font-family:var(--font-mono);color:var(--micro);background:rgba(255,255,255,.03);padding:2px 6px;border-radius:3px;border:1px solid var(--border2);cursor:pointer;transition:border-color .12s,color .12s}
-.tag:hover{border-color:var(--accent);color:var(--accent)}
+.card-meta{margin-top:10px;padding-top:8px;border-top:1px solid var(--border);display:flex;align-items:center;gap:7px;min-width:0}
+.card-tags{display:flex;align-items:center;gap:4px;min-width:0;overflow:hidden;flex-wrap:nowrap}
+.tag{font-size:10px;font-family:var(--font-mono);color:var(--micro);background:rgba(255,255,255,.03);padding:2px 6px;border-radius:var(--r-sm);border:1px solid var(--border2);cursor:pointer;white-space:nowrap;transition:border-color .12s,color .12s,background .12s}
+.tag:hover{border-color:color-mix(in srgb,var(--type-accent,var(--accent)) 60%,var(--border2));color:color-mix(in srgb,var(--type-accent,var(--accent)) 80%,var(--text))}
+.tag-more{cursor:default;color:var(--micro);opacity:.7}
+.tag-more:hover{border-color:var(--border2);color:var(--micro)}
 [data-theme="light"] .tag{background:rgba(0,0,0,.03)}
-.card-date{margin-left:auto;font-size:10px;font-family:var(--font-mono);color:var(--micro)}
+.card-stat{font-size:9.5px;font-family:var(--font-mono);color:var(--micro);letter-spacing:.02em;white-space:nowrap;flex-shrink:0;margin-left:auto}
+.card-stat + .card-date{margin-left:0}
+.card-date{margin-left:auto;font-size:10px;font-family:var(--font-mono);color:var(--micro);white-space:nowrap;flex-shrink:0}
+.card-stat ~ .card-date::before{content:'·';margin-right:6px;color:var(--border2)}
 
 /* AI hint */
 
@@ -588,7 +690,8 @@ button,input,textarea,select{font-family:var(--font-sans)}
 }
 #grid.list-view .card:first-child{border-top:1px solid var(--border)}
 #grid.list-view .card:hover{background:var(--surface)}
-#grid.list-view .l-type{font-size:9px;font-family:var(--font-mono);text-transform:uppercase;color:var(--micro);width:38px;flex-shrink:0}
+#grid.list-view .l-type{font-size:9px;font-family:var(--font-mono);text-transform:uppercase;color:var(--micro);width:52px;flex-shrink:0;display:flex;align-items:center;gap:5px}
+#grid.list-view .l-type .type-dot{width:5px;height:5px;border-radius:50%}
 #grid.list-view .l-title{font-size:13px;font-weight:500;width:160px;flex-shrink:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 #grid.list-view .l-preview{font-size:12px;color:var(--muted);flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 #grid.list-view .l-tags{display:flex;gap:3px;flex-shrink:0}
@@ -923,17 +1026,22 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 .img-download-btn:hover{background:rgba(0,0,0,.85)}
 
 /* ─── LOCAL-ONLY BADGE ─── */
+/* Trust badge — a whisper, not a banner. Small, monochrome, with a single
+   quiet living dot. It reassures without shouting a marketing sentence. */
 .local-badge{
-  display:flex;align-items:center;gap:5px;
-  padding:4px 9px;border-radius:5px;
-  background:var(--surface);border:1px solid var(--border2);
-  font-size:10px;font-family:var(--font-mono);color:var(--muted);
-  cursor:default;transition:border-color .14s,color .14s;
+  display:inline-flex;align-items:center;gap:6px;
+  padding:4px 10px 4px 8px;border-radius:999px;
+  background:color-mix(in srgb,var(--surface) 70%,transparent);
+  border:1px solid var(--border2);
+  font-size:10.5px;font-weight:500;letter-spacing:.01em;color:var(--muted);
+  cursor:default;transition:border-color .18s,color .18s;
   white-space:nowrap;
 }
-.local-badge:hover{border-color:var(--green);color:var(--green)}
-.local-badge .lb-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0}
-.local-badge .lb-lock{font-size:11px;flex-shrink:0}
+.local-badge:hover{border-color:color-mix(in srgb,var(--green) 45%,var(--border2));color:var(--text)}
+.local-badge .lb-lock{width:12px;height:12px;flex-shrink:0;color:var(--green);opacity:.85}
+.local-badge .lb-dot{width:5px;height:5px;border-radius:50%;background:var(--green);flex-shrink:0;box-shadow:0 0 0 0 color-mix(in srgb,var(--green) 55%,transparent);animation:lbPulse 3.2s var(--ease-panel) infinite}
+@keyframes lbPulse{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--green) 45%,transparent)}70%{box-shadow:0 0 0 5px transparent}100%{box-shadow:0 0 0 0 transparent}}
+@media (prefers-reduced-motion:reduce){.local-badge .lb-dot{animation:none}}
 
 /* ─── CLIPBOARD PROMPT TOAST ─── */
 .clip-prompt{
@@ -1108,10 +1216,10 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
 <main id="main">
   <!-- Hero search -->
   <div class="hero-area" id="heroArea">
-    <div class="local-badge" title="All data stored locally in your browser — nothing leaves your machine">
-      <span class="lb-lock">🔒</span>
+    <div class="local-badge" title="All data is stored locally in your browser — nothing ever leaves this device.">
+      <svg class="lb-lock" viewBox="0 0 16 16" fill="none"><rect x="3.5" y="7" width="9" height="6.5" rx="1.5" stroke="currentColor" stroke-width="1.2"/><path d="M5.5 7V5.2a2.5 2.5 0 015 0V7" stroke="currentColor" stroke-width="1.2"/></svg>
+      <span>Local-only</span>
       <span class="lb-dot"></span>
-      <span>100% local-only — your data never leaves this device</span>
     </div>
     <div class="hero-greeting" id="heroGreeting"><span class="hg-line">Welcome back.</span> <span class="hg-sub">What are you capturing?</span></div>
     <div class="hero-search" id="heroSearch">
@@ -1124,21 +1232,41 @@ textarea.nc-field{min-height:120px;resize:none;line-height:1.65}
   <!-- Favorites -->
   <div class="fav-section" id="favSection">
     <div class="fav-header">
-      <span class="fav-title">Pinned</span>
+      <span class="fav-title">
+        <svg class="fav-title-ico" viewBox="0 0 16 16" fill="none"><path d="M5.5 2.5h5M7 2.5v3.5l-1.5 2h5L9 6V2.5M8 8v5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Pinned
+      </span>
       <button class="fav-expand" id="favExpand">View all →</button>
     </div>
     <div class="fav-list" id="favList"></div>
   </div>
 
-  <!-- Feed (hidden until expand/search/filter) -->
+  <!-- Feed / Collection (hidden until expand/search/filter) -->
   <div id="feedSection">
     <div class="feed-header">
-      <button class="feed-back" id="feedBack">← Back</button>
-      <span class="feed-title-text" id="feedTitleText">All Clips</span>
+      <button class="feed-back" id="feedBack" title="Back to home" aria-label="Back to home">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M10 3.5L5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <div class="feed-title-wrap">
+        <span class="feed-title-text" id="feedTitleText">All Clips</span>
+        <span class="feed-count" id="feedCount"></span>
+      </div>
       <div class="feed-actions">
+        <div class="sort-control" id="sortControl">
+          <button class="sort-btn" id="sortBtn" aria-haspopup="listbox" aria-expanded="false" title="Sort clips">
+            <svg viewBox="0 0 16 16" fill="none"><path d="M4 4h8M4 8h5M4 12h3" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <span id="sortLabel">Recent</span>
+            <svg class="sort-caret" viewBox="0 0 16 16" fill="none"><path d="M4.5 6.5L8 10l3.5-3.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
+          <div class="sort-menu" id="sortMenu" role="listbox">
+            <button class="sort-opt" role="option" data-sort="recent"><span>Recent</span><span class="sort-check">✓</span></button>
+            <button class="sort-opt" role="option" data-sort="oldest"><span>Oldest</span><span class="sort-check">✓</span></button>
+            <button class="sort-opt" role="option" data-sort="az"><span>A–Z</span><span class="sort-check">✓</span></button>
+          </div>
+        </div>
         <div class="view-toggle">
-          <button class="vt-btn active" id="btnCards">⊞ Cards</button>
-          <button class="vt-btn" id="btnList">≡ List</button>
+          <button class="vt-btn active" id="btnCards" title="Card view" aria-label="Card view"><svg viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="2" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="2" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="5" height="5" rx="1" stroke="currentColor" stroke-width="1.3"/></svg></button>
+          <button class="vt-btn" id="btnList" title="List view" aria-label="List view"><svg viewBox="0 0 16 16" fill="none"><path d="M3 4h10M3 8h10M3 12h10" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg></button>
         </div>
         <button id="cmdBtn">⌘K</button>
       </div>
@@ -1338,7 +1466,8 @@ function setAIKey(){
 
 /* ── State ── */
 let clips = [];
-let prefs = { theme:'dark', view:'card', sidebarCollapsed:false };
+let prefs = { theme:'dark', view:'card', sidebarCollapsed:false, sort:'recent' };
+let sortMode = 'recent'; // recent | oldest | az
 let filter = 'all';
 let view = 'card';
 let openId = null;
@@ -1467,6 +1596,26 @@ function uniqueTags(tags=[]){
   return tags.map(normalizeTag).filter(t=>t && !seen.has(t) && seen.add(t));
 }
 function allTags(){ return [...new Set(clips.flatMap(c=>c.tags||[]).map(normalizeTag).filter(Boolean))].sort() }
+
+/* ── Content-derived metadata ──────────────────────────────────────────────
+   All local, all offline. We never fetch a favicon (that would leak the URL
+   off-device and break the offline promise) — instead we render a deterministic
+   monogram tile keyed to the domain, which is faster, consistent, and private. */
+function domainOf(url=''){
+  let h=String(url||'').trim().replace(/^https?:\/\//i,'').replace(/^www\./i,'');
+  h=h.split(/[\/?#]/)[0];
+  return h||'';
+}
+function domainHue(d=''){ let h=0; for(let i=0;i<d.length;i++) h=(h*31+d.charCodeAt(i))%360; return h; }
+function wordCount(t=''){ const m=String(t||'').trim().match(/\S+/g); return m?m.length:0; }
+function lineCount(t=''){ return String(t||'').trim()? String(t).trim().split('\n').length : 0; }
+/* One quiet size/shape figure per card, chosen to suit the type. */
+function metaStat(c){
+  if(c.type==='code'){ const n=lineCount(c.content); return n?`${n} ${n===1?'line':'lines'}`:''; }
+  if(c.type==='image') return '';
+  if(c.type==='link') return '';
+  const n=wordCount(c.content); return n?`${n} ${n===1?'word':'words'}`:'';
+}
 function updateTagOptions(){
   const dl=document.getElementById('tagOptions'); if(!dl) return;
   dl.innerHTML=allTags().map(t=>`<option value="${esc(t)}"></option>`).join('');
@@ -1505,10 +1654,13 @@ function filtered(){
   if(filter==='pinned') list=list.filter(c=>c.pinned);
   else if(filter.startsWith('type:')) list=list.filter(c=>c.type===filter.slice(5));
   else if(filter.startsWith('tag:')) list=list.filter(c=>(c.tags||[]).some(t=>normalizeTag(t)===filter.slice(4)));
-  list.sort((a,b)=>b.date-a.date);
-  // Custom drag order only applies in the unfiltered "All Clips" view, so a
-  // reorder inside one filter can't scramble the rest of the library.
-  return (filter==='all' && !searchQ) ? applyCustomOrder(list) : list;
+  if(sortMode==='oldest') list.sort((a,b)=>a.date-b.date);
+  else if(sortMode==='az') list.sort((a,b)=>(a.title||'').localeCompare(b.title||'',undefined,{sensitivity:'base'}));
+  else list.sort((a,b)=>b.date-a.date);
+  // Custom drag order only applies in the unfiltered "All Clips" view on the
+  // default Recent sort — an explicit sort choice should win over drag order,
+  // and a reorder inside one filter mustn't scramble the rest of the library.
+  return (filter==='all' && !searchQ && sortMode==='recent') ? applyCustomOrder(list) : list;
 }
 
 /* ── Counts ── */
@@ -1530,7 +1682,14 @@ function cardBodyHTML(c){
     const dlBtn = c.imageData ? `<button class="img-download-btn" data-action="download" title="Download image">↓ Save</button>` : '';
     return `<div class="card-img-wrap">${img}${dlBtn}</div>${c.content?`<div class="card-preview two-line ${c.sensitive?'sensitive-wrap blur':''}">${esc(excerpt(c.content,90))}</div>`:''}`;
   }
-  if(c.type==='link') return `<div class="card-link"><div class="link-ico">↗</div><div style="min-width:0;flex:1"><div class="card-link-url">${esc(c.url||c.content||'')}</div><div class="link-title">${esc(excerpt(c.title||c.content,90))}</div></div></div>`;
+  if(c.type==='link'){
+    const url=c.url||c.content||'';
+    const dom=domainOf(url);
+    const mono=(dom.replace(/^www\./,'')[0]||'↗').toUpperCase();
+    const hue=domainHue(dom);
+    const fav=`<span class="link-fav" style="--fav-h:${hue}">${esc(mono)}</span>`;
+    return `<div class="card-link">${fav}<div style="min-width:0;flex:1"><div class="card-link-domain">${esc(dom||url)}</div><div class="link-title">${esc(excerpt(c.title||c.content,90))}</div></div><div class="link-arrow">↗</div></div>`;
+  }
   return `<div class="card-preview ${c.sensitive?'sensitive-wrap blur':''}">${esc(excerpt(c.content,220))}</div>`;
 }
 /* Self-explanatory line icons for the card action rail (match sidebar SVG style) */
@@ -1556,20 +1715,28 @@ function actionsHTML(c){
       </div>
     </div>`;
 }
+/* Tags render capped at 3 with a quiet "+N" so the meta row never wraps into a
+   noisy tag cloud. */
+function tagsHTML(list=[]){
+  const t=uniqueTags(list);
+  const shown=t.slice(0,3).map(x=>`<span class="tag" data-tag="${esc(x)}">#${esc(x)}</span>`).join('');
+  const extra=t.length>3?`<span class="tag tag-more">+${t.length-3}</span>`:'';
+  return shown+extra;
+}
 function cardHTML(c){
-  const tags=(c.tags||[]).map(t=>`<span class="tag" data-tag="${esc(normalizeTag(t))}">#${esc(normalizeTag(t))}</span>`).join('');
+  const stat=metaStat(c);
+  const statHTML=stat?`<span class="card-stat">${stat}</span>`:'';
   return `
     <div class="drag-handle" title="Drag to reorder"><span></span></div>
-    <div class="card-type"><div class="type-dot ${c.type}"></div>${c.type.toUpperCase()}</div>
+    <div class="card-type"><div class="type-dot ${c.type}"></div><span class="ct-name">${c.type.toUpperCase()}</span></div>
     <div class="card-title">${esc(c.title)}</div>
     ${cardBodyHTML(c)}
-    <div class="card-meta">${tags}<span class="card-date">${rel(c.date)}</span></div>
+    <div class="card-meta"><div class="card-tags">${tagsHTML(c.tags)}</div>${statHTML}<span class="card-date">${rel(c.date)}</span></div>
     ${actionsHTML(c)}`;
 }
 function listHTML(c){
-  const tags=(c.tags||[]).map(t=>`<span class="tag" data-tag="${esc(normalizeTag(t))}">#${esc(normalizeTag(t))}</span>`).join('');
   const prev=excerpt(c.content||c.url||'',90);
-  return `<span class="l-type">${c.type}</span><span class="l-title">${esc(c.title)}</span><span class="l-preview">${esc(prev)}</span><div class="l-tags">${tags}</div><span class="l-date">${rel(c.date)}</span>
+  return `<span class="l-type"><span class="type-dot ${c.type}"></span>${c.type}</span><span class="l-title">${esc(c.title)}</span><span class="l-preview">${esc(prev)}</span><div class="l-tags">${tagsHTML(c.tags)}</div><span class="l-date">${rel(c.date)}</span>
     ${actionsHTML(c)}`;
 }
 
@@ -1578,6 +1745,8 @@ function render(){
   const grid=document.getElementById('grid');
   const list=filtered();
   grid.className=view==='card'?'masonry':'list-view';
+  const fc=document.getElementById('feedCount');
+  if(fc) fc.textContent=list.length?`${list.length} ${list.length===1?'clip':'clips'}`:'';
 
   if(!list.length){
     grid.innerHTML=`<div class="empty"><div class="empty-glyph">✦</div><div class="empty-title">${clips.length?'No clips match this filter':'Start capturing ideas'}</div><div class="empty-sub">${clips.length?'Try a different filter or search term':'Paste, drop, or type — your clips live here, locally.'}</div><div class="empty-hint"><span class="empty-hint-chip">⌘N new clip</span><span class="empty-hint-chip">⌘V paste</span><span class="empty-hint-chip">drag & drop</span><span class="empty-hint-chip">⌘K commands</span></div></div>`;
@@ -1587,7 +1756,7 @@ function render(){
   grid.innerHTML='';
   list.forEach(c=>{
     const card=document.createElement('div');
-    card.className='card'+(selected.has(c.id)?' selected':'');
+    card.className='card type-'+c.type+(selected.has(c.id)?' selected':'');
     card.dataset.id=c.id;
     card.innerHTML=view==='card'?cardHTML(c):listHTML(c);
 
@@ -1631,10 +1800,9 @@ function renderFavorites(){
 
   el.innerHTML=show.map(c=>{
     const age=rel(c.date);
-    const preview=(c.content||'').substring(0,60).replace(/\n/g,' ');
-    return `<div class="fav-item" data-id="${c.id}">
+    const preview=(c.content||c.url||'').substring(0,72).replace(/\s+/g,' ').trim();
+    return `<div class="fav-item type-${c.type}" data-id="${c.id}">
       <span class="type-dot ${c.type}"></span>
-      <span class="fav-item-type">${c.type}</span>
       <span class="fav-item-title">${esc(c.title||'Untitled')}</span>
       <span class="fav-item-preview">${esc(preview)}</span>
       <span class="fav-item-time">${age}</span>
@@ -1844,7 +2012,30 @@ function autoDetectType(text){
   if(/^https?:\/\/\S+$/i.test(t) || /^www\.\S+\.\S+$/i.test(t) || (/^[a-z0-9.-]+\.[a-z]{2,}(\/\S*)?$/i.test(t.split(/\s/)[0]) && !t.includes(' '))) return 'link';
   const codeSignals=[/[{};]\s*$/m, /=>/, /\b(function|const|let|var|import|export|class|def|return|public|private)\b/, /^\s{2,}\S/m, /<\/?[a-z][\s\S]*>/i, /\b\w+\([^)]*\)\s*[{;]/];
   if(codeSignals.filter(re=>re.test(t)).length>=2) return 'code';
+  if(isPromptLike(t)) return 'prompt';
   return 'text';
+}
+/* Prompt detection — an LLM prompt is instructional, second-person, and often
+   role-assigning ("You are…", "Act as…", "Your task is…") or a stack of
+   directives ("Do not…", "Never…", "Always…", "Respond in…"). We require a
+   strong opener OR two weaker directive signals so ordinary prose stays TEXT. */
+function isPromptLike(t){
+  const s=t.replace(/\s+/g,' ').trim();
+  const strong=[
+    /^(you are|you're|act as|imagine you are|pretend (you are|to be)|as an? (expert|ai|assistant))\b/i,
+    /^(your (task|job|role|goal|objective) (is|will be)|the (task|goal) is to)\b/i,
+    /^(i want you to|i'd like you to|please (write|generate|summari[sz]e|create|draft|translate|rewrite|explain|analy[sz]e))\b/i,
+    /^(system prompt|prompt:)\b/i,
+  ];
+  if(strong.some(re=>re.test(s))) return true;
+  const directive=[
+    /\byou (are|should|must|will|need to|can)\b/i,
+    /\b(do not|don't|never|always|make sure to|be sure to|ensure that)\b/i,
+    /\b(step[- ]by[- ]step|respond (in|with|only)|output (a|the|only|in)|return (a|the|only|json)|format (your|the) (answer|response|output))\b/i,
+    /\b(your (task|role|goal|job|response)|the (user|assistant|following))\b/i,
+    /^(write|generate|summari[sz]e|create|draft|translate|rewrite|explain|analy[sz]e|list|give me|describe)\b/i,
+  ];
+  return directive.filter(re=>re.test(s)).length>=2;
 }
 function setNCType(type, preserve){
   ncType=type;
@@ -2381,6 +2572,29 @@ function cycleTheme(){ const t=['dark','light','auto']; prefs.theme=t[(t.indexOf
 document.getElementById('btnCards').addEventListener('click',()=>switchView('card'));
 document.getElementById('btnList').addEventListener('click',()=>switchView('list'));
 
+/* ── Sort control ── */
+const SORT_LABELS={recent:'Recent',oldest:'Oldest',az:'A–Z'};
+function reflectSort(){
+  const lbl=document.getElementById('sortLabel'); if(lbl) lbl.textContent=SORT_LABELS[sortMode]||'Recent';
+  document.querySelectorAll('.sort-opt').forEach(o=>o.classList.toggle('active',o.dataset.sort===sortMode));
+}
+function setSort(mode){
+  if(!SORT_LABELS[mode]) mode='recent';
+  sortMode=mode; prefs.sort=mode; saveP();
+  reflectSort(); render();
+}
+function closeSortMenu(){ document.getElementById('sortControl')?.classList.remove('open'); document.getElementById('sortBtn')?.setAttribute('aria-expanded','false'); }
+document.getElementById('sortBtn')?.addEventListener('click',e=>{
+  e.stopPropagation();
+  const c=document.getElementById('sortControl'); const open=c.classList.toggle('open');
+  document.getElementById('sortBtn').setAttribute('aria-expanded',String(open));
+});
+document.querySelectorAll('.sort-opt').forEach(o=>o.addEventListener('click',e=>{
+  e.stopPropagation(); setSort(o.dataset.sort); closeSortMenu();
+}));
+document.addEventListener('click',e=>{ if(!e.target.closest('#sortControl')) closeSortMenu(); });
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeSortMenu(); });
+
 /* ── Search ── */
 document.getElementById('searchInput').addEventListener('focus',()=>{
   document.getElementById('heroSearch').classList.add('focused');
@@ -2719,6 +2933,7 @@ document.getElementById('clipPromptDismiss').addEventListener('click',dismissCli
   else { clips=clips.map(c=>({...c,archived:!!c.archived,pinned:!!(c.pinned||c.favorited),tags:uniqueTags(c.tags||[])})) } // migrate old data; fold any legacy favorites into pins
   applyTheme(prefs.theme);
   applySidebar();
+  sortMode=SORT_LABELS[prefs.sort]?prefs.sort:'recent'; reflectSort();
   renderRecent();
   renderFavorites();
   renderClipboardPanel();
